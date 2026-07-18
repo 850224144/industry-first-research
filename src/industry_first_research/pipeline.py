@@ -15,6 +15,7 @@ from .models import (
     ResourcePolicy,
     ScanResult,
 )
+from .screening import assess_company_opportunities, assess_industry_opportunities
 
 
 _ELIGIBLE_STATES = {
@@ -64,12 +65,40 @@ class IndustryFirstDiscovery:
                 "ai_deep_company_limit": self.policy.ai_deep_company_limit,
             },
         )
+        result.industry_opportunity_assessments = {
+            industry.industry_id: assess_industry_opportunities(industry)
+            for industry in selected
+        }
 
         light_data_company_count = 0
         for industry in selected:
             pool = list(self.company_pool.candidates(industry, self.policy.company_pool_size))
             pool = pool[: self.policy.company_pool_size]
             light_data_company_count += len(pool)
+            industry_assessments = result.industry_opportunity_assessments.get(
+                industry.industry_id, {}
+            )
+            pool = [
+                candidate.with_metadata(
+                    {
+                        **candidate.metadata,
+                        "opportunity_assessments": assess_company_opportunities(
+                            candidate, industry_assessments
+                        ),
+                    }
+                )
+                for candidate in pool
+            ]
+            result.rejected_companies.extend(
+                candidate
+                for candidate in pool
+                if candidate.hard_gate_status in {"REJECTED", "BLOCKED"}
+            )
+            pool = [
+                candidate
+                for candidate in pool
+                if candidate.hard_gate_status not in {"REJECTED", "BLOCKED"}
+            ]
             light = list(self.company_data.enrich(pool, CompanyDataTier.LIGHT))
             supplemental = list(
                 self.company_data.enrich(
@@ -92,7 +121,10 @@ class IndustryFirstDiscovery:
                 deep = [candidate.with_tier(CompanyDataTier.AI_DEEP) for candidate in deep]
             result.company_pools[industry.industry_id] = deep
 
-        result.empty_result = not bool(result.selected_industries and result.company_pools)
+        result.empty_result = not bool(
+            result.selected_industries
+            and any(result.company_pools.values())
+        )
         result.resource_audit.update(
             {
                 "light_data_company_count": light_data_company_count,
@@ -101,6 +133,7 @@ class IndustryFirstDiscovery:
                     1 for items in result.company_pools.values() for item in items
                     if item.data_tier == CompanyDataTier.AI_DEEP
                 ),
+                "rejected_company_count": len(result.rejected_companies),
             }
         )
         return result

@@ -23,12 +23,15 @@
 - 本地 JSON 快照存储；
 - 外部网页 AI 研究输入的人工粘贴协议；
 - 可运行的测试和 CLI 演示。
+- 白酒行业配置化纵向切片：行业雷达、13 家代表公司池、5 家深度层、Markdown/HTML 报告和 JSON 快照。
+- 确定性的周期反转/质量修复规则审计，以及公司淘汰、空结果和研究资产缺失留痕。
 
 尚未完成：
 
 - AKShare、QMT、原始公告和行业数据的生产适配器；
 - `luopan` / `ai-berkshire` 的字段级研究资产导入；
-- 真实行业雷达数据源和产品级深研；
+- AKShare、QMT 和原始公告的生产数据接入；
+- 产品级深研、模拟决策快照和持续跟踪；
 - Web 界面和微信公众号草稿发布。
 
 ## 开发
@@ -45,6 +48,12 @@ python -m industry_first_research demo
 
 ```bash
 PYTHONPATH=src python -m industry_first_research demo
+
+# 白酒行业纵向切片
+PYTHONPATH=src python -m industry_first_research industry \
+  --config config/industries/baijiu.json \
+  --output /tmp/baijiu-report.md \
+  --html-output /tmp/baijiu-report.html
 ```
 
 ## 外部研究资产

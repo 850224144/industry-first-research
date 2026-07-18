@@ -1,0 +1,199 @@
+{
+  "industry_id": "baijiu",
+  "display_name": "中国白酒",
+  "industry_type": "consumer",
+  "as_of": "2026-07-16",
+  "state": "INFLECTION_CANDIDATE",
+  "evidence_completeness": "CROSS_VALIDATED",
+  "opportunity_types": ["cycle_reversal", "quality_repair"],
+  "reason": "成熟收缩期中出现供给退出和分化，但价格体系、渠道库存和真实动销尚未普遍确认反转；机会更可能集中在强品牌、区域堡垒和有证据的困境修复。",
+  "signals": [
+    {
+      "name": "industry_cycle",
+      "value": "mature_contraction",
+      "source": "outputs/罗盘-白酒行业研究-正式调用版-2026-07-16.md",
+      "evidence_status": "CROSS_VALIDATED",
+      "note": "行业不会消失，但总量、场景和品牌竞争发生结构性变化。"
+    },
+    {
+      "name": "supply_exit",
+      "value": "visible",
+      "source": "outputs/罗盘-白酒行业研究-正式调用版-2026-07-16.md",
+      "evidence_status": "CROSS_VALIDATED",
+      "note": "规上企业数量、经销商和弱品牌承压，供给出清需要继续核验。"
+    },
+    {
+      "name": "channel_price",
+      "value": "divergent",
+      "source": "vendor/ai-berkshire/reports/白酒周期/白酒周期见底研究-team-20260503.md",
+      "evidence_status": "REFERENCE_ONLY",
+      "note": "高端强品牌与次高端、区域弱品牌不能用同一价格状态代表。"
+    },
+    {
+      "name": "consumer_demand",
+      "value": "structurally_mixed",
+      "source": "outputs/罗盘-白酒行业研究-正式调用版-2026-07-16.md",
+      "evidence_status": "CROSS_VALIDATED",
+      "note": "商务、礼赠、自饮和宴席场景变化方向不同。"
+    }
+  ],
+  "source_documents": [
+    {
+      "title": "罗盘白酒行业正式调用版",
+      "path": "outputs/罗盘-白酒行业研究-正式调用版-2026-07-16.md",
+      "level": "REFERENCE_ONLY",
+      "role": "luopan 行业边界、行业判断、权力分层和反证记录"
+    },
+    {
+      "title": "白酒周期见底深度研究",
+      "path": "vendor/ai-berkshire/reports/白酒周期/白酒周期见底研究-team-20260503.md",
+      "level": "REFERENCE_ONLY",
+      "role": "ai-berkshire 周期漏斗与见底信号参考"
+    },
+    {
+      "title": "招商中证白酒指数投资研究",
+      "path": "vendor/ai-berkshire/reports/招商中证白酒指数C-投资研究-20260625.md",
+      "level": "REFERENCE_ONLY",
+      "role": "白酒公司和指数研究参考"
+    },
+    {
+      "title": "前瞻产业研究院白酒行业数据",
+      "path": "outputs/罗盘-白酒行业研究-正式调用版-2026-07-16.md",
+      "level": "B",
+      "url": "https://www.qianzhan.com/analyst/detail/220/250314-917b47ed.html",
+      "role": "行业产量、收入、利润等公开数据线索，正式结论前需回溯核验"
+    }
+  ],
+  "companies": [
+    {
+      "company_id": "600519.SH",
+      "display_name": "贵州茅台",
+      "score": 8,
+      "hard_gate_status": "PASS",
+      "source": "luopan+ai-berkshire",
+      "inclusion_reason": "超高端品牌、现金能力和真实定价权是行业强生存样本。",
+      "notes": ["强品牌", "高现金回报"],
+      "source_assets": ["outputs/罗盘-白酒行业研究-正式调用版-2026-07-16.md", "vendor/ai-berkshire/reports/茅台/贵州茅台-investment-research-20260627.md"]
+    },
+    {
+      "company_id": "000568.SZ",
+      "display_name": "泸州老窖",
+      "score": 8,
+      "hard_gate_status": "PASS",
+      "source": "luopan+ai-berkshire",
+      "inclusion_reason": "老窖池和核心品牌形成较高壁垒，但需要继续核验批价和经销商盈利。",
+      "notes": ["强品牌", "价格体系待核验"],
+      "source_assets": ["outputs/罗盘-白酒行业研究-正式调用版-2026-07-16.md"]
+    },
+    {
+      "company_id": "600809.SH",
+      "display_name": "山西汾酒",
+      "score": 7,
+      "hard_gate_status": "PASS",
+      "source": "luopan+ai-berkshire",
+      "inclusion_reason": "清香龙头和全价格带布局提供穿越能力，但全国化扩张质量需跟踪。",
+      "notes": ["清香龙头", "增长验证"],
+      "source_assets": ["outputs/罗盘-白酒行业研究-正式调用版-2026-07-16.md"]
+    },
+    {
+      "company_id": "000858.SZ",
+      "display_name": "五粮液",
+      "score": 6,
+      "hard_gate_status": "OBSERVE",
+      "source": "luopan+ai-berkshire",
+      "inclusion_reason": "体量和现金强，但价格体系、治理和历史口径冲突需要单独核验。",
+      "notes": ["高生存", "待修复"],
+      "source_assets": ["outputs/罗盘-白酒行业研究-正式调用版-2026-07-16.md", "vendor/ai-berkshire/reports/五粮液/五粮液-research-20260619.md"]
+    },
+    {
+      "company_id": "000596.SZ",
+      "display_name": "古井贡酒",
+      "score": 6,
+      "hard_gate_status": "PASS",
+      "source": "luopan",
+      "inclusion_reason": "安徽区域密度和宴席场景形成区域堡垒。",
+      "notes": ["区域堡垒"],
+      "source_assets": ["outputs/罗盘-白酒行业研究-正式调用版-2026-07-16.md"]
+    },
+    {
+      "company_id": "603369.SH",
+      "display_name": "今世缘",
+      "score": 6,
+      "hard_gate_status": "PASS",
+      "source": "luopan",
+      "inclusion_reason": "江苏区域婚宴和礼赠渠道具备密度，但省外复制能力有限。",
+      "notes": ["区域堡垒", "省外天花板"],
+      "source_assets": ["outputs/罗盘-白酒行业研究-正式调用版-2026-07-16.md"]
+    },
+    {
+      "company_id": "603198.SH",
+      "display_name": "迎驾贡酒",
+      "score": 5,
+      "hard_gate_status": "PASS",
+      "source": "luopan",
+      "inclusion_reason": "县域终端和区域成本效率提供下行缓冲。",
+      "notes": ["区域堡垒", "成本效率"],
+      "source_assets": ["outputs/罗盘-白酒行业研究-正式调用版-2026-07-16.md"]
+    },
+    {
+      "company_id": "002304.SZ",
+      "display_name": "洋河股份",
+      "score": 5,
+      "hard_gate_status": "OBSERVE",
+      "source": "luopan+ai-berkshire",
+      "inclusion_reason": "根据地和现金较强，但产品老化与渠道库存必须先修复。",
+      "notes": ["高生存", "渠道修复"],
+      "source_assets": ["outputs/罗盘-白酒行业研究-正式调用版-2026-07-16.md"]
+    },
+    {
+      "company_id": "600702.SH",
+      "display_name": "舍得酒业",
+      "score": 4,
+      "hard_gate_status": "OBSERVE",
+      "source": "luopan+ai-berkshire",
+      "inclusion_reason": "困境修复弹性较大，但次高端拥挤和渠道费用依赖使下行保护不足。",
+      "notes": ["困境修复", "高波动"],
+      "source_assets": ["outputs/罗盘-白酒行业研究-正式调用版-2026-07-16.md"]
+    },
+    {
+      "company_id": "000799.SZ",
+      "display_name": "酒鬼酒",
+      "score": 3,
+      "hard_gate_status": "OBSERVE",
+      "source": "luopan",
+      "inclusion_reason": "区域品牌和产品特色存在期权，但规模、现金流和全国心智不足。",
+      "notes": ["观察", "品牌可替代"],
+      "source_assets": ["outputs/罗盘-白酒行业研究-正式调用版-2026-07-16.md"]
+    },
+    {
+      "company_id": "600779.SH",
+      "display_name": "水井坊",
+      "score": 3,
+      "hard_gate_status": "OBSERVE",
+      "source": "luopan",
+      "inclusion_reason": "历史窖池有壁垒，但全国品牌运营和费用效率仍需证明。",
+      "notes": ["观察", "费用效率"],
+      "source_assets": ["outputs/罗盘-白酒行业研究-正式调用版-2026-07-16.md"]
+    },
+    {
+      "company_id": "603589.SH",
+      "display_name": "口子窖",
+      "score": 4,
+      "hard_gate_status": "OBSERVE",
+      "source": "luopan",
+      "inclusion_reason": "安徽根据地有价值，但面临区域强者竞争和产品升级压力。",
+      "notes": ["区域竞争"],
+      "source_assets": ["outputs/罗盘-白酒行业研究-正式调用版-2026-07-16.md"]
+    },
+    {
+      "company_id": "000860.SZ",
+      "display_name": "顺鑫农业",
+      "score": 2,
+      "hard_gate_status": "OBSERVE",
+      "source": "luopan",
+      "inclusion_reason": "大众光瓶酒规模大，但上市主体混合业务使白酒利润和现金流口径不可直接比较。",
+      "notes": ["混合业务", "口径风险"],
+      "source_assets": ["outputs/罗盘-白酒行业研究-正式调用版-2026-07-16.md"]
+    }
+  ]
+}

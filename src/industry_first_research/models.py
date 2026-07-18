@@ -64,6 +64,7 @@ class CompanyCandidate:
     hard_gate_status: str = "PENDING"
     score: float | None = None
     notes: tuple[str, ...] = ()
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def with_tier(self, tier: CompanyDataTier) -> "CompanyCandidate":
         return CompanyCandidate(
@@ -76,6 +77,21 @@ class CompanyCandidate:
             hard_gate_status=self.hard_gate_status,
             score=self.score,
             notes=self.notes,
+            metadata=self.metadata,
+        )
+
+    def with_metadata(self, metadata: dict[str, Any]) -> "CompanyCandidate":
+        return CompanyCandidate(
+            company_id=self.company_id,
+            display_name=self.display_name,
+            industry_id=self.industry_id,
+            data_tier=self.data_tier,
+            source=self.source,
+            inclusion_reason=self.inclusion_reason,
+            hard_gate_status=self.hard_gate_status,
+            score=self.score,
+            notes=self.notes,
+            metadata=metadata,
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -126,6 +142,7 @@ class ScanResult:
     company_pools: dict[str, list[CompanyCandidate]] = field(default_factory=dict)
     rejected_industries: list[str] = field(default_factory=list)
     rejected_companies: list[CompanyCandidate] = field(default_factory=list)
+    industry_opportunity_assessments: dict[str, dict[str, Any]] = field(default_factory=dict)
     resource_audit: dict[str, int | bool] = field(default_factory=dict)
     empty_result: bool = False
 
@@ -140,6 +157,7 @@ class ScanResult:
             },
             "rejected_industries": self.rejected_industries,
             "rejected_companies": [item.to_dict() for item in self.rejected_companies],
+            "industry_opportunity_assessments": self.industry_opportunity_assessments,
             "resource_audit": self.resource_audit,
             "empty_result": self.empty_result,
         }

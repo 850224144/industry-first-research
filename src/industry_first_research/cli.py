@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 
+from .config import candidates_from_config, load_config, radar_from_config, source_documents
 from .external_ai import ExternalAIResearchRecord
+from .local_assets import ConfigCompanyPool, LocalAssetDataProvider, LocalResearchAssetCatalog
 from .models import CompanyCandidate, IndustryRadarSnapshot, IndustrySignal, IndustryState
 from .pipeline import (
     InMemoryCompanyPool,
@@ -15,6 +18,8 @@ from .pipeline import (
     PassThroughDeepResearch,
     current_as_of,
 )
+from .report import render_scan_html, render_scan_markdown
+from .storage import JsonSnapshotStore
 
 
 def demo() -> dict:
@@ -61,6 +66,17 @@ def main() -> None:
     parser = argparse.ArgumentParser(prog="industry-first-research")
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("demo", help="run the local-only industry-first demo")
+    industry = subparsers.add_parser(
+        "industry", help="run an industry-first scan from a local industry config"
+    )
+    industry.add_argument("--config", required=True, help="path to an industry JSON config")
+    industry.add_argument("--output", help="write the Markdown report to this path")
+    industry.add_argument("--html-output", help="write the HTML report to this path")
+    industry.add_argument(
+        "--snapshot-dir",
+        default="artifacts/snapshots",
+        help="directory for the JSON scan snapshot",
+    )
     external = subparsers.add_parser("external-ai", help="normalise a pasted web AI answer")
     external.add_argument("--provider", required=True)
     external.add_argument("--question", required=True)
@@ -70,6 +86,40 @@ def main() -> None:
 
     if args.command == "demo":
         print(json.dumps(demo(), ensure_ascii=False, indent=2))
+    elif args.command == "industry":
+        config = load_config(args.config)
+        project_root = Path.cwd()
+        scan = IndustryFirstDiscovery(
+            InMemoryRadar([radar_from_config(config)]),
+            ConfigCompanyPool(
+                candidates_from_config(config),
+                catalog=LocalResearchAssetCatalog(project_root),
+            ),
+            LocalAssetDataProvider(),
+        ).run(config["as_of"])
+        snapshot_path = JsonSnapshotStore(args.snapshot_dir).write(
+            scan.scan_id,
+            {
+                "scan": scan.to_dict(),
+                "industry": config,
+                "execution_mode": "LOCAL_ASSET_REUSE",
+            },
+        )
+        report = render_scan_markdown(scan, config, source_documents(config))
+        html_report = render_scan_html(scan, config, source_documents(config))
+        if args.output:
+            target = Path(args.output)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(report, encoding="utf-8")
+            result = {"report": str(target), "snapshot": str(snapshot_path)}
+            if args.html_output:
+                html_target = Path(args.html_output)
+                html_target.parent.mkdir(parents=True, exist_ok=True)
+                html_target.write_text(html_report, encoding="utf-8")
+                result["html_report"] = str(html_target)
+            print(json.dumps(result, ensure_ascii=False))
+        else:
+            print(report)
     elif args.command == "external-ai":
         record = ExternalAIResearchRecord(
             provider=args.provider,

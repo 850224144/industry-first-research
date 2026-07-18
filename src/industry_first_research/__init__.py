@@ -9,6 +9,7 @@ from .models import (
     ScanResult,
 )
 from .pipeline import IndustryFirstDiscovery
+from .report import render_scan_html, render_scan_markdown
 
 __all__ = [
     "CompanyCandidate",
@@ -18,4 +19,6 @@ __all__ = [
     "IndustryState",
     "ResourcePolicy",
     "ScanResult",
+    "render_scan_markdown",
+    "render_scan_html",
 ]
