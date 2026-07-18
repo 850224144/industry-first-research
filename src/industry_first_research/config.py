@@ -19,9 +19,21 @@ def load_config(path: str | Path) -> dict[str, Any]:
     payload = json.loads(config_path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise ValueError("industry config must be a JSON object")
-    for key in ("industry_id", "display_name", "as_of", "state", "companies"):
+    required_keys = ("industry_id", "display_name", "as_of", "state", "companies")
+    for key in required_keys:
         if key not in payload:
             raise ValueError(f"industry config is missing {key!r}")
+    return payload
+
+
+def load_company_config(path: str | Path) -> dict[str, Any]:
+    config_path = Path(path)
+    payload = json.loads(config_path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("company config must be a JSON object")
+    for key in ("company_id", "as_of"):
+        if key not in payload:
+            raise ValueError(f"company config is missing {key!r}")
     return payload
 
 

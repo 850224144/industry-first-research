@@ -11,7 +11,9 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
+from contextlib import redirect_stderr, redirect_stdout
 import importlib
+from io import StringIO
 from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
@@ -37,6 +39,7 @@ class DataSourceAttempt:
     reason: str = ""
     started_at: str = ""
     finished_at: str = ""
+    diagnostics: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -59,8 +62,13 @@ class RoutedDataResult:
 
 
 class DataSourceExhaustedError(RuntimeError):
-    def __init__(self, attempts: Sequence[DataSourceAttempt]) -> None:
+    def __init__(
+        self,
+        attempts: Sequence[DataSourceAttempt],
+        requested_sources: Sequence[str] = (),
+    ) -> None:
         self.attempts = tuple(attempts)
+        self.requested_sources = tuple(requested_sources)
         detail = "; ".join(
             f"{attempt.source}: {attempt.status} {attempt.reason}".strip()
             for attempt in self.attempts
@@ -159,8 +167,12 @@ class DataSourceRouter:
     ) -> RoutedDataResult:
         names = tuple(source_names or self.policy.sources_for(subject_type or "company"))
         attempts: list[DataSourceAttempt] = []
+        source_queries = query.get("source_queries", {})
         for name in names:
             started_at = _now()
+            health_diagnostics = ""
+            fetch_diagnostics = ""
+            normalize_diagnostics = ""
             adapter = self._adapters.get(name)
             if adapter is None:
                 attempts.append(
@@ -173,8 +185,19 @@ class DataSourceRouter:
                     )
                 )
                 continue
+            if source_queries and isinstance(source_queries, Mapping) and name not in source_queries:
+                attempts.append(
+                    DataSourceAttempt(
+                        source=name,
+                        status="SKIPPED",
+                        reason="no query configured for this source",
+                        started_at=started_at,
+                        finished_at=_now(),
+                    )
+                )
+                continue
             try:
-                health = adapter.health_check()
+                health, health_diagnostics = _capture_output(adapter.health_check)
                 if not health.available:
                     attempts.append(
                         DataSourceAttempt(
@@ -183,11 +206,27 @@ class DataSourceRouter:
                             reason=health.reason or "source unavailable",
                             started_at=started_at,
                             finished_at=_now(),
+                            diagnostics=health_diagnostics,
                         )
                     )
                     continue
-                raw = adapter.fetch(query, as_of)
-                normalized = adapter.normalize(raw)
+                source_query = dict(query)
+                if isinstance(source_queries, Mapping) and name in source_queries:
+                    override = source_queries[name]
+                    if not isinstance(override, Mapping):
+                        raise ValueError(f"source query for {name} must be an object")
+                    source_query.update(override)
+                raw, fetch_diagnostics = _capture_output(
+                    adapter.fetch, source_query, as_of
+                )
+                normalized, normalize_diagnostics = _capture_output(
+                    adapter.normalize, raw
+                )
+                diagnostics = _merge_diagnostics(
+                    health_diagnostics,
+                    fetch_diagnostics,
+                    normalize_diagnostics,
+                )
                 if not _has_payload(normalized):
                     raise ValueError("source returned an empty payload")
                 required_fields = tuple(query.get("required_fields", ()))
@@ -202,10 +241,17 @@ class DataSourceRouter:
                         status="SUCCESS",
                         started_at=started_at,
                         finished_at=_now(),
+                        diagnostics=diagnostics,
                     )
                 )
                 return RoutedDataResult(name, normalized, tuple(attempts), names)
             except Exception as error:
+                diagnostics = _merge_diagnostics(
+                    locals().get("health_diagnostics", ""),
+                    locals().get("fetch_diagnostics", ""),
+                    locals().get("normalize_diagnostics", ""),
+                    getattr(error, "captured_diagnostics", ""),
+                )
                 attempts.append(
                     DataSourceAttempt(
                         source=name,
@@ -213,9 +259,10 @@ class DataSourceRouter:
                         reason=f"{type(error).__name__}: {error}",
                         started_at=started_at,
                         finished_at=_now(),
+                        diagnostics=diagnostics,
                     )
                 )
-        raise DataSourceExhaustedError(attempts)
+        raise DataSourceExhaustedError(attempts, names)
 
 
 class AkshareDataSourceAdapter:
@@ -439,6 +486,30 @@ def default_data_source_router(
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _capture_output(function: Callable[..., Any], *args: Any, **kwargs: Any) -> tuple[Any, str]:
+    """Keep noisy optional data libraries from corrupting machine-readable output."""
+
+    stdout = StringIO()
+    stderr = StringIO()
+    try:
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            result = function(*args, **kwargs)
+    except Exception as error:
+        diagnostics = _clean_diagnostics(stdout.getvalue(), stderr.getvalue())
+        setattr(error, "captured_diagnostics", diagnostics)
+        raise
+    return result, _clean_diagnostics(stdout.getvalue(), stderr.getvalue())
+
+
+def _merge_diagnostics(*values: str) -> str:
+    return _clean_diagnostics("\n".join(value for value in values if value))
+
+
+def _clean_diagnostics(stdout: str, stderr: str = "") -> str:
+    combined = "\n".join(value.strip() for value in (stdout, stderr) if value.strip())
+    return combined[:2000]
 
 
 def _has_payload(value: Any) -> bool:

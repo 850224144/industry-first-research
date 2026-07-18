@@ -1,0 +1,105 @@
+{
+  "company_id": "600438.SH",
+  "display_name": "通威股份",
+  "as_of": "2026-07-18",
+  "industry_id": "photovoltaic",
+  "business_scope": [
+    "高纯晶硅",
+    "太阳能电池",
+    "太阳能组件",
+    "水产饲料及相关业务"
+  ],
+  "products": [
+    {
+      "product": "高纯晶硅",
+      "system_layer": "光伏产业链上游材料",
+      "function": "为硅片环节提供光伏级硅料",
+      "criticality": "必要材料但同质化竞争强",
+      "substitutability": "同类供应商可替代，成本、品质和规模决定竞争位置",
+      "profit_transmission": "需核验硅料价格、单位成本、有效产能、库存和现金流"
+    },
+    {
+      "product": "太阳能电池/组件",
+      "system_layer": "光伏产业链中下游制造",
+      "function": "将硅片转化为电池片并封装为组件",
+      "criticality": "产品需求长期存在，但制造环节竞争和技术迭代强",
+      "substitutability": "存在同类厂商、技术路线替代和客户供应链切换",
+      "profit_transmission": "需核验产能利用率、转换效率、产品价格、资本开支和现金回款"
+    }
+  ],
+  "identity_query": {
+    "required_fields": ["data"],
+    "source_queries": {
+      "eastmoney": {
+        "url": "https://push2.eastmoney.com/api/qt/stock/get",
+        "params": {"secid": "1.600438", "fields": "f57,f58,f84,f85,f116,f117"}
+      },
+      "akshare": {
+        "endpoint": "stock_individual_info_em",
+        "params": {"symbol": "600438"}
+      }
+    }
+  },
+  "financial_query": {
+    "required_fields": ["data"],
+    "source_queries": {
+      "eastmoney": {
+        "url": "https://datacenter.eastmoney.com/securities/api/data/get",
+        "params": {
+          "type": "RPT_F10_FINANCE_MAINFINADATA",
+          "sty": "APP_F10_MAINFINADATA",
+          "filter": "(SECUCODE=\"600438.SH\")",
+          "p": "1",
+          "ps": "8",
+          "sr": "-1",
+          "st": "REPORT_DATE"
+        }
+      },
+      "akshare": {
+        "endpoint": "stock_financial_analysis_indicator",
+        "params": {"symbol": "600438", "start_year": "2022"}
+      }
+    }
+  },
+  "quote_query": {
+    "required_fields": ["data"],
+    "source_queries": {
+      "eastmoney": {
+        "url": "https://push2.eastmoney.com/api/qt/stock/get",
+        "params": {"secid": "1.600438", "fields": "f43,f57,f58,f169,f170,f171"}
+      },
+      "akshare": {
+        "endpoint": "stock_zh_a_spot_em",
+        "params": {}
+      },
+      "baostock": {
+        "query_type": "history",
+        "code": "sh.600438",
+        "start_date": "2026-07-17",
+        "end_date": "2026-07-18"
+      }
+    }
+  },
+  "source_documents": [
+    {
+      "title": "通威股份交易所/公司原始披露",
+      "level": "A",
+      "role": "身份、业务边界、财务口径和重大事项核验"
+    },
+    {
+      "title": "东方财富通威股份公开接口",
+      "level": "B",
+      "role": "行情和公开财务采集入口"
+    },
+    {
+      "title": "AKShare 通威股份数据",
+      "level": "B",
+      "role": "行情、财务和行业数据备用采集入口"
+    },
+    {
+      "title": "BaoStock 通威股份历史行情",
+      "level": "B",
+      "role": "A 股历史行情备用采集入口"
+    }
+  ]
+}

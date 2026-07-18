@@ -193,3 +193,36 @@ def test_router_raises_only_after_all_sources_fail():
     with pytest.raises(DataSourceExhaustedError) as error:
         router.fetch({}, "2026-07-18", subject_type="listed_company")
     assert error.value.attempts[0].status == "SKIPPED"
+
+
+def test_router_captures_noisy_adapter_output_without_leaking_to_caller(capsys):
+    class NoisyAdapter:
+        name = "akshare"
+
+        def health_check(self):
+            print("health diagnostic")
+            return SimpleNamespace(
+                name=self.name,
+                source_type="test",
+                available=False,
+                capabilities=(),
+                reason="offline",
+                version="test",
+            )
+
+        def fetch(self, query, as_of):
+            raise AssertionError("unavailable source must not be fetched")
+
+        def normalize(self, value):
+            return value
+
+    router = DataSourceRouter(
+        [NoisyAdapter()],
+        FreeDataSourcePolicy(listed_company_sources=("akshare",)),
+    )
+    with pytest.raises(DataSourceExhaustedError):
+        router.fetch({}, "2026-07-18", subject_type="listed_company")
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""

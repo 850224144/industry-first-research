@@ -6,7 +6,15 @@ import argparse
 import json
 from pathlib import Path
 
-from .config import candidates_from_config, load_config, radar_from_config, source_documents
+from .company_research import CompanyResearchAssembler, snapshot_from_config
+from .config import (
+    candidates_from_config,
+    load_company_config,
+    load_config,
+    radar_from_config,
+    source_documents,
+)
+from .data_sources import default_data_source_router
 from .external_ai import ExternalAIResearchRecord
 from .local_assets import ConfigCompanyPool, LocalAssetDataProvider, LocalResearchAssetCatalog
 from .models import CompanyCandidate, IndustryRadarSnapshot, IndustrySignal, IndustryState
@@ -66,6 +74,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(prog="industry-first-research")
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("demo", help="run the local-only industry-first demo")
+    company = subparsers.add_parser(
+        "company", help="collect a bounded company research snapshot"
+    )
+    company.add_argument("--config", required=True, help="path to a company JSON config")
+    company.add_argument(
+        "--snapshot-dir",
+        default="artifacts/company-snapshots",
+        help="directory for the JSON company snapshot",
+    )
     industry = subparsers.add_parser(
         "industry", help="run an industry-first scan from a local industry config"
     )
@@ -86,6 +103,26 @@ def main() -> None:
 
     if args.command == "demo":
         print(json.dumps(demo(), ensure_ascii=False, indent=2))
+    elif args.command == "company":
+        config = load_company_config(args.config)
+        snapshot = CompanyResearchAssembler(default_data_source_router()).collect(
+            snapshot_from_config(config)
+        )
+        snapshot_path = JsonSnapshotStore(args.snapshot_dir).write(
+            f"company-{snapshot.company_id.replace('.', '-')}-{snapshot.as_of}",
+            {
+                "company": config,
+                "research": snapshot.to_dict(),
+                "execution_mode": "LOCAL_DATA_ROUTER",
+            },
+        )
+        print(
+            json.dumps(
+                {"snapshot": str(snapshot_path), "research": snapshot.to_dict()},
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
     elif args.command == "industry":
         config = load_config(args.config)
         project_root = Path.cwd()
