@@ -13,8 +13,15 @@ from .report import render_scan_html, render_scan_markdown
 from .data_sources import (
     AkshareDataSourceAdapter,
     BaoStockDataSourceAdapter,
+    DataSourceAttempt,
+    DataSourceExhaustedError,
     DataSourceHealth,
+    DataSourceRouter,
+    EastmoneyDataSourceAdapter,
     FreeDataSourcePolicy,
+    PublicHttpDataSourceAdapter,
+    RoutedDataResult,
+    default_data_source_router,
     default_free_data_adapters,
 )
 
@@ -30,7 +37,14 @@ __all__ = [
     "render_scan_html",
     "AkshareDataSourceAdapter",
     "BaoStockDataSourceAdapter",
+    "DataSourceAttempt",
+    "DataSourceExhaustedError",
     "DataSourceHealth",
+    "DataSourceRouter",
+    "EastmoneyDataSourceAdapter",
     "FreeDataSourcePolicy",
+    "PublicHttpDataSourceAdapter",
+    "RoutedDataResult",
+    "default_data_source_router",
     "default_free_data_adapters",
 ]

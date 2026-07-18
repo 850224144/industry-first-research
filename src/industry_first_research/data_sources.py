@@ -8,11 +8,13 @@ and company announcements remain the preferred verification layer.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 import importlib
 from typing import Any
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+from urllib.request import Request, urlopen
 
 
 @dataclass(frozen=True)
@@ -29,15 +31,69 @@ class DataSourceHealth:
 
 
 @dataclass(frozen=True)
-class FreeDataSourcePolicy:
-    """Default source order with no broker-terminal dependency."""
+class DataSourceAttempt:
+    source: str
+    status: str
+    reason: str = ""
+    started_at: str = ""
+    finished_at: str = ""
 
-    listed_company_sources: tuple[str, ...] = ("akshare", "baostock")
-    industry_sources: tuple[str, ...] = ("akshare",)
-    futures_sources: tuple[str, ...] = ("official_exchange", "akshare")
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
+class RoutedDataResult:
+    source: str
+    data: dict[str, Any]
+    attempts: tuple[DataSourceAttempt, ...]
+    requested_sources: tuple[str, ...]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "source": self.source,
+            "data": self.data,
+            "attempts": [attempt.to_dict() for attempt in self.attempts],
+            "requested_sources": list(self.requested_sources),
+        }
+
+
+class DataSourceExhaustedError(RuntimeError):
+    def __init__(self, attempts: Sequence[DataSourceAttempt]) -> None:
+        self.attempts = tuple(attempts)
+        detail = "; ".join(
+            f"{attempt.source}: {attempt.status} {attempt.reason}".strip()
+            for attempt in self.attempts
+        )
+        super().__init__(f"all configured data sources failed: {detail}")
+
+
+@dataclass(frozen=True)
+class FreeDataSourcePolicy:
+    """Default source order; each tuple is tried from left to right."""
+
+    listed_company_sources: tuple[str, ...] = (
+        "official_exchange",
+        "company_disclosure",
+        "eastmoney",
+        "akshare",
+        "baostock",
+    )
+    industry_sources: tuple[str, ...] = (
+        "official_exchange",
+        "eastmoney",
+        "akshare",
+    )
+    futures_sources: tuple[str, ...] = (
+        "official_exchange",
+        "eastmoney",
+        "akshare",
+    )
     announcement_sources: tuple[str, ...] = (
         "official_exchange",
         "company_disclosure",
+        "eastmoney",
+        "akshare",
     )
 
     def sources_for(self, subject_type: str) -> tuple[str, ...]:
@@ -62,6 +118,104 @@ class FreeDataSourcePolicy:
             raise ValueError("the default free-data policy cannot depend on QMT")
         if not self.listed_company_sources:
             raise ValueError("listed company sources must not be empty")
+
+
+class DataSourceRouter:
+    """Try configured sources in order and preserve every failed attempt."""
+
+    def __init__(
+        self,
+        adapters: Sequence[Any],
+        policy: FreeDataSourcePolicy | None = None,
+    ) -> None:
+        self.policy = policy or FreeDataSourcePolicy()
+        self.policy.validate()
+        self._adapters = {adapter.name: adapter for adapter in adapters}
+
+    def health(self, source_names: Sequence[str] | None = None) -> list[DataSourceHealth]:
+        names = tuple(source_names or self._adapters)
+        results: list[DataSourceHealth] = []
+        for name in names:
+            adapter = self._adapters.get(name)
+            if adapter is None:
+                results.append(
+                    DataSourceHealth(
+                        name=name,
+                        source_type="unregistered",
+                        available=False,
+                        reason="adapter is not registered",
+                    )
+                )
+            else:
+                results.append(adapter.health_check())
+        return results
+
+    def fetch(
+        self,
+        query: Mapping[str, Any],
+        as_of: str,
+        subject_type: str | None = None,
+        source_names: Sequence[str] | None = None,
+    ) -> RoutedDataResult:
+        names = tuple(source_names or self.policy.sources_for(subject_type or "company"))
+        attempts: list[DataSourceAttempt] = []
+        for name in names:
+            started_at = _now()
+            adapter = self._adapters.get(name)
+            if adapter is None:
+                attempts.append(
+                    DataSourceAttempt(
+                        source=name,
+                        status="SKIPPED",
+                        reason="adapter is not registered",
+                        started_at=started_at,
+                        finished_at=_now(),
+                    )
+                )
+                continue
+            try:
+                health = adapter.health_check()
+                if not health.available:
+                    attempts.append(
+                        DataSourceAttempt(
+                            source=name,
+                            status="SKIPPED",
+                            reason=health.reason or "source unavailable",
+                            started_at=started_at,
+                            finished_at=_now(),
+                        )
+                    )
+                    continue
+                raw = adapter.fetch(query, as_of)
+                normalized = adapter.normalize(raw)
+                if not _has_payload(normalized):
+                    raise ValueError("source returned an empty payload")
+                required_fields = tuple(query.get("required_fields", ()))
+                if not _has_required_fields(normalized, required_fields):
+                    raise ValueError(
+                        "source payload is missing required fields: "
+                        + ", ".join(required_fields)
+                    )
+                attempts.append(
+                    DataSourceAttempt(
+                        source=name,
+                        status="SUCCESS",
+                        started_at=started_at,
+                        finished_at=_now(),
+                    )
+                )
+                return RoutedDataResult(name, normalized, tuple(attempts), names)
+            except Exception as error:
+                attempts.append(
+                    DataSourceAttempt(
+                        source=name,
+                        status="FAILED",
+                        reason=f"{type(error).__name__}: {error}",
+                        started_at=started_at,
+                        finished_at=_now(),
+                    )
+                )
+        raise DataSourceExhaustedError(attempts)
 
 
 class AkshareDataSourceAdapter:
@@ -192,8 +346,162 @@ class BaoStockDataSourceAdapter:
         return dict(raw_object)
 
 
+class PublicHttpDataSourceAdapter:
+    """Generic adapter for an explicitly configured public JSON/text endpoint."""
+
+    def __init__(
+        self,
+        name: str,
+        capabilities: tuple[str, ...],
+        opener: Callable[..., Any] | None = None,
+    ) -> None:
+        self.name = name
+        self.source_type = "official_public_disclosure"
+        self.capabilities = capabilities
+        self._opener = opener or urlopen
+
+    def health_check(self) -> DataSourceHealth:
+        return DataSourceHealth(
+            name=self.name,
+            source_type=self.source_type,
+            available=True,
+            capabilities=self.capabilities,
+            version="public-endpoint",
+        )
+
+    def fetch(self, query: Mapping[str, Any], as_of: str) -> dict[str, Any]:
+        url = str(query.get("url", ""))
+        if not url.startswith(("http://", "https://")):
+            raise ValueError(f"an explicit {self.name} http(s) url is required")
+        url = _with_query(url, query.get("params", {}))
+        request = Request(
+            url,
+            headers={"User-Agent": "industry-first-research/0.1"},
+        )
+        response = self._opener(request, timeout=float(query.get("timeout", 15)))
+        try:
+            raw = response.read()
+            content_type = _response_content_type(response)
+        finally:
+            close = getattr(response, "close", None)
+            if callable(close):
+                close()
+        payload = _decode_public_payload(raw)
+        return {
+            "source": self.name,
+            "source_type": self.source_type,
+            "url": url,
+            "content_type": content_type,
+            "as_of": as_of,
+            "retrieved_at": _now(),
+            "data": payload,
+        }
+
+    def normalize(self, raw_object: Mapping[str, Any]) -> dict[str, Any]:
+        return dict(raw_object)
+
+
+class EastmoneyDataSourceAdapter(PublicHttpDataSourceAdapter):
+    """Dependency-free adapter for an explicitly configured Eastmoney endpoint."""
+
+    name = "eastmoney"
+    source_type = "public_api"
+
+    def __init__(self, opener: Callable[..., Any] | None = None) -> None:
+        super().__init__(
+            name=self.name,
+            capabilities=("cn_stock", "hk_stock", "industry", "futures"),
+            opener=opener,
+        )
+
+
 def default_free_data_adapters() -> tuple[Any, ...]:
-    return (AkshareDataSourceAdapter(), BaoStockDataSourceAdapter())
+    return (
+        PublicHttpDataSourceAdapter(
+            "official_exchange",
+            ("exchange_disclosure", "futures_rules", "futures_inventory"),
+        ),
+        PublicHttpDataSourceAdapter(
+            "company_disclosure",
+            ("company_disclosure", "financial_statement"),
+        ),
+        EastmoneyDataSourceAdapter(),
+        AkshareDataSourceAdapter(),
+        BaoStockDataSourceAdapter(),
+    )
+
+
+def default_data_source_router(
+    policy: FreeDataSourcePolicy | None = None,
+) -> DataSourceRouter:
+    return DataSourceRouter(default_free_data_adapters(), policy)
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _has_payload(value: Any) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, Mapping):
+        if not value:
+            return False
+        if "data" in value:
+            return _has_payload(value["data"])
+        return True
+    if isinstance(value, (str, bytes)):
+        return bool(value)
+    try:
+        return len(value) > 0
+    except TypeError:
+        return True
+
+
+def _has_required_fields(value: Any, fields: Sequence[str]) -> bool:
+    if not fields:
+        return True
+    if isinstance(value, Mapping):
+        if all(field in value for field in fields):
+            return True
+        return any(_has_required_fields(item, fields) for item in value.values())
+    if isinstance(value, (list, tuple)):
+        return any(_has_required_fields(item, fields) for item in value)
+    return False
+
+
+def _with_query(url: str, params: Mapping[str, Any]) -> str:
+    if not params:
+        return url
+    parsed = urlsplit(url)
+    existing = dict(parse_qsl(parsed.query))
+    existing.update({key: str(value) for key, value in params.items()})
+    return urlunsplit(
+        (parsed.scheme, parsed.netloc, parsed.path, urlencode(existing), parsed.fragment)
+    )
+
+
+def _response_content_type(response: Any) -> str:
+    headers = getattr(response, "headers", None)
+    if headers is None:
+        return "unknown"
+    getter = getattr(headers, "get_content_type", None)
+    if callable(getter):
+        return str(getter())
+    getter = getattr(headers, "get", None)
+    if callable(getter):
+        return str(getter("Content-Type", "unknown"))
+    return "unknown"
+
+
+def _decode_public_payload(raw: Any) -> Any:
+    import json
+
+    text = raw.decode("utf-8", errors="replace") if isinstance(raw, bytes) else str(raw)
+    try:
+        return json.loads(text)
+    except (TypeError, json.JSONDecodeError):
+        return text
 
 
 def _to_records(value: Any) -> Any:
