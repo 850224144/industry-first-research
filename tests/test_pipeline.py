@@ -1,0 +1,76 @@
+from industry_first_research.models import (
+    CompanyCandidate,
+    CompanyDataTier,
+    IndustryRadarSnapshot,
+    IndustryState,
+    ResourcePolicy,
+)
+from industry_first_research.pipeline import (
+    InMemoryCompanyPool,
+    InMemoryRadar,
+    IndustryFirstDiscovery,
+    PassThroughCompanyData,
+    PassThroughDeepResearch,
+)
+
+
+def snapshot(industry_id: str, state: IndustryState) -> IndustryRadarSnapshot:
+    return IndustryRadarSnapshot(
+        industry_id=industry_id,
+        display_name=industry_id,
+        as_of="2026-07-18",
+        state=state,
+        evidence_completeness="CROSS_VALIDATED",
+    )
+
+
+def candidates(industry_id: str, count: int) -> list[CompanyCandidate]:
+    return [
+        CompanyCandidate(f"{industry_id}-{index}", f"公司 {index}", industry_id)
+        for index in range(count)
+    ]
+
+
+def test_discovery_selects_industry_before_loading_company_data():
+    radar = InMemoryRadar(
+        [
+            snapshot("selected", IndustryState.INFLECTION_CANDIDATE),
+            snapshot("rejected", IndustryState.DETERIORATING),
+        ]
+    )
+    pool = InMemoryCompanyPool({"selected": candidates("selected", 8), "rejected": candidates("rejected", 8)})
+    result = IndustryFirstDiscovery(
+        radar,
+        pool,
+        PassThroughCompanyData(),
+        PassThroughDeepResearch(),
+        ResourcePolicy(company_pool_size=5, supplemental_company_limit=3, deep_company_limit=2, ai_deep_company_limit=1),
+    ).run("2026-07-18")
+
+    assert [item.industry_id for item in result.selected_industries] == ["selected"]
+    assert "rejected" in result.rejected_industries
+    assert len(result.company_pools["selected"]) == 1
+    assert result.company_pools["selected"][0].data_tier == CompanyDataTier.AI_DEEP
+    assert result.resource_audit["full_market_deep_data"] is False
+    assert result.resource_audit["light_data_company_count"] == 5
+
+
+def test_empty_result_is_valid():
+    result = IndustryFirstDiscovery(
+        InMemoryRadar([snapshot("weak", IndustryState.INSUFFICIENT)]),
+        InMemoryCompanyPool({}),
+        PassThroughCompanyData(),
+    ).run("2026-07-18")
+
+    assert result.empty_result is True
+    assert result.selected_industries == []
+    assert result.company_pools == {}
+
+
+def test_full_market_deep_data_is_rejected_by_policy():
+    try:
+        ResourcePolicy(allow_full_market_deep_data=True).validate()
+    except ValueError as error:
+        assert "full-market" in str(error)
+    else:
+        raise AssertionError("full-market deep data must require a separate approved workflow")
