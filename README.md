@@ -28,9 +28,9 @@
 
 尚未完成：
 
-- AKShare、QMT、原始公告和行业数据的生产适配器；
+- AKShare、BaoStock、原始公告和行业数据的生产适配器；
 - `luopan` / `ai-berkshire` 的字段级研究资产导入；
-- AKShare、QMT 和原始公告的生产数据接入；
+- AKShare、BaoStock 和原始公告的生产数据接入；
 - 产品级深研、模拟决策快照和持续跟踪；
 - Web 界面和微信公众号草稿发布。
 
@@ -42,6 +42,9 @@ source .venv/bin/activate
 python -m pip install -e '.[dev]'
 pytest
 python -m industry_first_research demo
+
+# 可选免费数据依赖（Mac/Linux/Windows 均可）
+python -m pip install -e '.[data]'
 ```
 
 也可以直接运行：
@@ -66,8 +69,11 @@ PYTHONPATH=src python -m industry_first_research industry \
 - [`outputs/投研分析系统-设计文档.md`](outputs/投研分析系统-设计文档.md)
 - [`outputs/投研分析系统-评审记录-2026-07-17.md`](outputs/投研分析系统-评审记录-2026-07-17.md)
 - [`docs/decisions/0002-external-ai-research-input.md`](docs/decisions/0002-external-ai-research-input.md)
+- [`docs/decisions/0003-free-cross-platform-data-sources.md`](docs/decisions/0003-free-cross-platform-data-sources.md)
 
 网页 AI 说明：豆包、腾讯元宝、DeepSeek 等网页产品只通过 `MANUAL_WEB_AI` 模式人工导入。它们适合发现资料和提出反证，不进入自动行业雷达，也不能单独支撑关键事实、候选升级或模拟决策。
+
+数据源说明：首期不依赖 QMT 或券商终端。AKShare 是公开市场数据的主采集入口，BaoStock 是 A 股历史行情的可选补充，交易所和公司原始披露仍是关键事实的核验来源。
 
 ## 免责声明
 

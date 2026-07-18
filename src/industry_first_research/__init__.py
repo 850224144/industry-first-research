@@ -10,6 +10,13 @@ from .models import (
 )
 from .pipeline import IndustryFirstDiscovery
 from .report import render_scan_html, render_scan_markdown
+from .data_sources import (
+    AkshareDataSourceAdapter,
+    BaoStockDataSourceAdapter,
+    DataSourceHealth,
+    FreeDataSourcePolicy,
+    default_free_data_adapters,
+)
 
 __all__ = [
     "CompanyCandidate",
@@ -21,4 +28,9 @@ __all__ = [
     "ScanResult",
     "render_scan_markdown",
     "render_scan_html",
+    "AkshareDataSourceAdapter",
+    "BaoStockDataSourceAdapter",
+    "DataSourceHealth",
+    "FreeDataSourcePolicy",
+    "default_free_data_adapters",
 ]

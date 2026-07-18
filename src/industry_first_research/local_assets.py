@@ -142,7 +142,7 @@ class ConfigCompanyPool:
 
 
 class LocalAssetDataProvider:
-    """A no-network provider used until AKShare/QMT adapters are connected."""
+    """A no-network provider used until free-data adapters are connected."""
 
     def enrich(
         self, candidates: Sequence[CompanyCandidate], tier: CompanyDataTier
