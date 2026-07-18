@@ -16,6 +16,7 @@ from .company_research import (
     CompanyResearchSnapshot,
     snapshot_from_config,
 )
+from .industry_radar import IndustryRadarCollection, IndustryRadarCollector
 from .data_sources import (
     AkshareDataSourceAdapter,
     BaoStockDataSourceAdapter,
@@ -45,6 +46,8 @@ __all__ = [
     "CompanyResearchQuery",
     "CompanyResearchSnapshot",
     "snapshot_from_config",
+    "IndustryRadarCollection",
+    "IndustryRadarCollector",
     "AkshareDataSourceAdapter",
     "BaoStockDataSourceAdapter",
     "DataSourceAttempt",

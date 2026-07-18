@@ -11,10 +11,12 @@ from .config import (
     candidates_from_config,
     load_company_config,
     load_config,
+    load_radar_config,
     radar_from_config,
     source_documents,
 )
 from .data_sources import default_data_source_router
+from .industry_radar import IndustryRadarCollector
 from .external_ai import ExternalAIResearchRecord
 from .local_assets import ConfigCompanyPool, LocalAssetDataProvider, LocalResearchAssetCatalog
 from .models import CompanyCandidate, IndustryRadarSnapshot, IndustrySignal, IndustryState
@@ -83,6 +85,16 @@ def main() -> None:
         default="artifacts/company-snapshots",
         help="directory for the JSON company snapshot",
     )
+    radar = subparsers.add_parser(
+        "industry-radar", help="collect configured industry signals only"
+    )
+    radar.add_argument("--config", required=True, help="path to an industry JSON config")
+    radar.add_argument("--as-of", help="override the configuration data date")
+    radar.add_argument(
+        "--snapshot-dir",
+        default="artifacts/radar-snapshots",
+        help="directory for the JSON radar snapshot",
+    )
     industry = subparsers.add_parser(
         "industry", help="run an industry-first scan from a local industry config"
     )
@@ -119,6 +131,26 @@ def main() -> None:
         print(
             json.dumps(
                 {"snapshot": str(snapshot_path), "research": snapshot.to_dict()},
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+    elif args.command == "industry-radar":
+        config = load_radar_config(args.config)
+        collection = IndustryRadarCollector(default_data_source_router()).collect(
+            config, as_of=args.as_of
+        )
+        snapshot_path = JsonSnapshotStore(args.snapshot_dir).write(
+            f"radar-{collection.snapshot.industry_id}-{collection.snapshot.as_of}",
+            {
+                "industry": config,
+                "radar": collection.to_dict(),
+                "execution_mode": "INDUSTRY_SIGNAL_ROUTER",
+            },
+        )
+        print(
+            json.dumps(
+                {"snapshot": str(snapshot_path), "radar": collection.to_dict()},
                 ensure_ascii=False,
                 indent=2,
             )

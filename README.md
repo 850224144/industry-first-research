@@ -27,6 +27,7 @@
 - 确定性的周期反转/质量修复规则审计，以及公司淘汰、空结果和研究资产缺失留痕。
 - 交易所/公司披露、东方财富、AKShare、BaoStock 的可插拔适配器和主备路由；连接失败、超时、限流、空结果或字段不完整会自动切换并保留尝试记录。
 - 通威股份 `600438.SH` 公司研究配置化纵向切片：公司身份、业务范围、产品画像、财务和行情按字段主备采集，并输出 `READY/PARTIAL/INSUFFICIENT` 状态。
+- 通用 `industry-radar` 行业信号采集命令：逐指标复用主备路由，保存来源尝试链，并明确公司池尚未加载。
 
 尚未完成：
 
@@ -62,6 +63,10 @@ PYTHONPATH=src python -m industry_first_research industry \
 # 通威股份公司快照（按交易所/公司披露、东方财富、AKShare、BaoStock 主备切换）
 PYTHONPATH=src python -m industry_first_research company \
   --config config/companies/600438.json
+
+# 只采集配置中的行业信号，不加载公司池或全市场深度数据
+PYTHONPATH=src python -m industry_first_research industry-radar \
+  --config config/industries/your-industry.json
 ```
 
 ## 外部研究资产

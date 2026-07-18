@@ -26,6 +26,19 @@ def load_config(path: str | Path) -> dict[str, Any]:
     return payload
 
 
+def load_radar_config(path: str | Path) -> dict[str, Any]:
+    """Load only the industry-level portion needed by the radar stage."""
+
+    config_path = Path(path)
+    payload = json.loads(config_path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("industry radar config must be a JSON object")
+    for key in ("industry_id", "display_name", "as_of", "state"):
+        if key not in payload:
+            raise ValueError(f"industry radar config is missing {key!r}")
+    return payload
+
+
 def load_company_config(path: str | Path) -> dict[str, Any]:
     config_path = Path(path)
     payload = json.loads(config_path.read_text(encoding="utf-8"))
