@@ -41,6 +41,23 @@ pytest
 python -m industry_first_research demo
 ```
 
+获取只读行业雷达快照：
+
+```bash
+PYTHONPATH=src python -m industry_first_research radar --source cross --limit 50
+```
+
+历史快照达到至少 3 个日期后，可生成只读趋势报告：
+
+```bash
+PYTHONPATH=src python -m industry_first_research trend --source cross --min-observations 3
+```
+
+行业雷达使用东方财富和同花顺两个公开来源，只有同名行业且方向一致时才标记为
+`CROSS_VALIDATED`，输出带日期、来源和证据状态的 `industry-radar.v1` JSON，并保存到
+`data/radar/`。单日行情只作为行业强弱线索，不会自动确认周期反转，也不会连接券商或执行交易。详见
+[`docs/industry-radar.md`](docs/industry-radar.md)。
+
 也可以直接运行：
 
 ```bash
