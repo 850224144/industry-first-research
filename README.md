@@ -264,6 +264,20 @@ PYTHONPATH=src python -m industry_first_research decision-snapshot \
 触发/失效条件、复查日期和基准，并固定为 `LOCKED`。期货快照必须绑定具体合约，不能绑定
 连续序列；修改只能创建新版本，不连接券商、不发送委托。
 
+达到快照中锁定的复查日期后，使用同一份锁定快照生成只读复盘与归因：
+
+```bash
+PYTHONPATH=src python -m industry_first_research attribution \
+  --input data/decision_snapshots/<decision-snapshot>.json \
+  --outcome data/attribution_inputs/<outcome>.json \
+  --closed-at 2026-08-19
+```
+
+公司结果要求标的与快照锁定的基准使用相同日期序列，并拆分价格、分红、汇率和成本；
+期货结果要求具体合约的逐日结算账本，并单列盯市、保证金、手续费、滑点、移仓和模拟强平。
+基准不允许在复盘时替换，未到复查日期或数据不可比时输出 `NOT_EVALUABLE`。解释性归因默认
+为 `ROUGH_ATTRIBUTION`，不会把相关性写成因果或生成交易结论。
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash

@@ -46,6 +46,7 @@ from .adversarial_review import (
 )
 from .research_report import ResearchReportError, build_research_report
 from .decision_snapshot import DecisionSnapshotError, build_decision_snapshot
+from .attribution import AttributionError, build_attribution_report
 from .manual_evidence import (
     ManualEvidenceTemplateError,
     build_manual_evidence_template,
@@ -345,6 +346,17 @@ def main() -> None:
         "--output-dir", default="data/decision_snapshots", dest="output_dir"
     )
     decision_snapshot.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    attribution = subparsers.add_parser(
+        "attribution",
+        help="compare a locked simulation snapshot with its fixed benchmark",
+    )
+    attribution.add_argument("--input", required=True, dest="input_path")
+    attribution.add_argument("--outcome", required=True, dest="outcome_path")
+    attribution.add_argument("--closed-at", default="", dest="closed_at")
+    attribution.add_argument(
+        "--output-dir", default="data/attribution_results", dest="output_dir"
+    )
+    attribution.add_argument("--attribution-id", default="", dest="attribution_id")
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -860,6 +872,32 @@ def main() -> None:
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["snapshot_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "attribution":
+        try:
+            decision_snapshot = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            outcome_input = json.loads(
+                Path(args.outcome_path).read_text(encoding="utf-8")
+            )
+            report = build_attribution_report(
+                decision_snapshot,
+                outcome_input,
+                closed_at=args.closed_at,
+                attribution_id=args.attribution_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            AttributionError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(
+            report["attribution_id"], report
+        )
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "evidence-template":
         try:
