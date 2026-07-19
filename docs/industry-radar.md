@@ -71,5 +71,17 @@ python -m industry_first_research screen --input data/company_pools/tonghuashun-
 The result is `PASS`, `REVIEW`, or `INSUFFICIENT` for data quality only. It does not estimate
 value, rank investment merit, or create a trading decision.
 
+Turn a saved screen into a traceable review queue with:
+
+```text
+python -m industry_first_research queue --input data/company_screens/<screen>.json
+```
+
+The output uses `company-candidate-queue.v1`. `PASS` becomes `WATCH`, `REVIEW` remains
+`REVIEW`, and missing or contradictory evidence becomes `INSUFFICIENT` or `REJECTED`.
+LIGHT data never becomes `CANDIDATE` by itself. Every queue item retains its rule version,
+source, date, reasons, blockers, and evidence gaps. The queue is review-only and cannot
+place orders or produce an investment conclusion.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.

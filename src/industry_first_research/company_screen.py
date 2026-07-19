@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from typing import Any
 
 from .cross_validation import normalize_industry_name
@@ -94,6 +94,9 @@ def _screen_one(
         "company_id": candidate.company_id,
         "display_name": candidate.display_name,
         "industry_id": candidate.industry_id,
+        "source": str(profile.get("source") or candidate.source or ""),
+        "as_of": str(profile.get("as_of") or ""),
+        "available_fields": list(profile.get("available_fields") or ()),
         "data_tier": candidate.data_tier.value,
         "light_status": status,
         "screen_state": screen_state,

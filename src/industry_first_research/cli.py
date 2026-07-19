@@ -8,6 +8,7 @@ from pathlib import Path
 
 from .cross_validation import CrossSourceIndustryRadar
 from .company_screen import CompanyScreenError, screen_company_candidates
+from .candidate_queue import CandidateQueueError, build_candidate_queue
 from .eastmoney import EastmoneyAPIError, EastmoneyIndustryRadar
 from .external_ai import ExternalAIResearchRecord
 from .industry_aliases import IndustryAliasError, IndustryAliasRegistry
@@ -142,6 +143,14 @@ def main() -> None:
     screen.add_argument("--input", required=True, dest="input_path")
     screen.add_argument("--output-dir", default="data/company_screens", dest="output_dir")
     screen.add_argument("--expected-industry", default="", dest="expected_industry")
+    queue = subparsers.add_parser(
+        "queue", help="build a conservative review queue from a company LIGHT screen"
+    )
+    queue.add_argument("--input", required=True, dest="input_path")
+    queue.add_argument("--output-dir", default="data/candidate_queues", dest="output_dir")
+    queue.add_argument("--as-of", default="", dest="as_of")
+    queue.add_argument("--source", default="", dest="source")
+    queue.add_argument("--snapshot-id", default="", dest="snapshot_id")
     discover = subparsers.add_parser(
         "discover", help="run the read-only industry-to-company discovery pipeline"
     )
@@ -313,6 +322,20 @@ def main() -> None:
         report_id = f"company-light-screen-{Path(args.input_path).stem}"
         JsonSnapshotStore(Path(args.output_dir)).write(report_id, report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "queue":
+        try:
+            screen_report = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            queue_report = build_candidate_queue(
+                screen_report,
+                as_of=args.as_of,
+                source=args.source,
+                snapshot_id=args.snapshot_id or Path(args.input_path).stem,
+            )
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError, CandidateQueueError) as error:
+            parser.error(str(error))
+        queue_id = queue_report["queue_id"]
+        JsonSnapshotStore(Path(args.output_dir)).write(queue_id, queue_report)
+        print(json.dumps(queue_report, ensure_ascii=False, indent=2))
     elif args.command == "external-ai":
         record = ExternalAIResearchRecord(
             provider=args.provider,
