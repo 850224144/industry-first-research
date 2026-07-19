@@ -45,6 +45,7 @@ from .adversarial_review import (
     build_adversarial_review_report,
 )
 from .research_report import ResearchReportError, build_research_report
+from .decision_snapshot import DecisionSnapshotError, build_decision_snapshot
 from .manual_evidence import (
     ManualEvidenceTemplateError,
     build_manual_evidence_template,
@@ -331,6 +332,19 @@ def main() -> None:
         "--output-dir", default="data/company_research_reports", dest="output_dir"
     )
     research_report.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    decision_snapshot = subparsers.add_parser(
+        "decision-snapshot",
+        help="create an immutable user-confirmed simulation decision snapshot",
+    )
+    decision_snapshot.add_argument("--input", required=True, dest="input_path")
+    decision_snapshot.add_argument("--decision", required=True, dest="decision_path")
+    decision_snapshot.add_argument(
+        "--user-confirmed", action="store_true", dest="user_confirmed"
+    )
+    decision_snapshot.add_argument(
+        "--output-dir", default="data/decision_snapshots", dest="output_dir"
+    )
+    decision_snapshot.add_argument("--snapshot-id", default="", dest="snapshot_id")
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -822,6 +836,30 @@ def main() -> None:
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "decision-snapshot":
+        try:
+            research_report = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            decision = json.loads(
+                Path(args.decision_path).read_text(encoding="utf-8")
+            )
+            report = build_decision_snapshot(
+                research_report,
+                decision,
+                user_confirmed=args.user_confirmed,
+                snapshot_id=args.snapshot_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            DecisionSnapshotError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["snapshot_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "evidence-template":
         try:

@@ -251,6 +251,19 @@ PYTHONPATH=src python -m industry_first_research research-report \
 清单。只有审查 `PASS` 且候选状态允许时标记 `REVIEWABLE`；该步骤不生成方向性投资结论、
 目标价或模拟决策快照，模拟记录必须等待用户确认。
 
+用户确认后，才可从 `REVIEWABLE` 研究报告创建不可覆盖的模拟决策快照：
+
+```bash
+PYTHONPATH=src python -m industry_first_research decision-snapshot \
+  --input data/company_research_reports/<research-report>.json \
+  --decision data/decision_inputs/<decision>.json \
+  --user-confirmed
+```
+
+快照保存研究对象、决策时间、数据截面、模拟动作、方向、价格/数量/资金假设、理由、风险、
+触发/失效条件、复查日期和基准，并固定为 `LOCKED`。期货快照必须绑定具体合约，不能绑定
+连续序列；修改只能创建新版本，不连接券商、不发送委托。
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash

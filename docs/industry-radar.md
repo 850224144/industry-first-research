@@ -283,5 +283,19 @@ valuation framework, counterevidence, and follow-up checks separate. Only a pass
 with an eligible candidate is marked `REVIEWABLE`; no directional conclusion, target price,
 or decision snapshot is created, and simulation requires user confirmation.
 
+After explicit user confirmation, create the immutable simulation decision snapshot:
+
+```text
+python -m industry_first_research decision-snapshot \
+  --input data/company_research_reports/<research-report>.json \
+  --decision data/decision_inputs/<decision>.json \
+  --user-confirmed
+```
+
+The snapshot locks the subject, cutoff, action, direction, price/quantity/capital assumptions,
+reasons, risks, triggers, invalidators, review date, and benchmark as `LOCKED`. Futures
+snapshots must bind a specific contract rather than a continuous series; revisions create a
+new version, and no broker order or execution is performed.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.
