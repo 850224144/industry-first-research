@@ -62,6 +62,11 @@ python -m industry_first_research discover --max-selected-industries 3 --company
 It runs cross-source industry selection first, resolves source-specific industry IDs, then
 loads bounded company pools and LIGHT facts only for selected industries.
 
+With `--with-light-data`, the company pool first reads Tonghuashun LIGHT fields. If
+`listing_market` is missing, it performs a bounded Eastmoney company-survey lookup and
+accepts the value only when the returned company code matches the candidate. The field
+source is retained as `field_sources`; no market is inferred from the stock code.
+
 To screen a saved company-pool snapshot for data completeness:
 
 ```text

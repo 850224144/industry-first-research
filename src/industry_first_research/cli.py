@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from .cross_validation import CrossSourceIndustryRadar
+from .adapters import ChainedCompanyData
 from .company_screen import CompanyScreenError, screen_company_candidates
 from .candidate_queue import CandidateQueueError, build_candidate_queue
 from .supplemental_evidence import (
@@ -20,6 +21,7 @@ from .manual_evidence import (
     build_manual_evidence_template,
 )
 from .eastmoney import EastmoneyAPIError, EastmoneyIndustryRadar
+from .eastmoney_company_survey import EastmoneyCompanySurveyData
 from .external_ai import ExternalAIResearchRecord
 from .industry_aliases import IndustryAliasError, IndustryAliasRegistry
 from .models import (
@@ -294,7 +296,9 @@ def main() -> None:
         light_data_summary = {"requested": False, "status_counts": {}}
         if args.with_light_data:
             candidates = list(
-                TonghuashunLightCompanyData().enrich(candidates, CompanyDataTier.LIGHT)
+                ChainedCompanyData(
+                    (TonghuashunLightCompanyData(), EastmoneyCompanySurveyData())
+                ).enrich(candidates, CompanyDataTier.LIGHT)
             )
             counts: dict[str, int] = {}
             for candidate in candidates:
@@ -331,7 +335,9 @@ def main() -> None:
         discovery = IndustryFirstDiscovery(
             radar_provider,
             TonghuashunCompanyPool(page_size=args.company_pool_size),
-            TonghuashunLightCompanyData(),
+            ChainedCompanyData(
+                (TonghuashunLightCompanyData(), EastmoneyCompanySurveyData())
+            ),
             policy=ResourcePolicy(
                 max_selected_industries=args.max_selected_industries,
                 company_pool_size=args.company_pool_size,

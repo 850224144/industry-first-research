@@ -22,6 +22,10 @@ def test_complete_light_profile_passes_data_quality_screen():
                 reported_industry="电力",
                 listing_market="深圳证券交易所",
                 source="https://example.test/profile",
+                field_sources={
+                    "listing_market": "https://example.test/listing-market"
+                },
+                additional_sources=["https://example.test/listing-market"],
             )
         ],
         expected_industry="电力",
@@ -31,6 +35,8 @@ def test_complete_light_profile_passes_data_quality_screen():
     assert result["screen_state"] == "PASS"
     assert result["evidence_gaps"] == []
     assert result["investment_conclusion"] is False
+    assert result["field_sources"]["listing_market"].endswith("listing-market")
+    assert result["additional_sources"] == ["https://example.test/listing-market"]
 
 
 def test_screen_preserves_input_snapshot_provenance():

@@ -137,6 +137,8 @@ def _queue_one(
         "industry_id": str(item.get("industry_id") or ""),
         "source": source,
         "as_of": item_as_of,
+        "field_sources": _field_sources(item.get("field_sources")),
+        "additional_sources": _string_list(item.get("additional_sources")),
         "rule_version": rule_version,
         "screen_state": screen_state,
         "candidate_state": candidate_state,
@@ -198,6 +200,18 @@ def _string_list(value: Any) -> list[str]:
     if not isinstance(value, Sequence) or isinstance(value, (bytes, bytearray)):
         raise CandidateQueueError("reasons, blockers, and evidence fields must be lists")
     return [str(item) for item in value if str(item)]
+
+
+def _field_sources(value: Any) -> dict[str, str]:
+    if value is None:
+        return {}
+    if not isinstance(value, Mapping):
+        raise CandidateQueueError("field_sources must be a string mapping")
+    return {
+        str(field): str(source).strip()
+        for field, source in value.items()
+        if str(field).strip() and str(source).strip()
+    }
 
 
 def _unique(values: Sequence[str]) -> list[str]:

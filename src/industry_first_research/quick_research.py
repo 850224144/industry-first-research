@@ -160,6 +160,12 @@ def _build_item(
         "candidate_rule_version": str(
             readiness_item.get("candidate_rule_version") or ""
         ),
+        "candidate_field_sources": dict(
+            readiness_item.get("candidate_field_sources") or {}
+        ),
+        "candidate_additional_sources": _string_list(
+            readiness_item.get("candidate_additional_sources")
+        ),
         "known_facts": known_facts,
         "unverified_claims": unverified_claims,
         "unknowns": missing_fields,

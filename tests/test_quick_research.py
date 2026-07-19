@@ -27,6 +27,10 @@ def build_inputs(candidate_state="REVIEW", records=None):
                     "source": "https://example.test/profile",
                     "as_of": "2026-07-19",
                     "available_fields": ["main_business"],
+                    "field_sources": {
+                        "listing_market": "https://example.test/listing-market"
+                    },
+                    "additional_sources": ["https://example.test/listing-market"],
                 },
             )
         ],
@@ -72,6 +76,12 @@ def test_quick_research_preserves_facts_and_marks_unknowns():
     assert item["research_depth"] == "QUICK"
     assert item["known_facts"]["key_products"]["values"] == [["新能源发电"]]
     assert item["unknowns"] == ["company_scope", "reporting_scope"]
+    assert item["candidate_field_sources"]["listing_market"].endswith(
+        "listing-market"
+    )
+    assert item["candidate_additional_sources"] == [
+        "https://example.test/listing-market"
+    ]
     assert "FINANCIAL_DATA_NOT_INCLUDED" in item["limitations"]
     assert item["candidate_state_changed"] is False
 

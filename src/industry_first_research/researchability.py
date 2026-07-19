@@ -144,6 +144,12 @@ def _build_item(item: Any, *, rule_version: str) -> dict[str, Any]:
         "candidate_reasons": candidate_reasons,
         "candidate_blockers": candidate_blockers,
         "candidate_evidence_gaps": candidate_gaps,
+        "candidate_field_sources": _field_sources(
+            item.get("candidate_field_sources")
+        ),
+        "candidate_additional_sources": _string_list(
+            item.get("candidate_additional_sources")
+        ),
         "supplemental_state": supplemental_state,
         "research_readiness": readiness,
         "research_depth": depth,
@@ -179,6 +185,18 @@ def _string_list(value: Any) -> list[str]:
     if not isinstance(value, Sequence) or isinstance(value, (bytes, bytearray)):
         raise ResearchabilityError("researchability fields must be string lists")
     return [str(item) for item in value if str(item)]
+
+
+def _field_sources(value: Any) -> dict[str, str]:
+    if value is None:
+        return {}
+    if not isinstance(value, Mapping):
+        raise ResearchabilityError("field_sources must be a string mapping")
+    return {
+        str(field): str(source).strip()
+        for field, source in value.items()
+        if str(field).strip() and str(source).strip()
+    }
 
 
 def _unique(values: Sequence[str]) -> list[str]:

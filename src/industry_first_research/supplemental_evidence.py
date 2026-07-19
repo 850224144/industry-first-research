@@ -134,6 +134,12 @@ def _normalise_queue_items(raw_items: list[Any]) -> list[dict[str, Any]]:
                 "candidate_evidence_gaps": _string_list(
                     raw_item.get("evidence_gaps")
                 ),
+                "candidate_field_sources": _field_sources(
+                    raw_item.get("field_sources")
+                ),
+                "candidate_additional_sources": _string_list(
+                    raw_item.get("additional_sources")
+                ),
             }
         )
     return items
@@ -278,6 +284,8 @@ def _build_item(
         "candidate_reasons": queue_item["candidate_reasons"],
         "candidate_blockers": queue_item["candidate_blockers"],
         "candidate_evidence_gaps": queue_item["candidate_evidence_gaps"],
+        "candidate_field_sources": queue_item["candidate_field_sources"],
+        "candidate_additional_sources": queue_item["candidate_additional_sources"],
         "supplemental_state": supplemental_state,
         "rule_version": rule_version,
         "required_fields": list(required_fields),
@@ -302,6 +310,18 @@ def _string_list(value: Any) -> list[str]:
     if not isinstance(value, Sequence) or isinstance(value, (bytes, bytearray)):
         raise SupplementalEvidenceError("queue reason fields must be string lists")
     return [str(item) for item in value if str(item)]
+
+
+def _field_sources(value: Any) -> dict[str, str]:
+    if value is None:
+        return {}
+    if not isinstance(value, Mapping):
+        raise SupplementalEvidenceError("field_sources must be a string mapping")
+    return {
+        str(field): str(source).strip()
+        for field, source in value.items()
+        if str(field).strip() and str(source).strip()
+    }
 
 
 def _is_empty_value(value: Any) -> bool:

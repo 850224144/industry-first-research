@@ -62,6 +62,11 @@ PYTHONPATH=src python -m industry_first_research company-pool --industry-id 8811
 PYTHONPATH=src python -m industry_first_research company-pool --industry-id 881145 --industry-name 电力 --limit 30 --with-light-data
 ```
 
+`--with-light-data` first reads Tonghuashun LIGHT fields. When `listing_market` is
+missing, it uses a bounded Eastmoney company-survey lookup and accepts the result only
+when the returned company code matches. The field-level source is retained; no market is
+inferred from the stock code.
+
 运行行业到公司 LIGHT 资料的只读编排：
 
 ```bash

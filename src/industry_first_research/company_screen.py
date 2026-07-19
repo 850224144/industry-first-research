@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from typing import Any
 
 from .cross_validation import normalize_industry_name
@@ -118,6 +118,8 @@ def _screen_one(
         "source": str(profile.get("source") or candidate.source or ""),
         "as_of": str(profile.get("as_of") or ""),
         "available_fields": list(profile.get("available_fields") or ()),
+        "field_sources": _field_sources(profile.get("field_sources")),
+        "additional_sources": _string_list(profile.get("additional_sources")),
         "data_tier": candidate.data_tier.value,
         "light_status": status,
         "screen_state": screen_state,
@@ -138,3 +140,25 @@ def _missing_light_fields(profile: dict[str, Any]) -> list[str]:
             field for field in _LIGHT_FIELDS if str(profile.get(field) or "").strip()
         }
     return [field for field in _LIGHT_FIELDS if field not in available_fields]
+
+
+def _field_sources(value: Any) -> dict[str, str]:
+    if value is None:
+        return {}
+    if not isinstance(value, Mapping):
+        raise CompanyScreenError("field_sources must be a string mapping")
+    return {
+        str(field): str(source).strip()
+        for field, source in value.items()
+        if str(field).strip() and str(source).strip()
+    }
+
+
+def _string_list(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [value]
+    if not isinstance(value, Sequence) or isinstance(value, (bytes, bytearray)):
+        raise CompanyScreenError("source fields must be string lists")
+    return [str(item) for item in value if str(item)]

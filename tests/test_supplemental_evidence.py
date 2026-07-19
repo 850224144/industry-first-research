@@ -31,6 +31,9 @@ def queue_report(candidate_state="WATCH"):
                         "reported_industry",
                         "listing_market",
                     ],
+                    "field_sources": {
+                        "listing_market": "https://example.test/listing-market"
+                    },
                 },
             )
         ],
@@ -82,6 +85,9 @@ def test_verified_a_and_b_evidence_can_make_package_ready_only():
     assert item["candidate_rule_version"] == "company-candidate-queue-rules.v1"
     assert item["candidate_reasons"]
     assert item["candidate_evidence_gaps"] == []
+    assert item["candidate_field_sources"]["listing_market"].endswith(
+        "listing-market"
+    )
     assert item["candidate_state_changed"] is False
     assert report["policy"]["supplemental_evidence_can_promote"] is False
 

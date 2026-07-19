@@ -47,6 +47,7 @@ def test_pass_is_watch_only_and_keeps_provenance():
     assert item["candidate_state"] == "WATCH"
     assert item["source"] == "https://example.test/profile"
     assert item["as_of"] == "2026-07-19"
+    assert item["field_sources"] == {}
     assert item["evidence_gaps"] == []
     assert report["policy"]["light_data_can_be_candidate"] is False
     assert item["investment_conclusion"] is False
