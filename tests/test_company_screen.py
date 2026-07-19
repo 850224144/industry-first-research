@@ -17,8 +17,10 @@ def test_complete_light_profile_passes_data_quality_screen():
         [
             candidate(
                 status="VERIFIED",
+                legal_name="深圳珈伟新能源股份有限公司",
                 main_business="新能源发电",
                 reported_industry="电力",
+                listing_market="深圳证券交易所",
                 source="https://example.test/profile",
             )
         ],
@@ -27,6 +29,7 @@ def test_complete_light_profile_passes_data_quality_screen():
 
     result = report["items"][0]
     assert result["screen_state"] == "PASS"
+    assert result["evidence_gaps"] == []
     assert result["investment_conclusion"] is False
 
 
@@ -53,6 +56,7 @@ def test_partial_profile_requires_review_without_being_called_a_failure():
     result = report["items"][0]
     assert result["screen_state"] == "REVIEW"
     assert "REPORTED_INDUSTRY_MISSING" in result["reasons"]
+    assert "LISTING_MARKET_MISSING" in result["evidence_gaps"]
     assert result["blockers"] == []
 
 

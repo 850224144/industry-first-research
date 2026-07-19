@@ -10,6 +10,15 @@ from .cross_validation import normalize_industry_name
 from .models import CompanyCandidate
 
 
+_LIGHT_FIELDS = ("legal_name", "main_business", "reported_industry", "listing_market")
+_LIGHT_FIELD_REASONS = {
+    "legal_name": "LEGAL_NAME_MISSING",
+    "main_business": "MAIN_BUSINESS_MISSING",
+    "reported_industry": "REPORTED_INDUSTRY_MISSING",
+    "listing_market": "LISTING_MARKET_MISSING",
+}
+
+
 class CompanyScreenError(ValueError):
     """Raised when screen configuration is invalid."""
 
@@ -83,6 +92,12 @@ def _screen_one(
         blockers.append("SOURCE_MISSING")
     if require_main_business and not str(profile.get("main_business") or "").strip():
         reasons.append("MAIN_BUSINESS_MISSING")
+    for field in _missing_light_fields(profile):
+        reason = _LIGHT_FIELD_REASONS[field]
+        if field == "main_business" and not require_main_business:
+            continue
+        if reason not in reasons:
+            reasons.append(reason)
     reported_industry = str(profile.get("reported_industry") or "").strip()
     if expected_industry and reported_industry:
         if normalize_industry_name(expected_industry) != normalize_industry_name(reported_industry):
@@ -106,8 +121,20 @@ def _screen_one(
         "data_tier": candidate.data_tier.value,
         "light_status": status,
         "screen_state": screen_state,
-        "reasons": reasons,
+        "reasons": list(dict.fromkeys(reasons)),
         "blockers": blockers,
+        "evidence_gaps": list(dict.fromkeys([*reasons, *blockers])),
         "review_only": True,
         "investment_conclusion": False,
     }
+
+
+def _missing_light_fields(profile: dict[str, Any]) -> list[str]:
+    available = profile.get("available_fields")
+    if isinstance(available, list):
+        available_fields = {str(field) for field in available}
+    else:
+        available_fields = {
+            field for field in _LIGHT_FIELDS if str(profile.get(field) or "").strip()
+        }
+    return [field for field in _LIGHT_FIELDS if field not in available_fields]

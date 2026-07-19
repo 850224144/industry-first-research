@@ -152,11 +152,14 @@ def _evidence_gaps(
     item: Mapping[str, Any], reasons: Sequence[str], blockers: Sequence[str]
 ) -> list[str]:
     gaps: list[str] = []
+    gaps.extend(_string_list(item.get("evidence_gaps")))
     for code in (*reasons, *blockers):
         if code in {
             "LIGHT_PROFILE_INCOMPLETE",
             "MAIN_BUSINESS_MISSING",
             "REPORTED_INDUSTRY_MISSING",
+            "LEGAL_NAME_MISSING",
+            "LISTING_MARKET_MISSING",
             "LIGHT_DATA_UNAVAILABLE",
             "SOURCE_MISSING",
         }:

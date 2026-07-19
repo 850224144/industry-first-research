@@ -23,8 +23,10 @@ def test_pass_is_watch_only_and_keeps_provenance():
         [
             candidate(
                 status="VERIFIED",
+                legal_name="深圳珈伟新能源股份有限公司",
                 main_business="新能源发电",
                 reported_industry="电力",
+                listing_market="深圳证券交易所",
                 source="https://example.test/profile",
                 as_of="2026-07-19",
                 available_fields=[
