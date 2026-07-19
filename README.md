@@ -161,6 +161,17 @@ PYTHONPATH=src python -m industry_first_research demand-transmission \
 `COMPETITIVE_VALIDATED`。订单前的新业务只保留为上行期权，无法完成利润和现金流验证时
 不得进入基准盈利、估值或投资结论。
 
+需求传导 `READY` 后，生成行业处境证据报告：
+
+```bash
+PYTHONPATH=src python -m industry_first_research industry-situation \
+  --input data/company_demand_transmission/<demand-transmission>.json
+```
+
+该阶段整理长期需求、价值链利润分配、供需、库存、价格、开工、竞争、政策/技术/海外
+因素、周期阶段、三个关键行业变量和反转验证条件。它不确认产业反转、不做生存分析、估值
+或投资结论；这些模块必须等待后续阶段。
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash

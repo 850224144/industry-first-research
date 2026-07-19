@@ -25,6 +25,10 @@ from .demand_transmission import (
     DemandTransmissionError,
     build_demand_transmission_report,
 )
+from .industry_situation import (
+    IndustrySituationError,
+    build_industry_situation_report,
+)
 from .manual_evidence import (
     ManualEvidenceTemplateError,
     build_manual_evidence_template,
@@ -221,6 +225,18 @@ def main() -> None:
         "--output-dir", default="data/company_demand_transmission", dest="output_dir"
     )
     demand_transmission.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    industry_situation = subparsers.add_parser(
+        "industry-situation",
+        help="build an evidence-only industry situation report",
+    )
+    industry_situation.add_argument("--input", required=True, dest="input_path")
+    industry_situation.add_argument(
+        "--required-field", action="append", default=None, dest="required_fields"
+    )
+    industry_situation.add_argument(
+        "--output-dir", default="data/company_industry_situations", dest="output_dir"
+    )
+    industry_situation.add_argument("--snapshot-id", default="", dest="snapshot_id")
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -541,6 +557,27 @@ def main() -> None:
             json.JSONDecodeError,
             TypeError,
             DemandTransmissionError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "industry-situation":
+        try:
+            demand_transmission_report = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            situation_kwargs = {"snapshot_id": args.snapshot_id}
+            if args.required_fields:
+                situation_kwargs["required_fields"] = args.required_fields
+            report = build_industry_situation_report(
+                demand_transmission_report, **situation_kwargs
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            IndustrySituationError,
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)

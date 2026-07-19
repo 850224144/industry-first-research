@@ -182,5 +182,17 @@ The gate distinguishes concept linkage, technical feasibility, customer qualific
 orders, revenue, profit/cash-flow validation, and competitive validation. Unverified new
 business remains an upside option and cannot enter a base case, valuation, or investment conclusion.
 
+After the transmission gate is `READY`, build the industry situation report:
+
+```text
+python -m industry_first_research industry-situation \
+  --input data/company_demand_transmission/<demand-transmission>.json
+```
+
+This report records long-term demand, value-chain profit distribution, supply/demand,
+inventory, price, utilization, competition, policy/technology/overseas factors, cycle
+stage, three key industry variables, and reversal validation conditions. It does not
+confirm an industrial reversal or perform survival, valuation, or investment analysis.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.
