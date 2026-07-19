@@ -101,5 +101,17 @@ as verified evidence. The report only describes supplemental coverage as `READY`
 `INSUFFICIENT`, or `BLOCKED`; it preserves the original candidate state and cannot promote
 a company or create an investment conclusion.
 
+Derive a researchability gate from the supplemental report:
+
+```text
+python -m industry_first_research readiness \
+  --input data/company_supplemental/<report>.json
+```
+
+`READY` permits standard research, `PARTIAL` permits only degraded research,
+`INSUFFICIENT` is screen-only, and `BLOCKED` pauses deep research. The gate preserves
+the original candidate state and cannot promote a candidate or create an investment
+conclusion.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.

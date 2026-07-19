@@ -13,6 +13,7 @@ from .supplemental_evidence import (
     SupplementalEvidenceError,
     build_supplemental_evidence_report,
 )
+from .researchability import ResearchabilityError, build_researchability_report
 from .eastmoney import EastmoneyAPIError, EastmoneyIndustryRadar
 from .external_ai import ExternalAIResearchRecord
 from .industry_aliases import IndustryAliasError, IndustryAliasRegistry
@@ -168,6 +169,15 @@ def main() -> None:
         "--required-field", action="append", default=None, dest="required_fields"
     )
     supplemental.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    readiness = subparsers.add_parser(
+        "readiness",
+        help="derive a conservative researchability gate from supplemental evidence",
+    )
+    readiness.add_argument("--input", required=True, dest="input_path")
+    readiness.add_argument(
+        "--output-dir", default="data/company_readiness", dest="output_dir"
+    )
+    readiness.add_argument("--snapshot-id", default="", dest="snapshot_id")
     discover = subparsers.add_parser(
         "discover", help="run the read-only industry-to-company discovery pipeline"
     )
@@ -387,6 +397,25 @@ def main() -> None:
             json.JSONDecodeError,
             TypeError,
             SupplementalEvidenceError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "readiness":
+        try:
+            supplemental_report = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            report = build_researchability_report(
+                supplemental_report,
+                snapshot_id=args.snapshot_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ResearchabilityError,
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)

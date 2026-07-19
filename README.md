@@ -89,6 +89,16 @@ PYTHONPATH=src python -m industry_first_research supplemental \
 补充证据必须保留公司、字段、来源、日期、证据等级和核验状态。该步骤只生成
 `READY/PARTIAL/INSUFFICIENT/BLOCKED` 覆盖状态，不自动升级候选、不生成估值，也不执行交易。
 
+根据补充证据生成可研究性闸门：
+
+```bash
+PYTHONPATH=src python -m industry_first_research readiness \
+  --input data/company_supplemental/<report>.json
+```
+
+`READY` 才能进入标准研究，`PARTIAL` 只能降级研究，`INSUFFICIENT` 只能初筛，
+`BLOCKED` 暂停深度研究。该闸门保留原候选状态，不自动升级候选或生成投资结论。
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash
