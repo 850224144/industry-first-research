@@ -113,5 +113,16 @@ python -m industry_first_research readiness \
 the original candidate state and cannot promote a candidate or create an investment
 conclusion.
 
+Create an evidence-only quick research snapshot:
+
+```text
+python -m industry_first_research quick-research \
+  --readiness data/company_readiness/<readiness>.json \
+  --supplemental data/company_supplemental/<supplemental>.json
+```
+
+The snapshot separates verified facts, unverified claims, and unknowns. It is `LOCAL_ONLY`,
+does not include financial analysis or valuation, and preserves the candidate state.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.

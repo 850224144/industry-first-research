@@ -99,6 +99,16 @@ PYTHONPATH=src python -m industry_first_research readiness \
 `READY` 才能进入标准研究，`PARTIAL` 只能降级研究，`INSUFFICIENT` 只能初筛，
 `BLOCKED` 暂停深度研究。该闸门保留原候选状态，不自动升级候选或生成投资结论。
 
+生成只读快速研究快照：
+
+```bash
+PYTHONPATH=src python -m industry_first_research quick-research \
+  --readiness data/company_readiness/<readiness>.json \
+  --supplemental data/company_supplemental/<supplemental>.json
+```
+
+快速研究只整理已核验事实、未核验线索和资料缺口，不包含财务分析、估值或投资结论。
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash

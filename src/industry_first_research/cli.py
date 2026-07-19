@@ -14,6 +14,7 @@ from .supplemental_evidence import (
     build_supplemental_evidence_report,
 )
 from .researchability import ResearchabilityError, build_researchability_report
+from .quick_research import QuickResearchError, build_quick_research_report
 from .eastmoney import EastmoneyAPIError, EastmoneyIndustryRadar
 from .external_ai import ExternalAIResearchRecord
 from .industry_aliases import IndustryAliasError, IndustryAliasRegistry
@@ -178,6 +179,16 @@ def main() -> None:
         "--output-dir", default="data/company_readiness", dest="output_dir"
     )
     readiness.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    quick = subparsers.add_parser(
+        "quick-research",
+        help="build an evidence-only quick company research snapshot",
+    )
+    quick.add_argument("--readiness", required=True, dest="readiness_path")
+    quick.add_argument("--supplemental", required=True, dest="supplemental_path")
+    quick.add_argument(
+        "--output-dir", default="data/company_quick_research", dest="output_dir"
+    )
+    quick.add_argument("--snapshot-id", default="", dest="snapshot_id")
     discover = subparsers.add_parser(
         "discover", help="run the read-only industry-to-company discovery pipeline"
     )
@@ -416,6 +427,29 @@ def main() -> None:
             json.JSONDecodeError,
             TypeError,
             ResearchabilityError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "quick-research":
+        try:
+            readiness_report = json.loads(
+                Path(args.readiness_path).read_text(encoding="utf-8")
+            )
+            supplemental_report = json.loads(
+                Path(args.supplemental_path).read_text(encoding="utf-8")
+            )
+            report = build_quick_research_report(
+                readiness_report,
+                supplemental_report,
+                snapshot_id=args.snapshot_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            QuickResearchError,
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
