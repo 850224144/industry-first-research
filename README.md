@@ -50,6 +50,12 @@ PYTHONPATH=src python -m industry_first_research radar --source cross --limit 50
 跨源行业名称映射使用版本化文件 `docs/industry_aliases.v1.json`，可通过
 `--alias-file` 指定替代文件；映射错误会阻止交叉验证，不会自动模糊匹配。
 
+获取选定行业的有限公司池：
+
+```bash
+PYTHONPATH=src python -m industry_first_research company-pool --industry-id 881145 --industry-name 电力 --limit 30
+```
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash

@@ -40,5 +40,14 @@ python -m industry_first_research trend --source cross --window 10 --min-observa
 The trend report is review-only. It requires repeated observations, reports mixed or
 insufficient evidence explicitly, and never promotes a trend directly into a company pool.
 
+For a selected industry, the next bounded step is the visible company pool:
+
+```text
+python -m industry_first_research company-pool --industry-id 881145 --industry-name 电力 --limit 30
+```
+
+This reads only the public industry detail table and records `visible_table_only=true` and
+`full_industry_membership_loaded=false`. It is a candidate list, not company-level research.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.

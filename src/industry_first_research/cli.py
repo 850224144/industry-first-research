@@ -22,6 +22,7 @@ from .pipeline import (
 from .storage import JsonSnapshotStore
 from .trend import RadarTrendError, build_trend_report, write_trend_report
 from .tonghuashun import TonghuashunAPIError, TonghuashunIndustryRadar
+from .tonghuashun_company_pool import TonghuashunCompanyPool, TonghuashunCompanyPoolError
 
 
 def demo() -> dict:
@@ -89,6 +90,12 @@ def main() -> None:
     trend.add_argument("--min-observations", type=int, default=3, dest="min_observations")
     trend.add_argument("--min-direction-ratio", type=float, default=2 / 3, dest="min_direction_ratio")
     trend.add_argument("--as-of", default=None, dest="as_of")
+    pool = subparsers.add_parser("company-pool", help="load a bounded company pool for one industry")
+    pool.add_argument("--industry-id", required=True, dest="industry_id")
+    pool.add_argument("--industry-name", required=True, dest="industry_name")
+    pool.add_argument("--as-of", default=None, dest="as_of")
+    pool.add_argument("--limit", type=int, default=30)
+    pool.add_argument("--output-dir", default="data/company_pools", dest="output_dir")
     external = subparsers.add_parser("external-ai", help="normalise a pasted web AI answer")
     external.add_argument("--provider", required=True)
     external.add_argument("--question", required=True)
@@ -147,6 +154,32 @@ def main() -> None:
         except RadarTrendError as error:
             parser.error(str(error))
         print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "company-pool":
+        as_of = args.as_of or current_as_of()
+        industry = IndustryRadarSnapshot(
+            industry_id=args.industry_id,
+            display_name=args.industry_name,
+            as_of=as_of,
+            state=IndustryState.CLEARING,
+        )
+        provider = TonghuashunCompanyPool(page_size=args.limit)
+        try:
+            candidates = list(provider.candidates(industry, args.limit))
+        except TonghuashunCompanyPoolError as error:
+            parser.error(str(error))
+        payload = {
+            "schema_version": "industry-company-pool.v1",
+            "snapshot_id": f"tonghuashun-company-pool-{args.industry_id}-{as_of}",
+            "industry": industry.to_dict(),
+            "source": provider.metadata(),
+            "candidates": [candidate.to_dict() for candidate in candidates],
+            "read_only": True,
+            "full_industry_membership_loaded": False,
+        }
+        JsonSnapshotStore(Path(args.output_dir)).write(
+            f"tonghuashun-company-pool-{args.industry_id}-{as_of}", payload
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
     elif args.command == "external-ai":
         record = ExternalAIResearchRecord(
             provider=args.provider,
