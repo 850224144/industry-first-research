@@ -206,6 +206,17 @@ PYTHONPATH=src python -m industry_first_research survival-analysis \
 融资依赖度和生存结果。`self_funded`、`refinancing_dependent`、`external_support_dependent`
 分开记录，证据不足时不输出生存者或反转受益者结论。
 
+生存闸门通过后，建立三情景估值框架和反向估值检查：
+
+```bash
+PYTHONPATH=src python -m industry_first_research valuation-scenarios \
+  --input data/company_survival_analysis/<survival-analysis>.json
+```
+
+该步骤要求悲观、基准、乐观三种情景，以及当前价格时点、历史财务、周期中枢利润、净债务
+和稀释、反向估值假设、证据支持假设、模型假设、基准情景排除项和敏感性。当前只生成
+可审计的估值框架，不计算目标价，不生成投资结论，也不把未验证风口或周期高点利润放进基准情景。
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash

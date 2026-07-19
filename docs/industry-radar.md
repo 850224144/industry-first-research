@@ -233,5 +233,18 @@ and survival outcome. `self_funded`, `refinancing_dependent`, and
 `external_support_dependent` remain separate; missing evidence does not produce a survivor
 or reversal-beneficiary conclusion.
 
+After the survival gate, build the three-scenario valuation and reverse-valuation framework:
+
+```text
+python -m industry_first_research valuation-scenarios \
+  --input data/company_survival_analysis/<survival-analysis>.json
+```
+
+The framework requires bear, base, and bull scenarios, current-price timing, historical
+financials, cycle-center profit, net debt and dilution, implied assumptions,
+evidence-backed assumptions, model assumptions, base-case exclusions, and sensitivity.
+It is an auditable framework only: no target price or investment conclusion is generated,
+and unverified themes or peak-cycle profit cannot enter the base case.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.

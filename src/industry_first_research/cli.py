@@ -35,6 +35,10 @@ from .competitive_position import (
     build_competitive_position_report,
 )
 from .survival_analysis import SurvivalAnalysisError, build_survival_analysis_report
+from .valuation_scenarios import (
+    ValuationScenarioError,
+    build_valuation_scenarios_report,
+)
 from .manual_evidence import (
     ManualEvidenceTemplateError,
     build_manual_evidence_template,
@@ -279,6 +283,18 @@ def main() -> None:
         "--output-dir", default="data/company_survival_analysis", dest="output_dir"
     )
     survival_analysis.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    valuation_scenarios = subparsers.add_parser(
+        "valuation-scenarios",
+        help="build an evidence-only valuation and scenario framework",
+    )
+    valuation_scenarios.add_argument("--input", required=True, dest="input_path")
+    valuation_scenarios.add_argument(
+        "--required-field", action="append", default=None, dest="required_fields"
+    )
+    valuation_scenarios.add_argument(
+        "--output-dir", default="data/company_valuation_scenarios", dest="output_dir"
+    )
+    valuation_scenarios.add_argument("--snapshot-id", default="", dest="snapshot_id")
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -683,6 +699,27 @@ def main() -> None:
             json.JSONDecodeError,
             TypeError,
             SurvivalAnalysisError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "valuation-scenarios":
+        try:
+            survival_analysis_report = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            valuation_kwargs = {"snapshot_id": args.snapshot_id}
+            if args.required_fields:
+                valuation_kwargs["required_fields"] = args.required_fields
+            report = build_valuation_scenarios_report(
+                survival_analysis_report, **valuation_kwargs
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValuationScenarioError,
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
