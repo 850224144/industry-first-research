@@ -30,6 +30,10 @@ from .industry_situation import (
     build_industry_situation_report,
 )
 from .cycle_reversal import CycleReversalError, build_cycle_reversal_report
+from .competitive_position import (
+    CompetitivePositionError,
+    build_competitive_position_report,
+)
 from .manual_evidence import (
     ManualEvidenceTemplateError,
     build_manual_evidence_template,
@@ -250,6 +254,18 @@ def main() -> None:
         "--output-dir", default="data/company_cycle_reversals", dest="output_dir"
     )
     cycle_reversal.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    competitive_position = subparsers.add_parser(
+        "competitive-position",
+        help="build an evidence-only company competitive position report",
+    )
+    competitive_position.add_argument("--input", required=True, dest="input_path")
+    competitive_position.add_argument(
+        "--required-field", action="append", default=None, dest="required_fields"
+    )
+    competitive_position.add_argument(
+        "--output-dir", default="data/company_competitive_positions", dest="output_dir"
+    )
+    competitive_position.add_argument("--snapshot-id", default="", dest="snapshot_id")
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -612,6 +628,27 @@ def main() -> None:
             json.JSONDecodeError,
             TypeError,
             CycleReversalError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "competitive-position":
+        try:
+            cycle_reversal_report = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            position_kwargs = {"snapshot_id": args.snapshot_id}
+            if args.required_fields:
+                position_kwargs["required_fields"] = args.required_fields
+            report = build_competitive_position_report(
+                cycle_reversal_report, **position_kwargs
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            CompetitivePositionError,
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)

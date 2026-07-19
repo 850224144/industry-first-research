@@ -183,6 +183,17 @@ PYTHONPATH=src python -m industry_first_research cycle-reversal \
 `INDUSTRIAL_REVERSAL_CONFIRMED`，并要求相应的需求、有效供给、库存、价格、供给退出和
 行业现金流证据。非适用行业明确标记 `NOT_APPLICABLE`；该报告不做生存、估值或投资结论。
 
+周期证据通过后，建立公司商业模式与竞争位置报告：
+
+```bash
+PYTHONPATH=src python -m industry_first_research competitive-position \
+  --input data/company_cycle_reversals/<cycle-reversal>.json
+```
+
+该阶段覆盖商业模式、收入结构、成本、技术、客户、渠道、资本、市场份额和竞争矩阵
+（成本、性能、良率、认证、交付、客户、规模、替代路线）。证据不完整时只输出缺口，
+不会把核心部件、高增长或单一竞争维度自动升级为护城河，也不做生存、估值或投资结论。
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash

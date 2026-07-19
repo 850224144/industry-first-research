@@ -207,5 +207,17 @@ inventory, price, capacity-exit, and industry-cash-flow evidence. Non-cyclical i
 are explicitly marked `NOT_APPLICABLE`; the command does not perform survival, valuation,
 or investment analysis.
 
+After the cycle evidence gate, build the company business-model and competitive-position report:
+
+```text
+python -m industry_first_research competitive-position \
+  --input data/company_cycle_reversals/<cycle-reversal>.json
+```
+
+The report covers business model, revenue structure, cost, technology, customers, channels,
+capital, market share, and a competition matrix for cost, performance, yield, certification,
+delivery, customers, scale, and substitution route. Missing evidence remains explicit; the
+command does not infer a moat or perform survival, valuation, or investment analysis.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.
