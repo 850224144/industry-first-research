@@ -74,6 +74,21 @@ PYTHONPATH=src python -m industry_first_research discover --max-selected-industr
 PYTHONPATH=src python -m industry_first_research screen --input data/company_pools/tonghuashun-company-pool-881145-YYYY-MM-DD.json --expected-industry 电力
 ```
 
+将候选队列与人工核验的补充证据合并为只读证据包：
+
+```bash
+PYTHONPATH=src python -m industry_first_research supplemental \
+  --input data/candidate_queues/<queue>.json \
+  --evidence data/supplemental_evidence/<records>.json \
+  --required-field company_scope \
+  --required-field reporting_scope \
+  --required-field key_products \
+  --required-field key_risks
+```
+
+补充证据必须保留公司、字段、来源、日期、证据等级和核验状态。该步骤只生成
+`READY/PARTIAL/INSUFFICIENT/BLOCKED` 覆盖状态，不自动升级候选、不生成估值，也不执行交易。
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash

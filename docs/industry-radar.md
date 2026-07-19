@@ -83,5 +83,23 @@ LIGHT data never becomes `CANDIDATE` by itself. Every queue item retains its rul
 source, date, reasons, blockers, and evidence gaps. The queue is review-only and cannot
 place orders or produce an investment conclusion.
 
+Build a supplemental evidence report from a queue and a manually prepared JSON record list:
+
+```text
+python -m industry_first_research supplemental \
+  --input data/candidate_queues/<queue>.json \
+  --evidence data/supplemental_evidence/<records>.json \
+  --required-field company_scope \
+  --required-field reporting_scope \
+  --required-field key_products \
+  --required-field key_risks
+```
+
+Every evidence record keeps its company, field, value, source, date, evidence tier, and
+verification status. Tier `B` requires two source references; tiers `C` and `D` do not count
+as verified evidence. The report only describes supplemental coverage as `READY`, `PARTIAL`,
+`INSUFFICIENT`, or `BLOCKED`; it preserves the original candidate state and cannot promote
+a company or create an investment conclusion.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.

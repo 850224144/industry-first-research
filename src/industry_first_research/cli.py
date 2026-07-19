@@ -9,6 +9,10 @@ from pathlib import Path
 from .cross_validation import CrossSourceIndustryRadar
 from .company_screen import CompanyScreenError, screen_company_candidates
 from .candidate_queue import CandidateQueueError, build_candidate_queue
+from .supplemental_evidence import (
+    SupplementalEvidenceError,
+    build_supplemental_evidence_report,
+)
 from .eastmoney import EastmoneyAPIError, EastmoneyIndustryRadar
 from .external_ai import ExternalAIResearchRecord
 from .industry_aliases import IndustryAliasError, IndustryAliasRegistry
@@ -151,6 +155,19 @@ def main() -> None:
     queue.add_argument("--as-of", default="", dest="as_of")
     queue.add_argument("--source", default="", dest="source")
     queue.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    supplemental = subparsers.add_parser(
+        "supplemental",
+        help="assemble traceable supplemental evidence for a candidate queue",
+    )
+    supplemental.add_argument("--input", required=True, dest="input_path")
+    supplemental.add_argument("--evidence", required=True, dest="evidence_path")
+    supplemental.add_argument(
+        "--output-dir", default="data/company_supplemental", dest="output_dir"
+    )
+    supplemental.add_argument(
+        "--required-field", action="append", default=None, dest="required_fields"
+    )
+    supplemental.add_argument("--snapshot-id", default="", dest="snapshot_id")
     discover = subparsers.add_parser(
         "discover", help="run the read-only industry-to-company discovery pipeline"
     )
@@ -342,6 +359,38 @@ def main() -> None:
         queue_id = queue_report["queue_id"]
         JsonSnapshotStore(Path(args.output_dir)).write(queue_id, queue_report)
         print(json.dumps(queue_report, ensure_ascii=False, indent=2))
+    elif args.command == "supplemental":
+        try:
+            queue_report = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            evidence_payload = json.loads(
+                Path(args.evidence_path).read_text(encoding="utf-8")
+            )
+            if isinstance(evidence_payload, list):
+                evidence_records = evidence_payload
+            elif isinstance(evidence_payload, dict):
+                evidence_records = evidence_payload.get("records")
+            else:
+                evidence_records = None
+            if not isinstance(evidence_records, list):
+                raise SupplementalEvidenceError(
+                    "evidence input must be a list or an object with records list"
+                )
+            supplemental_kwargs = {"snapshot_id": args.snapshot_id}
+            if args.required_fields:
+                supplemental_kwargs["required_fields"] = args.required_fields
+            report = build_supplemental_evidence_report(
+                queue_report, evidence_records, **supplemental_kwargs
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            SupplementalEvidenceError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "external-ai":
         record = ExternalAIResearchRecord(
             provider=args.provider,
