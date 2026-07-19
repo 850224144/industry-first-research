@@ -49,5 +49,9 @@ python -m industry_first_research company-pool --industry-id 881145 --industry-n
 This reads only the public industry detail table and records `visible_table_only=true` and
 `full_industry_membership_loaded=false`. It is a candidate list, not company-level research.
 
+Use `--with-light-data` to add source-bound company name, main business, reported industry,
+and listing market fields. Missing pages or fields are recorded as `UNAVAILABLE` or `PARTIAL`;
+the adapter does not infer or fill missing facts.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.

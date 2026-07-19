@@ -10,7 +10,13 @@ from .cross_validation import CrossSourceIndustryRadar
 from .eastmoney import EastmoneyAPIError, EastmoneyIndustryRadar
 from .external_ai import ExternalAIResearchRecord
 from .industry_aliases import IndustryAliasError, IndustryAliasRegistry
-from .models import CompanyCandidate, IndustryRadarSnapshot, IndustrySignal, IndustryState
+from .models import (
+    CompanyCandidate,
+    CompanyDataTier,
+    IndustryRadarSnapshot,
+    IndustrySignal,
+    IndustryState,
+)
 from .pipeline import (
     InMemoryCompanyPool,
     InMemoryRadar,
@@ -23,6 +29,7 @@ from .storage import JsonSnapshotStore
 from .trend import RadarTrendError, build_trend_report, write_trend_report
 from .tonghuashun import TonghuashunAPIError, TonghuashunIndustryRadar
 from .tonghuashun_company_pool import TonghuashunCompanyPool, TonghuashunCompanyPoolError
+from .tonghuashun_light_data import TonghuashunLightCompanyData
 
 
 def demo() -> dict:
@@ -96,6 +103,11 @@ def main() -> None:
     pool.add_argument("--as-of", default=None, dest="as_of")
     pool.add_argument("--limit", type=int, default=30)
     pool.add_argument("--output-dir", default="data/company_pools", dest="output_dir")
+    pool.add_argument(
+        "--with-light-data",
+        action="store_true",
+        help="enrich the bounded pool with public LIGHT company facts",
+    )
     external = subparsers.add_parser("external-ai", help="normalise a pasted web AI answer")
     external.add_argument("--provider", required=True)
     external.add_argument("--question", required=True)
@@ -167,6 +179,16 @@ def main() -> None:
             candidates = list(provider.candidates(industry, args.limit))
         except TonghuashunCompanyPoolError as error:
             parser.error(str(error))
+        light_data_summary = {"requested": False, "status_counts": {}}
+        if args.with_light_data:
+            candidates = list(
+                TonghuashunLightCompanyData().enrich(candidates, CompanyDataTier.LIGHT)
+            )
+            counts: dict[str, int] = {}
+            for candidate in candidates:
+                status = str(candidate.light_profile.get("status", "UNKNOWN"))
+                counts[status] = counts.get(status, 0) + 1
+            light_data_summary = {"requested": True, "status_counts": counts}
         payload = {
             "schema_version": "industry-company-pool.v1",
             "snapshot_id": f"tonghuashun-company-pool-{args.industry_id}-{as_of}",
@@ -175,6 +197,7 @@ def main() -> None:
             "candidates": [candidate.to_dict() for candidate in candidates],
             "read_only": True,
             "full_industry_membership_loaded": False,
+            "light_data": light_data_summary,
         }
         JsonSnapshotStore(Path(args.output_dir)).write(
             f"tonghuashun-company-pool-{args.industry_id}-{as_of}", payload

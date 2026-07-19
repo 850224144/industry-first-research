@@ -56,6 +56,12 @@ PYTHONPATH=src python -m industry_first_research radar --source cross --limit 50
 PYTHONPATH=src python -m industry_first_research company-pool --industry-id 881145 --industry-name 电力 --limit 30
 ```
 
+追加公开公司 LIGHT 资料：
+
+```bash
+PYTHONPATH=src python -m industry_first_research company-pool --industry-id 881145 --industry-name 电力 --limit 30 --with-light-data
+```
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash
