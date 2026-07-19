@@ -149,6 +149,18 @@ PYTHONPATH=src python -m industry_first_research application-mapping \
 能力、竞争和需求传导状态的证据。没有 `product-profile` 的 `READY` 或没有明确的
 产品—应用关系时，映射会被阻断或标为 `INSUFFICIENT`，不会推导风口收入、估值或投资结论。
 
+应用映射 `READY` 后，继续检查风口需求是否传导到公司：
+
+```bash
+PYTHONPATH=src python -m industry_first_research demand-transmission \
+  --input data/company_application_mappings/<application-mapping>.json
+```
+
+传导阶段严格区分 `CONCEPT_LINKED`、`TECHNICALLY_FEASIBLE`、`CUSTOMER_QUALIFIED`、
+`ORDER_VALIDATED`、`REVENUE_VALIDATED`、`PROFIT_VALIDATED` 和
+`COMPETITIVE_VALIDATED`。订单前的新业务只保留为上行期权，无法完成利润和现金流验证时
+不得进入基准盈利、估值或投资结论。
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash

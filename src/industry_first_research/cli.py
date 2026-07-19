@@ -21,6 +21,10 @@ from .application_mapping import (
     ApplicationMappingError,
     build_application_mapping_report,
 )
+from .demand_transmission import (
+    DemandTransmissionError,
+    build_demand_transmission_report,
+)
 from .manual_evidence import (
     ManualEvidenceTemplateError,
     build_manual_evidence_template,
@@ -205,6 +209,18 @@ def main() -> None:
         "--output-dir", default="data/company_application_mappings", dest="output_dir"
     )
     application_mapping.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    demand_transmission = subparsers.add_parser(
+        "demand-transmission",
+        help="build an evidence-only demand transmission gate",
+    )
+    demand_transmission.add_argument("--input", required=True, dest="input_path")
+    demand_transmission.add_argument(
+        "--required-field", action="append", default=None, dest="required_fields"
+    )
+    demand_transmission.add_argument(
+        "--output-dir", default="data/company_demand_transmission", dest="output_dir"
+    )
+    demand_transmission.add_argument("--snapshot-id", default="", dest="snapshot_id")
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -504,6 +520,27 @@ def main() -> None:
             json.JSONDecodeError,
             TypeError,
             ApplicationMappingError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "demand-transmission":
+        try:
+            application_mapping_report = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            transmission_kwargs = {"snapshot_id": args.snapshot_id}
+            if args.required_fields:
+                transmission_kwargs["required_fields"] = args.required_fields
+            report = build_demand_transmission_report(
+                application_mapping_report, **transmission_kwargs
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            DemandTransmissionError,
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)

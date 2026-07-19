@@ -171,5 +171,16 @@ customer validation, order or shipment/revenue evidence, company supply capabili
 competition, and transmission state. It preserves missing evidence and blocks without a
 `READY` product profile; it does not infer demand, revenue, valuation, or an investment conclusion.
 
+After a `READY` mapping, build the demand-transmission gate:
+
+```text
+python -m industry_first_research demand-transmission \
+  --input data/company_application_mappings/<application-mapping>.json
+```
+
+The gate distinguishes concept linkage, technical feasibility, customer qualification,
+orders, revenue, profit/cash-flow validation, and competitive validation. Unverified new
+business remains an upside option and cannot enter a base case, valuation, or investment conclusion.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.
