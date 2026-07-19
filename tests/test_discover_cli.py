@@ -35,4 +35,3 @@ def test_discovery_result_json_is_serialisable():
 
     assert snapshot.to_dict()["source_ids"] == {"tonghuashun": "881145"}
     assert json.dumps(snapshot.to_dict(), ensure_ascii=False)
-
