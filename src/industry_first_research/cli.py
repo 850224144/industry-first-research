@@ -16,6 +16,7 @@ from .supplemental_evidence import (
 )
 from .researchability import ResearchabilityError, build_researchability_report
 from .quick_research import QuickResearchError, build_quick_research_report
+from .product_profile import ProductProfileError, build_product_profile_report
 from .manual_evidence import (
     ManualEvidenceTemplateError,
     build_manual_evidence_template,
@@ -176,6 +177,18 @@ def main() -> None:
         "--required-field", action="append", default=None, dest="required_fields"
     )
     supplemental.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    product_profile = subparsers.add_parser(
+        "product-profile",
+        help="build an evidence-only product and profit-source profile",
+    )
+    product_profile.add_argument("--input", required=True, dest="input_path")
+    product_profile.add_argument(
+        "--required-field", action="append", default=None, dest="required_fields"
+    )
+    product_profile.add_argument(
+        "--output-dir", default="data/company_product_profiles", dest="output_dir"
+    )
+    product_profile.add_argument("--snapshot-id", default="", dest="snapshot_id")
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -433,6 +446,27 @@ def main() -> None:
             json.JSONDecodeError,
             TypeError,
             SupplementalEvidenceError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "product-profile":
+        try:
+            supplemental_report = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            product_profile_kwargs = {"snapshot_id": args.snapshot_id}
+            if args.required_fields:
+                product_profile_kwargs["required_fields"] = args.required_fields
+            report = build_product_profile_report(
+                supplemental_report, **product_profile_kwargs
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ProductProfileError,
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)

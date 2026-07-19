@@ -127,6 +127,17 @@ PYTHONPATH=src python -m industry_first_research quick-research \
 
 快速研究只整理已核验事实、未核验线索和资料缺口，不包含财务分析、估值或投资结论。
 
+按设计文档继续生成产品与盈利来源画像的证据闸门：
+
+```bash
+PYTHONPATH=src python -m industry_first_research product-profile \
+  --input data/company_supplemental/<supplemental>.json
+```
+
+该步骤只整理产品、应用、客户采购理由、系统层级、关键程度、替代关系、竞争对手、
+市场状态、盈利来源、生命周期、客户验证和收入—利润—现金流桥接的证据覆盖；缺口不
+会被自动补齐。只有 `READY` 才能进入后续应用传导、行业周期、生存、估值和决策模块。
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash

@@ -145,5 +145,19 @@ python -m industry_first_research quick-research \
 The snapshot separates verified facts, unverified claims, and unknowns. It is `LOCAL_ONLY`,
 does not include financial analysis or valuation, and preserves the candidate state.
 
+Build the next design-stage gate, the evidence-only product and profit-source profile:
+
+```text
+python -m industry_first_research product-profile \
+  --input data/company_supplemental/<supplemental>.json
+```
+
+This report covers product list, application, customer purchase reasons, system layer,
+criticality, substitution, competitors, market state, profit sources, lifecycle,
+validation, and the product-to-revenue/profit/cash-flow bridge. Missing or unverified
+fields remain explicit. `READY` is required before application transmission, cycle,
+survival, valuation, or decision modules; the command itself does not perform those
+analyses or promote a candidate.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.
