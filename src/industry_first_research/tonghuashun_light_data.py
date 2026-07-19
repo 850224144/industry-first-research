@@ -121,6 +121,7 @@ class _ProfileParser(HTMLParser):
         self._capture: str | None = None
         self._capture_parts: list[str] = []
         self._in_title = False
+        self._awaiting_shenwan_industry = False
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         attrs_dict = dict(attrs)
@@ -131,6 +132,14 @@ class _ProfileParser(HTMLParser):
             class_names = set((attrs_dict.get("class") or "").split())
             if "main-bussiness-text" in class_names:
                 self._start_capture("main_business")
+            elif (
+                self._awaiting_shenwan_industry
+                and tag.lower() == "span"
+                and "tip" in class_names
+                and "hltip" not in class_names
+            ):
+                self._awaiting_shenwan_industry = False
+                self._start_capture("reported_industry")
             elif element_id == "companyInfoName":
                 self._start_capture("company_name")
             elif element_id == "companyInfoIndustry":
@@ -149,6 +158,8 @@ class _ProfileParser(HTMLParser):
             self._title_parts.append(data)
         if self._capture is not None:
             self._capture_parts.append(data)
+        elif "所属申万行业" in data:
+            self._awaiting_shenwan_industry = True
 
     def close(self) -> None:
         super().close()

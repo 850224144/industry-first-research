@@ -44,6 +44,25 @@ def test_light_data_downgrades_missing_fields_and_fetch_failure():
     assert failed_result.data_tier == CompanyDataTier.LIGHT
 
 
+def test_light_data_extracts_labeled_adjacent_shenwan_industry_value():
+    page_html = """
+    <tr>
+      <td><span class="hltip f12 fl">主营业务：</span>
+        <span class="tip f14 fl main-bussiness-text">新能源发电</span>
+      </td>
+      <td><span class="hltip f12 f1">所属申万行业：</span>
+        <span class="tip f14">电力</span>
+      </td>
+    </tr>
+    """.encode("gbk")
+    provider = TonghuashunLightCompanyData(fetcher=lambda url: page_html)
+
+    result = provider.enrich([candidate()], CompanyDataTier.LIGHT)[0]
+
+    assert result.light_profile["reported_industry"] == "电力"
+    assert "reported_industry" in result.light_profile["available_fields"]
+
+
 def test_light_adapter_does_not_claim_higher_tiers():
     provider = TonghuashunLightCompanyData(fetcher=lambda url: HTML)
 
