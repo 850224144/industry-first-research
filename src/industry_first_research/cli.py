@@ -15,6 +15,10 @@ from .supplemental_evidence import (
 )
 from .researchability import ResearchabilityError, build_researchability_report
 from .quick_research import QuickResearchError, build_quick_research_report
+from .manual_evidence import (
+    ManualEvidenceTemplateError,
+    build_manual_evidence_template,
+)
 from .eastmoney import EastmoneyAPIError, EastmoneyIndustryRadar
 from .external_ai import ExternalAIResearchRecord
 from .industry_aliases import IndustryAliasError, IndustryAliasRegistry
@@ -170,6 +174,21 @@ def main() -> None:
         "--required-field", action="append", default=None, dest="required_fields"
     )
     supplemental.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    evidence_template = subparsers.add_parser(
+        "evidence-template",
+        help="create blank records for manually verified company evidence",
+    )
+    evidence_template.add_argument("--input", required=True, dest="input_path")
+    evidence_template.add_argument(
+        "--field", action="append", default=None, dest="fields"
+    )
+    evidence_template.add_argument(
+        "--company-id", action="append", default=None, dest="company_ids"
+    )
+    evidence_template.add_argument(
+        "--output-dir", default="data/supplemental_evidence", dest="output_dir"
+    )
+    evidence_template.add_argument("--snapshot-id", default="", dest="snapshot_id")
     readiness = subparsers.add_parser(
         "readiness",
         help="derive a conservative researchability gate from supplemental evidence",
@@ -412,6 +431,27 @@ def main() -> None:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "evidence-template":
+        try:
+            queue_report = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            template = build_manual_evidence_template(
+                queue_report,
+                fields=args.fields or ("listing_market",),
+                company_ids=args.company_ids,
+                snapshot_id=args.snapshot_id or Path(args.input_path).stem,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ManualEvidenceTemplateError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(
+            template["template_id"], template
+        )
+        print(json.dumps(template, ensure_ascii=False, indent=2))
     elif args.command == "readiness":
         try:
             supplemental_report = json.loads(

@@ -101,6 +101,22 @@ as verified evidence. The report only describes supplemental coverage as `READY`
 `INSUFFICIENT`, or `BLOCKED`; it preserves the original candidate state and cannot promote
 a company or create an investment conclusion.
 
+When a LIGHT profile has a field-level gap such as `LISTING_MARKET_MISSING`, create a
+blank, traceable manual evidence template before collecting the source-backed value:
+
+```text
+python -m industry_first_research evidence-template \
+  --input data/candidate_queues/<queue>.json \
+  --company-id 300317 \
+  --field listing_market
+```
+
+The template is intentionally blank. Fill a record only after manual verification and
+keep `company_id`, `field`, `source`, `as_of`, `evidence_tier`, and
+`verification_status`. Do not infer `listing_market` from a stock code or market
+convention. Web AI alone is not sufficient. Pass the completed template JSON to the
+`supplemental` command, then rerun `readiness` and `quick-research`.
+
 Derive a researchability gate from the supplemental report:
 
 ```text

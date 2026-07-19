@@ -183,6 +183,10 @@ def _normalise_record(raw_record: Mapping[str, Any]) -> dict[str, Any]:
         raise SupplementalEvidenceError(
             "evidence_id, company_id, field, source, and as_of must be non-empty"
         )
+    if _is_empty_value(raw_record["value"]):
+        raise SupplementalEvidenceError("evidence value must be non-empty")
+    if field == "listing_market" and not isinstance(raw_record["value"], str):
+        raise SupplementalEvidenceError("listing_market evidence value must be a string")
     if tier not in _EVIDENCE_TIERS:
         raise SupplementalEvidenceError(f"unsupported evidence_tier: {tier or '<empty>'}")
     if status not in _VERIFICATION_STATUSES:
@@ -298,3 +302,13 @@ def _string_list(value: Any) -> list[str]:
     if not isinstance(value, Sequence) or isinstance(value, (bytes, bytearray)):
         raise SupplementalEvidenceError("queue reason fields must be string lists")
     return [str(item) for item in value if str(item)]
+
+
+def _is_empty_value(value: Any) -> bool:
+    if value is None:
+        return True
+    if isinstance(value, str):
+        return not value.strip()
+    if isinstance(value, (list, tuple, set, dict)):
+        return not value
+    return False

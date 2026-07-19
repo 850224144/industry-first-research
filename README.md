@@ -86,6 +86,19 @@ PYTHONPATH=src python -m industry_first_research supplemental \
   --required-field key_risks
 ```
 
+For a field-level LIGHT gap, generate a blank manual evidence template first:
+
+```bash
+PYTHONPATH=src python -m industry_first_research evidence-template \
+  --input data/candidate_queues/<queue>.json \
+  --company-id 300317 \
+  --field listing_market
+```
+
+The template does not assert a value. Manually verified records must retain the company,
+field, source, date, evidence tier, and verification status. Empty values are rejected;
+`listing_market` cannot be inferred from a stock code or market convention.
+
 补充证据必须保留公司、字段、来源、日期、证据等级和核验状态。该步骤只生成
 `READY/PARTIAL/INSUFFICIENT/BLOCKED` 覆盖状态，不自动升级候选、不生成估值，也不执行交易。
 
