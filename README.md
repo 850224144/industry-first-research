@@ -172,6 +172,17 @@ PYTHONPATH=src python -m industry_first_research industry-situation \
 因素、周期阶段、三个关键行业变量和反转验证条件。它不确认产业反转、不做生存分析、估值
 或投资结论；这些模块必须等待后续阶段。
 
+对适用的强周期或供需驱动行业，再生成产业供需与周期反转报告：
+
+```bash
+PYTHONPATH=src python -m industry_first_research cycle-reversal \
+  --input data/company_industry_situations/<industry-situation>.json
+```
+
+该阶段区分 `PRICE_REBOUND`、`TURNING_POINT_CANDIDATE` 和
+`INDUSTRIAL_REVERSAL_CONFIRMED`，并要求相应的需求、有效供给、库存、价格、供给退出和
+行业现金流证据。非适用行业明确标记 `NOT_APPLICABLE`；该报告不做生存、估值或投资结论。
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash

@@ -29,6 +29,7 @@ from .industry_situation import (
     IndustrySituationError,
     build_industry_situation_report,
 )
+from .cycle_reversal import CycleReversalError, build_cycle_reversal_report
 from .manual_evidence import (
     ManualEvidenceTemplateError,
     build_manual_evidence_template,
@@ -237,6 +238,18 @@ def main() -> None:
         "--output-dir", default="data/company_industry_situations", dest="output_dir"
     )
     industry_situation.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    cycle_reversal = subparsers.add_parser(
+        "cycle-reversal",
+        help="build an evidence-only industry cycle reversal report",
+    )
+    cycle_reversal.add_argument("--input", required=True, dest="input_path")
+    cycle_reversal.add_argument(
+        "--required-field", action="append", default=None, dest="required_fields"
+    )
+    cycle_reversal.add_argument(
+        "--output-dir", default="data/company_cycle_reversals", dest="output_dir"
+    )
+    cycle_reversal.add_argument("--snapshot-id", default="", dest="snapshot_id")
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -578,6 +591,27 @@ def main() -> None:
             json.JSONDecodeError,
             TypeError,
             IndustrySituationError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "cycle-reversal":
+        try:
+            industry_situation_report = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            cycle_kwargs = {"snapshot_id": args.snapshot_id}
+            if args.required_fields:
+                cycle_kwargs["required_fields"] = args.required_fields
+            report = build_cycle_reversal_report(
+                industry_situation_report, **cycle_kwargs
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            CycleReversalError,
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)

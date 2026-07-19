@@ -194,5 +194,18 @@ inventory, price, utilization, competition, policy/technology/overseas factors, 
 stage, three key industry variables, and reversal validation conditions. It does not
 confirm an industrial reversal or perform survival, valuation, or investment analysis.
 
+For applicable cyclical or supply/demand-driven industries, build the cycle-reversal report:
+
+```text
+python -m industry_first_research cycle-reversal \
+  --input data/company_industry_situations/<industry-situation>.json
+```
+
+The report distinguishes `PRICE_REBOUND`, `TURNING_POINT_CANDIDATE`, and
+`INDUSTRIAL_REVERSAL_CONFIRMED`, and requires matching demand, effective supply,
+inventory, price, capacity-exit, and industry-cash-flow evidence. Non-cyclical industries
+are explicitly marked `NOT_APPLICABLE`; the command does not perform survival, valuation,
+or investment analysis.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.
