@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from .cross_validation import CrossSourceIndustryRadar
+from .company_screen import CompanyScreenError, screen_company_candidates
 from .eastmoney import EastmoneyAPIError, EastmoneyIndustryRadar
 from .external_ai import ExternalAIResearchRecord
 from .industry_aliases import IndustryAliasError, IndustryAliasRegistry
@@ -82,6 +83,23 @@ def _light_profile_status_counts(scan) -> dict[str, int]:
     return counts
 
 
+def _candidate_kwargs(item: dict) -> dict:
+    if not isinstance(item, dict):
+        raise TypeError("each candidate must be an object")
+    return {
+        "company_id": str(item.get("company_id") or ""),
+        "display_name": str(item.get("display_name") or ""),
+        "industry_id": str(item.get("industry_id") or ""),
+        "data_tier": CompanyDataTier(item.get("data_tier", CompanyDataTier.LIGHT.value)),
+        "source": str(item.get("source") or ""),
+        "inclusion_reason": str(item.get("inclusion_reason") or ""),
+        "hard_gate_status": str(item.get("hard_gate_status") or "PENDING"),
+        "score": item.get("score"),
+        "notes": tuple(item.get("notes") or ()),
+        "light_profile": dict(item.get("light_profile") or {}),
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="industry-first-research")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -118,6 +136,12 @@ def main() -> None:
         action="store_true",
         help="enrich the bounded pool with public LIGHT company facts",
     )
+    screen = subparsers.add_parser(
+        "screen", help="screen saved company-pool LIGHT profiles for data completeness"
+    )
+    screen.add_argument("--input", required=True, dest="input_path")
+    screen.add_argument("--output-dir", default="data/company_screens", dest="output_dir")
+    screen.add_argument("--expected-industry", default="", dest="expected_industry")
     discover = subparsers.add_parser(
         "discover", help="run the read-only industry-to-company discovery pipeline"
     )
@@ -273,6 +297,22 @@ def main() -> None:
             f"cross-discovery-{as_of}", payload
         )
         print(json.dumps(payload, ensure_ascii=False, indent=2))
+    elif args.command == "screen":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            raw_candidates = payload.get("candidates")
+            if not isinstance(raw_candidates, list):
+                raise CompanyScreenError("input file has no candidates list")
+            candidates = [CompanyCandidate(**_candidate_kwargs(item)) for item in raw_candidates]
+            report = screen_company_candidates(
+                candidates,
+                expected_industry=args.expected_industry,
+            )
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError, CompanyScreenError) as error:
+            parser.error(str(error))
+        report_id = f"company-light-screen-{Path(args.input_path).stem}"
+        JsonSnapshotStore(Path(args.output_dir)).write(report_id, report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "external-ai":
         record = ExternalAIResearchRecord(
             provider=args.provider,

@@ -68,6 +68,12 @@ PYTHONPATH=src python -m industry_first_research company-pool --industry-id 8811
 PYTHONPATH=src python -m industry_first_research discover --max-selected-industries 3 --company-pool-size 10
 ```
 
+对公司池的 LIGHT 资料做只读完整度筛选：
+
+```bash
+PYTHONPATH=src python -m industry_first_research screen --input data/company_pools/tonghuashun-company-pool-881145-YYYY-MM-DD.json --expected-industry 电力
+```
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash

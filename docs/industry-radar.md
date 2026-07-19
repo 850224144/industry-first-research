@@ -62,5 +62,14 @@ python -m industry_first_research discover --max-selected-industries 3 --company
 It runs cross-source industry selection first, resolves source-specific industry IDs, then
 loads bounded company pools and LIGHT facts only for selected industries.
 
+To screen a saved company-pool snapshot for data completeness:
+
+```text
+python -m industry_first_research screen --input data/company_pools/tonghuashun-company-pool-881145-YYYY-MM-DD.json --expected-industry 电力
+```
+
+The result is `PASS`, `REVIEW`, or `INSUFFICIENT` for data quality only. It does not estimate
+value, rank investment merit, or create a trading decision.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.
