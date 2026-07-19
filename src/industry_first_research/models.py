@@ -47,6 +47,7 @@ class IndustryRadarSnapshot:
     opportunity_types: tuple[str, ...] = ()
     reason: str = ""
     match_method: str = "UNMATCHED"
+    source_ids: dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         payload = asdict(self)

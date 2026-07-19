@@ -159,6 +159,7 @@ def _merge_items(
                 evidence_completeness="SINGLE_SOURCE",
                 opportunity_types=(),
                 match_method=match_method,
+                source_ids=_merge_source_ids(primary, secondary),
                 reason=(
                     f"No exact normalized-name match in the {primary.display_name} "
                     "secondary source; held out of confirmation screening."
@@ -189,6 +190,7 @@ def _merge_items(
                 signals=merged_signals,
                 evidence_completeness="CROSS_VALIDATED",
                 match_method=match_method,
+                source_ids=_merge_source_ids(primary, secondary),
                 reason=(
                     f"{primary.display_name} has the same daily direction in both "
                     "independent sources; this remains a strength clue, not a cycle confirmation."
@@ -205,6 +207,7 @@ def _merge_items(
                 evidence_completeness="CONFLICTING",
                 opportunity_types=(),
                 match_method=match_method,
+                source_ids=_merge_source_ids(primary, secondary),
                 reason=(
                     f"{primary.display_name} has conflicting daily directions across "
                     "the two sources; held out of confirmation screening."
@@ -220,6 +223,7 @@ def _merge_items(
             evidence_completeness="SINGLE_SOURCE",
             opportunity_types=(),
             match_method=match_method,
+            source_ids=_merge_source_ids(primary, secondary),
             reason=(
                 f"{primary.display_name} has no usable direction in both sources; "
                 "held out of confirmation screening."
@@ -238,6 +242,7 @@ def _replace_snapshot(
     opportunity_types: tuple[str, ...] | None = None,
     reason: str | None = None,
     match_method: str | None = None,
+    source_ids: dict[str, str] | None = None,
 ) -> IndustryRadarSnapshot:
     return IndustryRadarSnapshot(
         industry_id=snapshot.industry_id,
@@ -251,7 +256,18 @@ def _replace_snapshot(
         ),
         reason=reason if reason is not None else snapshot.reason,
         match_method=match_method if match_method is not None else snapshot.match_method,
+        source_ids=source_ids if source_ids is not None else dict(snapshot.source_ids),
     )
+
+
+def _merge_source_ids(
+    primary: IndustryRadarSnapshot,
+    secondary: IndustryRadarSnapshot | None,
+) -> dict[str, str]:
+    source_ids = dict(primary.source_ids)
+    if secondary is not None:
+        source_ids.update(secondary.source_ids)
+    return source_ids
 
 
 def secondary_provider_prefix(snapshot: IndustryRadarSnapshot) -> str:

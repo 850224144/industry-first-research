@@ -159,6 +159,7 @@ class EastmoneyIndustryRadar:
             evidence_completeness="SINGLE_SOURCE",
             opportunity_types=opportunity_types,
             reason=reason,
+            source_ids={"eastmoney": str(industry_id)},
         )
 
 

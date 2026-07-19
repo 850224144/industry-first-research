@@ -16,6 +16,7 @@ from .models import (
     IndustryRadarSnapshot,
     IndustrySignal,
     IndustryState,
+    ResourcePolicy,
 )
 from .pipeline import (
     InMemoryCompanyPool,
@@ -72,6 +73,15 @@ def demo() -> dict:
     return scan.to_dict()
 
 
+def _light_profile_status_counts(scan) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for candidates in scan.company_pools.values():
+        for candidate in candidates:
+            status = str(candidate.light_profile.get("status", "NOT_REQUESTED"))
+            counts[status] = counts.get(status, 0) + 1
+    return counts
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="industry-first-research")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -107,6 +117,18 @@ def main() -> None:
         "--with-light-data",
         action="store_true",
         help="enrich the bounded pool with public LIGHT company facts",
+    )
+    discover = subparsers.add_parser(
+        "discover", help="run the read-only industry-to-company discovery pipeline"
+    )
+    discover.add_argument("--as-of", default=None, dest="as_of")
+    discover.add_argument("--max-selected-industries", type=int, default=3)
+    discover.add_argument("--company-pool-size", type=int, default=10)
+    discover.add_argument("--output-dir", default="data/discovery", dest="output_dir")
+    discover.add_argument(
+        "--alias-file",
+        default="docs/industry_aliases.v1.json",
+        dest="alias_file",
     )
     external = subparsers.add_parser("external-ai", help="normalise a pasted web AI answer")
     external.add_argument("--provider", required=True)
@@ -201,6 +223,54 @@ def main() -> None:
         }
         JsonSnapshotStore(Path(args.output_dir)).write(
             f"tonghuashun-company-pool-{args.industry_id}-{as_of}", payload
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    elif args.command == "discover":
+        as_of = args.as_of or current_as_of()
+        try:
+            alias_registry = IndustryAliasRegistry.from_file(args.alias_file)
+        except IndustryAliasError as error:
+            parser.error(str(error))
+        radar_provider = CrossSourceIndustryRadar(
+            EastmoneyIndustryRadar(page_size=args.company_pool_size),
+            TonghuashunIndustryRadar(page_size=args.company_pool_size),
+            primary_name="eastmoney",
+            secondary_name="tonghuashun",
+            alias_registry=alias_registry,
+        )
+        discovery = IndustryFirstDiscovery(
+            radar_provider,
+            TonghuashunCompanyPool(page_size=args.company_pool_size),
+            TonghuashunLightCompanyData(),
+            policy=ResourcePolicy(
+                max_selected_industries=args.max_selected_industries,
+                company_pool_size=args.company_pool_size,
+                supplemental_company_limit=min(10, args.company_pool_size),
+                deep_company_limit=min(5, args.company_pool_size),
+                ai_deep_company_limit=min(3, args.company_pool_size),
+            ),
+        )
+        try:
+            scan = discovery.run(as_of)
+        except (EastmoneyAPIError, TonghuashunAPIError, TonghuashunCompanyPoolError) as error:
+            parser.error(str(error))
+        payload = {
+            "schema_version": "industry-discovery.v1",
+            "snapshot_id": f"cross-discovery-{as_of}",
+            "as_of": as_of,
+            "scan": scan.to_dict(),
+            "radar_source": radar_provider.metadata(as_of),
+            "alias_registry": alias_registry.metadata(),
+            "company_data": {
+                "provider": "tonghuashun_light",
+                "tier": "LIGHT",
+                "read_only": True,
+                "execution_enabled": False,
+                "status_counts": _light_profile_status_counts(scan),
+            },
+        }
+        JsonSnapshotStore(Path(args.output_dir)).write(
+            f"cross-discovery-{as_of}", payload
         )
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     elif args.command == "external-ai":

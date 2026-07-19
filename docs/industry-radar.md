@@ -53,5 +53,14 @@ Use `--with-light-data` to add source-bound company name, main business, reporte
 and listing market fields. Missing pages or fields are recorded as `UNAVAILABLE` or `PARTIAL`;
 the adapter does not infer or fill missing facts.
 
+The end-to-end read-only discovery command is:
+
+```text
+python -m industry_first_research discover --max-selected-industries 3 --company-pool-size 10
+```
+
+It runs cross-source industry selection first, resolves source-specific industry IDs, then
+loads bounded company pools and LIGHT facts only for selected industries.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.

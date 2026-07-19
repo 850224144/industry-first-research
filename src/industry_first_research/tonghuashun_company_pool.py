@@ -56,7 +56,8 @@ class TonghuashunCompanyPool:
     ) -> Sequence[CompanyCandidate]:
         if limit < 1:
             raise ValueError("limit must be positive")
-        url = self.endpoint_template.format(industry_code=industry.industry_id)
+        industry_code = industry.source_ids.get("tonghuashun", industry.industry_id)
+        url = self.endpoint_template.format(industry_code=industry_code)
         fetched_at = datetime.now(timezone.utc).isoformat()
         try:
             raw = self._fetch(url)
@@ -73,6 +74,8 @@ class TonghuashunCompanyPool:
         self._metadata = {
             "provider": "tonghuashun_company_pool",
             "endpoint": url,
+            "requested_industry_id": industry.industry_id,
+            "resolved_tonghuashun_industry_id": industry_code,
             "fetched_at": fetched_at,
             "requested_limit": limit,
             "adapter_limit": self.page_size,

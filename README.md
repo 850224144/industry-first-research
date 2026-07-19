@@ -62,6 +62,12 @@ PYTHONPATH=src python -m industry_first_research company-pool --industry-id 8811
 PYTHONPATH=src python -m industry_first_research company-pool --industry-id 881145 --industry-name 电力 --limit 30 --with-light-data
 ```
 
+运行行业到公司 LIGHT 资料的只读编排：
+
+```bash
+PYTHONPATH=src python -m industry_first_research discover --max-selected-industries 3 --company-pool-size 10
+```
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash

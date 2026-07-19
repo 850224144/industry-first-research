@@ -36,3 +36,24 @@ def test_company_pool_is_bounded_and_traceable():
     assert result[0].source.startswith("http://stockpage.10jqka.com.cn/")
     assert provider.metadata()["visible_table_only"] is True
     assert provider.metadata()["full_industry_membership_loaded"] is False
+
+
+def test_company_pool_uses_source_specific_id_from_cross_source_snapshot():
+    cross_industry = industry().__class__(
+        industry_id="BK1565",
+        display_name="电力",
+        as_of="2026-07-19",
+        state=IndustryState.CLEARING,
+        source_ids={"eastmoney": "BK1565", "tonghuashun": "881145"},
+    )
+    seen_urls = []
+    provider = TonghuashunCompanyPool(
+        page_size=1,
+        fetcher=lambda url: seen_urls.append(url) or HTML,
+    )
+
+    provider.candidates(cross_industry, limit=1)
+
+    assert "/detail/code/881145/" in seen_urls[0]
+    assert provider.metadata()["requested_industry_id"] == "BK1565"
+    assert provider.metadata()["resolved_tonghuashun_industry_id"] == "881145"
