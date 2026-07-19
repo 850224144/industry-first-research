@@ -240,6 +240,17 @@ PYTHONPATH=src python -m industry_first_research adversarial-review \
 AI 独立性、市场规模到公司利润的错误跳推、估值输出边界、市场结构信号泄漏和候选状态变更。
 结果为 `PASS`、`REVIEW` 或 `BLOCKED`，只记录问题，不改写事实或生成投资结论。
 
+对抗审查完成后，生成结构化公司研究报告和后续跟踪清单：
+
+```bash
+PYTHONPATH=src python -m industry_first_research research-report \
+  --input data/company_adversarial_reviews/<adversarial-review>.json
+```
+
+报告分开整理行业处境、公司质量、产品与需求传导、生存压力、估值框架、风险反证和跟踪
+清单。只有审查 `PASS` 且候选状态允许时标记 `REVIEWABLE`；该步骤不生成方向性投资结论、
+目标价或模拟决策快照，模拟记录必须等待用户确认。
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash

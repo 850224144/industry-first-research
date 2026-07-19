@@ -271,5 +271,17 @@ cash-flow conversion, base-case exclusions, external-AI independence, market-siz
 leaks, valuation boundaries, market-structure signal leakage, and candidate-state changes.
 It returns `PASS`, `REVIEW`, or `BLOCKED` without rewriting facts or producing an investment conclusion.
 
+After adversarial review, assemble the structured company research report and tracking checklist:
+
+```text
+python -m industry_first_research research-report \
+  --input data/company_adversarial_reviews/<adversarial-review>.json
+```
+
+The report keeps industry situation, company quality, product/transmission, survival,
+valuation framework, counterevidence, and follow-up checks separate. Only a passing audit
+with an eligible candidate is marked `REVIEWABLE`; no directional conclusion, target price,
+or decision snapshot is created, and simulation requires user confirmation.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.

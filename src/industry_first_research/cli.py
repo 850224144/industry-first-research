@@ -44,6 +44,7 @@ from .adversarial_review import (
     AdversarialReviewError,
     build_adversarial_review_report,
 )
+from .research_report import ResearchReportError, build_research_report
 from .manual_evidence import (
     ManualEvidenceTemplateError,
     build_manual_evidence_template,
@@ -321,6 +322,15 @@ def main() -> None:
         "--output-dir", default="data/company_adversarial_reviews", dest="output_dir"
     )
     adversarial_review.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    research_report = subparsers.add_parser(
+        "research-report",
+        help="assemble a structured evidence-bound company research report",
+    )
+    research_report.add_argument("--input", required=True, dest="input_path")
+    research_report.add_argument(
+        "--output-dir", default="data/company_research_reports", dest="output_dir"
+    )
+    research_report.add_argument("--snapshot-id", default="", dest="snapshot_id")
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -790,6 +800,25 @@ def main() -> None:
             json.JSONDecodeError,
             TypeError,
             AdversarialReviewError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "research-report":
+        try:
+            adversarial_review_report = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            report = build_research_report(
+                adversarial_review_report,
+                snapshot_id=args.snapshot_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ResearchReportError,
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
