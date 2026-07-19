@@ -246,5 +246,17 @@ evidence-backed assumptions, model assumptions, base-case exclusions, and sensit
 It is an auditable framework only: no target price or investment conclusion is generated,
 and unverified themes or peak-cycle profit cannot enter the base case.
 
+Market structure is an optional timing aid. Lock the subject, cutoff, timeframe,
+adjustment, and OHLCV snapshot before running:
+
+```text
+python -m industry_first_research market-structure \
+  --input data/market_structure/<input>.json
+```
+
+The snapshot reports multi-timeframe trend, volatility, range position, confirmation, and
+repaint risk only. It emits no buy/sell signal or automatic order; continuous futures series
+must also retain their main-contract, roll, stitching, and adjustment rules.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.

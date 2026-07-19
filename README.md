@@ -217,6 +217,17 @@ PYTHONPATH=src python -m industry_first_research valuation-scenarios \
 和稀释、反向估值假设、证据支持假设、模型假设、基准情景排除项和敏感性。当前只生成
 可审计的估值框架，不计算目标价，不生成投资结论，也不把未验证风口或周期高点利润放进基准情景。
 
+估值框架之后可选生成市场结构辅助快照。输入必须先锁定标的、数据截止时间、周期、复权和
+OHLCV 快照：
+
+```bash
+PYTHONPATH=src python -m industry_first_research market-structure \
+  --input data/market_structure/<input>.json
+```
+
+该步骤只输出多周期趋势、波动、区间位置、确认状态和重绘风险，不输出买卖信号或自动交易；
+期货连续序列还必须保留主力、换月、拼接和复权规则。
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash

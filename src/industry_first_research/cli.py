@@ -39,6 +39,7 @@ from .valuation_scenarios import (
     ValuationScenarioError,
     build_valuation_scenarios_report,
 )
+from .market_structure import MarketStructureError, build_market_structure_report
 from .manual_evidence import (
     ManualEvidenceTemplateError,
     build_manual_evidence_template,
@@ -295,6 +296,15 @@ def main() -> None:
         "--output-dir", default="data/company_valuation_scenarios", dest="output_dir"
     )
     valuation_scenarios.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    market_structure = subparsers.add_parser(
+        "market-structure",
+        help="build a read-only market structure snapshot from OHLCV input",
+    )
+    market_structure.add_argument("--input", required=True, dest="input_path")
+    market_structure.add_argument(
+        "--output-dir", default="data/market_structure", dest="output_dir"
+    )
+    market_structure.add_argument("--snapshot-id", default="", dest="snapshot_id")
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -720,6 +730,25 @@ def main() -> None:
             json.JSONDecodeError,
             TypeError,
             ValuationScenarioError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "market-structure":
+        try:
+            market_structure_input = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            report = build_market_structure_report(
+                market_structure_input,
+                snapshot_id=args.snapshot_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            MarketStructureError,
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
