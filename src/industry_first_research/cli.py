@@ -17,6 +17,10 @@ from .supplemental_evidence import (
 from .researchability import ResearchabilityError, build_researchability_report
 from .quick_research import QuickResearchError, build_quick_research_report
 from .product_profile import ProductProfileError, build_product_profile_report
+from .application_mapping import (
+    ApplicationMappingError,
+    build_application_mapping_report,
+)
 from .manual_evidence import (
     ManualEvidenceTemplateError,
     build_manual_evidence_template,
@@ -189,6 +193,18 @@ def main() -> None:
         "--output-dir", default="data/company_product_profiles", dest="output_dir"
     )
     product_profile.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    application_mapping = subparsers.add_parser(
+        "application-mapping",
+        help="build an evidence-only product-to-application mapping",
+    )
+    application_mapping.add_argument("--input", required=True, dest="input_path")
+    application_mapping.add_argument(
+        "--required-field", action="append", default=None, dest="required_fields"
+    )
+    application_mapping.add_argument(
+        "--output-dir", default="data/company_application_mappings", dest="output_dir"
+    )
+    application_mapping.add_argument("--snapshot-id", default="", dest="snapshot_id")
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -467,6 +483,27 @@ def main() -> None:
             json.JSONDecodeError,
             TypeError,
             ProductProfileError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "application-mapping":
+        try:
+            product_profile_report = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            mapping_kwargs = {"snapshot_id": args.snapshot_id}
+            if args.required_fields:
+                mapping_kwargs["required_fields"] = args.required_fields
+            report = build_application_mapping_report(
+                product_profile_report, **mapping_kwargs
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ApplicationMappingError,
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)

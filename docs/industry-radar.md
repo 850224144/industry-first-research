@@ -159,5 +159,17 @@ fields remain explicit. `READY` is required before application transmission, cyc
 survival, valuation, or decision modules; the command itself does not perform those
 analyses or promote a candidate.
 
+Once the product profile is `READY`, build the explicit product-to-application mapping:
+
+```text
+python -m industry_first_research application-mapping \
+  --input data/company_product_profiles/<product-profile>.json
+```
+
+The mapping requires evidence for the product, application, end market, demand driver,
+customer validation, order or shipment/revenue evidence, company supply capability,
+competition, and transmission state. It preserves missing evidence and blocks without a
+`READY` product profile; it does not infer demand, revenue, valuation, or an investment conclusion.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.

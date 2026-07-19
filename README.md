@@ -138,6 +138,17 @@ PYTHONPATH=src python -m industry_first_research product-profile \
 市场状态、盈利来源、生命周期、客户验证和收入—利润—现金流桥接的证据覆盖；缺口不
 会被自动补齐。只有 `READY` 才能进入后续应用传导、行业周期、生存、估值和决策模块。
 
+产品画像 `READY` 后，继续建立产品到下游应用和终端市场的显式映射：
+
+```bash
+PYTHONPATH=src python -m industry_first_research application-mapping \
+  --input data/company_product_profiles/<product-profile>.json
+```
+
+该步骤要求保留产品、应用、终端市场、需求驱动、客户验证、订单、出货/收入、供给
+能力、竞争和需求传导状态的证据。没有 `product-profile` 的 `READY` 或没有明确的
+产品—应用关系时，映射会被阻断或标为 `INSUFFICIENT`，不会推导风口收入、估值或投资结论。
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash
