@@ -219,5 +219,19 @@ capital, market share, and a competition matrix for cost, performance, yield, ce
 delivery, customers, scale, and substitution route. Missing evidence remains explicit; the
 command does not infer a moat or perform survival, valuation, or investment analysis.
 
+After the competitive-position evidence gate, run survival and stress testing:
+
+```text
+python -m industry_first_research survival-analysis \
+  --input data/company_competitive_positions/<competitive-position>.json
+```
+
+The gate requires six scenarios: prolonged weakness, refinancing failure, operating shock,
+asset impairment, technology replacement, and governance shock. Each scenario retains cash
+runway, debt gap, minimum cash, capex reduction, asset-sale actions, financing dependency,
+and survival outcome. `self_funded`, `refinancing_dependent`, and
+`external_support_dependent` remain separate; missing evidence does not produce a survivor
+or reversal-beneficiary conclusion.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.

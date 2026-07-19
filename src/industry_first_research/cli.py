@@ -34,6 +34,7 @@ from .competitive_position import (
     CompetitivePositionError,
     build_competitive_position_report,
 )
+from .survival_analysis import SurvivalAnalysisError, build_survival_analysis_report
 from .manual_evidence import (
     ManualEvidenceTemplateError,
     build_manual_evidence_template,
@@ -266,6 +267,18 @@ def main() -> None:
         "--output-dir", default="data/company_competitive_positions", dest="output_dir"
     )
     competitive_position.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    survival_analysis = subparsers.add_parser(
+        "survival-analysis",
+        help="build an evidence-only survival and stress-test report",
+    )
+    survival_analysis.add_argument("--input", required=True, dest="input_path")
+    survival_analysis.add_argument(
+        "--required-field", action="append", default=None, dest="required_fields"
+    )
+    survival_analysis.add_argument(
+        "--output-dir", default="data/company_survival_analysis", dest="output_dir"
+    )
+    survival_analysis.add_argument("--snapshot-id", default="", dest="snapshot_id")
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -649,6 +662,27 @@ def main() -> None:
             json.JSONDecodeError,
             TypeError,
             CompetitivePositionError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "survival-analysis":
+        try:
+            competitive_position_report = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            survival_kwargs = {"snapshot_id": args.snapshot_id}
+            if args.required_fields:
+                survival_kwargs["required_fields"] = args.required_fields
+            report = build_survival_analysis_report(
+                competitive_position_report, **survival_kwargs
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            SurvivalAnalysisError,
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)

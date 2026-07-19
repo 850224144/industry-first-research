@@ -194,6 +194,18 @@ PYTHONPATH=src python -m industry_first_research competitive-position \
 （成本、性能、良率、认证、交付、客户、规模、替代路线）。证据不完整时只输出缺口，
 不会把核心部件、高增长或单一竞争维度自动升级为护城河，也不做生存、估值或投资结论。
 
+竞争位置证据通过后，运行生存能力与极端压力测试闸门：
+
+```bash
+PYTHONPATH=src python -m industry_first_research survival-analysis \
+  --input data/company_competitive_positions/<competitive-position>.json
+```
+
+该步骤要求六个压力情景：低谷延长、再融资失败、经营冲击、资产减值、技术替代和治理冲击；
+每个情景必须保留现金跑道、债务缺口、最低现金余额、资本开支可削减程度、资产出售动作、
+融资依赖度和生存结果。`self_funded`、`refinancing_dependent`、`external_support_dependent`
+分开记录，证据不足时不输出生存者或反转受益者结论。
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash
