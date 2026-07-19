@@ -3,6 +3,10 @@
 The live industry radar has two read-only adapters: Eastmoney's public industry quote
 endpoint and Tonghuashun's public industry table.
 
+Cross-source matching uses the versioned explicit registry in
+`docs/industry_aliases.v1.json`. An alias match is recorded as `match_method=ALIAS` in the
+snapshot and in source metadata; unknown names are not fuzzy-matched.
+
 Run it from the repository root:
 
 ```text

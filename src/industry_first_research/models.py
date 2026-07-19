@@ -46,6 +46,7 @@ class IndustryRadarSnapshot:
     evidence_completeness: str = "UNKNOWN"
     opportunity_types: tuple[str, ...] = ()
     reason: str = ""
+    match_method: str = "UNMATCHED"
 
     def to_dict(self) -> dict[str, Any]:
         payload = asdict(self)

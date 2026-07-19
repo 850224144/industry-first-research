@@ -9,6 +9,7 @@ from pathlib import Path
 from .cross_validation import CrossSourceIndustryRadar
 from .eastmoney import EastmoneyAPIError, EastmoneyIndustryRadar
 from .external_ai import ExternalAIResearchRecord
+from .industry_aliases import IndustryAliasError, IndustryAliasRegistry
 from .models import CompanyCandidate, IndustryRadarSnapshot, IndustrySignal, IndustryState
 from .pipeline import (
     InMemoryCompanyPool,
@@ -74,6 +75,12 @@ def main() -> None:
     radar.add_argument("--limit", type=int, default=50)
     radar.add_argument("--as-of", default=None, dest="as_of")
     radar.add_argument("--output-dir", default="data/radar", dest="output_dir")
+    radar.add_argument(
+        "--alias-file",
+        default="docs/industry_aliases.v1.json",
+        dest="alias_file",
+        help="versioned explicit cross-source industry alias registry",
+    )
     trend = subparsers.add_parser("trend", help="summarise repeated saved radar snapshots")
     trend.add_argument("--source", choices=("cross", "eastmoney", "tonghuashun"), default="cross")
     trend.add_argument("--input-dir", default="data/radar", dest="input_dir")
@@ -100,11 +107,16 @@ def main() -> None:
             radar_provider = TonghuashunIndustryRadar(page_size=args.limit)
             api_errors = (TonghuashunAPIError,)
         else:
+            try:
+                alias_registry = IndustryAliasRegistry.from_file(args.alias_file)
+            except IndustryAliasError as error:
+                parser.error(str(error))
             radar_provider = CrossSourceIndustryRadar(
                 EastmoneyIndustryRadar(page_size=args.limit),
                 TonghuashunIndustryRadar(page_size=args.limit),
                 primary_name="eastmoney",
                 secondary_name="tonghuashun",
+                alias_registry=alias_registry,
             )
             api_errors = (EastmoneyAPIError, TonghuashunAPIError)
         try:

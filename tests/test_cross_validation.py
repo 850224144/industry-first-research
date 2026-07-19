@@ -1,4 +1,5 @@
 from industry_first_research.cross_validation import CrossSourceIndustryRadar
+from industry_first_research.industry_aliases import IndustryAliasRegistry
 from industry_first_research.models import IndustryRadarSnapshot, IndustrySignal, IndustryState
 
 
@@ -64,3 +65,71 @@ def test_missing_match_is_single_source_and_held_out():
     assert result.state == IndustryState.INSUFFICIENT
     assert result.evidence_completeness == "SINGLE_SOURCE"
     assert result.opportunity_types == ()
+
+
+def test_explicit_alias_match_is_audited():
+    registry = IndustryAliasRegistry.from_dict(
+        {
+            "schema_version": "industry-aliases.v1",
+            "mappings": [
+                {
+                    "canonical_id": "power",
+                    "canonical_name": "电力",
+                    "aliases": {
+                        "eastmoney": ["电能综合服务"],
+                        "tonghuashun": ["电力行业"],
+                    },
+                    "note": "test mapping",
+                }
+            ],
+        }
+    )
+    radar = CrossSourceIndustryRadar(
+        StaticRadar([item("BK1", "电能综合服务", IndustryState.CLEARING, "eastmoney")], "eastmoney"),
+        StaticRadar([item("881145", "电力行业", IndustryState.CLEARING, "https://q.10jqka.com.cn")], "tonghuashun"),
+        primary_name="eastmoney",
+        secondary_name="tonghuashun",
+        alias_registry=registry,
+    )
+
+    result = list(radar.snapshots("2026-07-19"))[0]
+
+    assert result.evidence_completeness == "CROSS_VALIDATED"
+    assert result.match_method == "ALIAS"
+    assert radar.metadata("2026-07-19")["alias_match_row_count"] == 1
+
+
+def test_ambiguous_alias_is_not_confirmed():
+    registry = IndustryAliasRegistry.from_dict(
+        {
+            "schema_version": "industry-aliases.v1",
+            "mappings": [
+                {
+                    "canonical_id": "power",
+                    "canonical_name": "电力",
+                    "aliases": {
+                        "eastmoney": ["电能综合服务"],
+                        "tonghuashun": ["电力行业"],
+                    },
+                    "note": "test mapping",
+                },
+            ],
+        }
+    )
+    radar = CrossSourceIndustryRadar(
+        StaticRadar([item("BK1", "电力", IndustryState.CLEARING, "eastmoney")], "eastmoney"),
+        StaticRadar(
+            [
+                item("881145", "电力行业", IndustryState.CLEARING, "https://q.10jqka.com.cn/a"),
+                item("881146", "电力行业", IndustryState.CLEARING, "https://q.10jqka.com.cn/b"),
+            ],
+            "tonghuashun",
+        ),
+        alias_registry=registry,
+    )
+
+    result = list(radar.snapshots("2026-07-19"))[0]
+
+    assert result.evidence_completeness == "SINGLE_SOURCE"
+    assert result.match_method == "AMBIGUOUS"
+    assert radar.metadata("2026-07-19")["ambiguous_match_row_count"] == 1
