@@ -20,6 +20,9 @@ def screen_company_candidates(
     expected_industry: str = "",
     require_main_business: bool = True,
     require_source: bool = True,
+    input_snapshot_id: str = "",
+    input_as_of: str = "",
+    input_source: Any = "",
 ) -> dict[str, Any]:
     """Classify LIGHT data quality without estimating value or investment merit."""
 
@@ -37,6 +40,9 @@ def screen_company_candidates(
         "schema_version": "company-light-screen.v1",
         "candidate_count": len(results),
         "expected_industry": expected_industry,
+        "input_snapshot_id": input_snapshot_id,
+        "input_as_of": input_as_of,
+        "input_source": input_source,
         "rules": {
             "require_main_business": require_main_business,
             "require_source": require_source,

@@ -313,9 +313,15 @@ def main() -> None:
             if not isinstance(raw_candidates, list):
                 raise CompanyScreenError("input file has no candidates list")
             candidates = [CompanyCandidate(**_candidate_kwargs(item)) for item in raw_candidates]
+            industry = payload.get("industry")
+            if not isinstance(industry, dict):
+                industry = {}
             report = screen_company_candidates(
                 candidates,
                 expected_industry=args.expected_industry,
+                input_snapshot_id=str(payload.get("snapshot_id") or ""),
+                input_as_of=str(industry.get("as_of") or ""),
+                input_source=payload.get("source") or "",
             )
         except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError, CompanyScreenError) as error:
             parser.error(str(error))

@@ -50,6 +50,24 @@ def test_pass_is_watch_only_and_keeps_provenance():
     assert item["investment_conclusion"] is False
 
 
+def test_queue_uses_screen_input_provenance_for_root_traceability():
+    screen = screen_company_candidates(
+        [candidate(status="PARTIAL", main_business="新能源发电")],
+        expected_industry="电力",
+        input_snapshot_id="pool-001",
+        input_as_of="2026-07-19",
+        input_source={"provider": "tonghuashun_company_pool"},
+    )
+
+    report = build_candidate_queue(screen)
+
+    assert report["input_snapshot_id"] == "pool-001"
+    assert report["as_of"] == "2026-07-19"
+    assert report["source"] == "tonghuashun_company_pool"
+    assert report["source_metadata"]["provider"] == "tonghuashun_company_pool"
+    assert report["queue_id"] == "company-candidate-queue-pool-001"
+
+
 def test_partial_profile_stays_review_and_records_gaps():
     screen = screen_company_candidates(
         [candidate(status="PARTIAL", main_business="新能源发电")],

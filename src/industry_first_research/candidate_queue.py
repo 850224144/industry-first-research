@@ -41,7 +41,13 @@ def build_candidate_queue(
         raise CandidateQueueError("rule_version must not be empty")
 
     resolved_as_of = as_of or _report_as_of(screen_report)
-    resolved_source = source or _report_source(screen_report)
+    input_source = (
+        screen_report.get("input_source")
+        or screen_report.get("source")
+        or source
+        or ""
+    )
+    resolved_source = source or _source_label(input_source)
     queue_items = [
         _queue_one(
             item,
@@ -52,7 +58,13 @@ def build_candidate_queue(
         for item in raw_items
     ]
     counts = Counter(item["candidate_state"] for item in queue_items)
-    queue_id = snapshot_id or str(screen_report.get("snapshot_id") or "")
+    input_snapshot_id = str(
+        screen_report.get("input_snapshot_id")
+        or screen_report.get("snapshot_id")
+        or snapshot_id
+        or ""
+    )
+    queue_id = snapshot_id or input_snapshot_id
     if not queue_id:
         queue_id = "company-light-screen-input"
 
@@ -60,10 +72,11 @@ def build_candidate_queue(
         "schema_version": QUEUE_SCHEMA_VERSION,
         "queue_id": f"company-candidate-queue-{queue_id}",
         "input_schema_version": screen_report["schema_version"],
-        "input_snapshot_id": str(screen_report.get("snapshot_id") or ""),
+        "input_snapshot_id": input_snapshot_id,
         "rule_version": rule_version,
         "as_of": resolved_as_of,
         "source": resolved_source,
+        "source_metadata": input_source,
         "candidate_count": len(queue_items),
         "status_counts": dict(counts),
         "allowed_candidate_states": sorted(_VALID_QUEUE_STATES),
@@ -165,8 +178,7 @@ def _report_as_of(report: Mapping[str, Any]) -> str:
     return ""
 
 
-def _report_source(report: Mapping[str, Any]) -> str:
-    value = report.get("source") or report.get("input_source") or ""
+def _source_label(value: Any) -> str:
     if isinstance(value, str):
         return value
     if isinstance(value, Mapping):
