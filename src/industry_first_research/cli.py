@@ -40,6 +40,10 @@ from .valuation_scenarios import (
     build_valuation_scenarios_report,
 )
 from .market_structure import MarketStructureError, build_market_structure_report
+from .adversarial_review import (
+    AdversarialReviewError,
+    build_adversarial_review_report,
+)
 from .manual_evidence import (
     ManualEvidenceTemplateError,
     build_manual_evidence_template,
@@ -305,6 +309,18 @@ def main() -> None:
         "--output-dir", default="data/market_structure", dest="output_dir"
     )
     market_structure.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    adversarial_review = subparsers.add_parser(
+        "adversarial-review",
+        help="audit a valuation package for evidence and boundary violations",
+    )
+    adversarial_review.add_argument("--input", required=True, dest="input_path")
+    adversarial_review.add_argument(
+        "--market-structure", default="", dest="market_structure_path"
+    )
+    adversarial_review.add_argument(
+        "--output-dir", default="data/company_adversarial_reviews", dest="output_dir"
+    )
+    adversarial_review.add_argument("--snapshot-id", default="", dest="snapshot_id")
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -749,6 +765,31 @@ def main() -> None:
             json.JSONDecodeError,
             TypeError,
             MarketStructureError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "adversarial-review":
+        try:
+            valuation_report = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            market_structure_report = None
+            if args.market_structure_path:
+                market_structure_report = json.loads(
+                    Path(args.market_structure_path).read_text(encoding="utf-8")
+                )
+            report = build_adversarial_review_report(
+                valuation_report,
+                market_structure_report=market_structure_report,
+                snapshot_id=args.snapshot_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            AdversarialReviewError,
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)

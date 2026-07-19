@@ -228,6 +228,18 @@ PYTHONPATH=src python -m industry_first_research market-structure \
 该步骤只输出多周期趋势、波动、区间位置、确认状态和重绘风险，不输出买卖信号或自动交易；
 期货连续序列还必须保留主力、换月、拼接和复权规则。
 
+估值和市场结构资料完成后，运行对抗审查：
+
+```bash
+PYTHONPATH=src python -m industry_first_research adversarial-review \
+  --input data/company_valuation_scenarios/<valuation-scenarios>.json \
+  --market-structure data/market_structure/<snapshot>.json
+```
+
+审查主动检查未来信息、冲突证据、反证和失效条件、利润到现金流转换、基准排除项、网页
+AI 独立性、市场规模到公司利润的错误跳推、估值输出边界、市场结构信号泄漏和候选状态变更。
+结果为 `PASS`、`REVIEW` 或 `BLOCKED`，只记录问题，不改写事实或生成投资结论。
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash

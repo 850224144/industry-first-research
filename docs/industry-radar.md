@@ -258,5 +258,18 @@ The snapshot reports multi-timeframe trend, volatility, range position, confirma
 repaint risk only. It emits no buy/sell signal or automatic order; continuous futures series
 must also retain their main-contract, roll, stitching, and adjustment rules.
 
+After valuation and optional market-structure inputs are prepared, run adversarial review:
+
+```text
+python -m industry_first_research adversarial-review \
+  --input data/company_valuation_scenarios/<valuation-scenarios>.json \
+  --market-structure data/market_structure/<snapshot>.json
+```
+
+The review checks future information, evidence conflicts, counterevidence and invalidators,
+cash-flow conversion, base-case exclusions, external-AI independence, market-size-to-profit
+leaks, valuation boundaries, market-structure signal leakage, and candidate-state changes.
+It returns `PASS`, `REVIEW`, or `BLOCKED` without rewriting facts or producing an investment conclusion.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.
