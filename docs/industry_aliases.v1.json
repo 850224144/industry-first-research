@@ -1,0 +1,32 @@
+{
+  "schema_version": "industry-aliases.v1",
+  "mappings": [
+    {
+      "canonical_id": "power",
+      "canonical_name": "\u7535\u529b",
+      "aliases": {
+        "eastmoney": ["\u7535\u529b"],
+        "tonghuashun": ["\u7535\u529b", "\u7535\u529b\u884c\u4e1a"]
+      },
+      "note": "Manual source-name normalization for the power industry."
+    },
+    {
+      "canonical_id": "banking",
+      "canonical_name": "\u94f6\u884c",
+      "aliases": {
+        "eastmoney": ["\u94f6\u884c"],
+        "tonghuashun": ["\u94f6\u884c", "\u94f6\u884c\u4e1a"]
+      },
+      "note": "Manual source-name normalization for banking."
+    },
+    {
+      "canonical_id": "ports-shipping",
+      "canonical_name": "\u6e2f\u53e3\u822a\u8fd0",
+      "aliases": {
+        "eastmoney": ["\u6e2f\u53e3\u822a\u8fd0"],
+        "tonghuashun": ["\u6e2f\u53e3\u822a\u8fd0", "\u6e2f\u53e3\u822a\u8fd0\u884c\u4e1a"]
+      },
+      "note": "Manual source-name normalization for ports and shipping."
+    }
+  ]
+}

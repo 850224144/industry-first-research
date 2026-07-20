@@ -28,5 +28,22 @@ class CompanyDataProvider(Protocol):
     ) -> Sequence[CompanyCandidate]: ...
 
 
+class ChainedCompanyData:
+    """Apply bounded company-data providers in order while preserving profiles."""
+
+    def __init__(self, providers: Sequence[CompanyDataProvider]) -> None:
+        if not providers:
+            raise ValueError("providers must not be empty")
+        self.providers = tuple(providers)
+
+    def enrich(
+        self, candidates: Sequence[CompanyCandidate], tier: CompanyDataTier
+    ) -> Sequence[CompanyCandidate]:
+        enriched = list(candidates)
+        for provider in self.providers:
+            enriched = list(provider.enrich(enriched, tier))
+        return enriched
+
+
 class DeepResearchProvider(Protocol):
     def research(self, candidates: Sequence[CompanyCandidate]) -> Sequence[CompanyCandidate]: ...

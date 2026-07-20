@@ -49,6 +49,254 @@ python -m industry_first_research demo
 python -m pip install -e '.[data]'
 ```
 
+获取只读行业雷达快照：
+
+```bash
+PYTHONPATH=src python -m industry_first_research radar --source cross --limit 50
+```
+
+跨源行业名称映射使用版本化文件 `docs/industry_aliases.v1.json`，可通过
+`--alias-file` 指定替代文件；映射错误会阻止交叉验证，不会自动模糊匹配。
+
+获取选定行业的有限公司池：
+
+```bash
+PYTHONPATH=src python -m industry_first_research company-pool --industry-id 881145 --industry-name 电力 --limit 30
+```
+
+追加公开公司 LIGHT 资料：
+
+```bash
+PYTHONPATH=src python -m industry_first_research company-pool --industry-id 881145 --industry-name 电力 --limit 30 --with-light-data
+```
+
+`--with-light-data` first reads Tonghuashun LIGHT fields. When `listing_market` is
+missing, it uses a bounded Eastmoney company-survey lookup and accepts the result only
+when the returned company code matches. The field-level source is retained; no market is
+inferred from the stock code.
+
+运行行业到公司 LIGHT 资料的只读编排：
+
+```bash
+PYTHONPATH=src python -m industry_first_research discover --max-selected-industries 3 --company-pool-size 10
+```
+
+对公司池的 LIGHT 资料做只读完整度筛选：
+
+```bash
+PYTHONPATH=src python -m industry_first_research screen --input data/company_pools/tonghuashun-company-pool-881145-YYYY-MM-DD.json --expected-industry 电力
+```
+
+将候选队列与人工核验的补充证据合并为只读证据包：
+
+```bash
+PYTHONPATH=src python -m industry_first_research supplemental \
+  --input data/candidate_queues/<queue>.json \
+  --evidence data/supplemental_evidence/<records>.json \
+  --required-field company_scope \
+  --required-field reporting_scope \
+  --required-field key_products \
+  --required-field key_risks
+```
+
+For a field-level LIGHT gap, generate a blank manual evidence template first:
+
+```bash
+PYTHONPATH=src python -m industry_first_research evidence-template \
+  --input data/candidate_queues/<queue>.json \
+  --company-id 300317 \
+  --field listing_market
+```
+
+The template does not assert a value. Manually verified records must retain the company,
+field, source, date, evidence tier, and verification status. Empty values are rejected;
+`listing_market` cannot be inferred from a stock code or market convention.
+
+补充证据必须保留公司、字段、来源、日期、证据等级和核验状态。该步骤只生成
+`READY/PARTIAL/INSUFFICIENT/BLOCKED` 覆盖状态，不自动升级候选、不生成估值，也不执行交易。
+
+根据补充证据生成可研究性闸门：
+
+```bash
+PYTHONPATH=src python -m industry_first_research readiness \
+  --input data/company_supplemental/<report>.json
+```
+
+`READY` 才能进入标准研究，`PARTIAL` 只能降级研究，`INSUFFICIENT` 只能初筛，
+`BLOCKED` 暂停深度研究。该闸门保留原候选状态，不自动升级候选或生成投资结论。
+
+生成只读快速研究快照：
+
+```bash
+PYTHONPATH=src python -m industry_first_research quick-research \
+  --readiness data/company_readiness/<readiness>.json \
+  --supplemental data/company_supplemental/<supplemental>.json
+```
+
+快速研究只整理已核验事实、未核验线索和资料缺口，不包含财务分析、估值或投资结论。
+
+按设计文档继续生成产品与盈利来源画像的证据闸门：
+
+```bash
+PYTHONPATH=src python -m industry_first_research product-profile \
+  --input data/company_supplemental/<supplemental>.json
+```
+
+该步骤只整理产品、应用、客户采购理由、系统层级、关键程度、替代关系、竞争对手、
+市场状态、盈利来源、生命周期、客户验证和收入—利润—现金流桥接的证据覆盖；缺口不
+会被自动补齐。只有 `READY` 才能进入后续应用传导、行业周期、生存、估值和决策模块。
+
+产品画像 `READY` 后，继续建立产品到下游应用和终端市场的显式映射：
+
+```bash
+PYTHONPATH=src python -m industry_first_research application-mapping \
+  --input data/company_product_profiles/<product-profile>.json
+```
+
+该步骤要求保留产品、应用、终端市场、需求驱动、客户验证、订单、出货/收入、供给
+能力、竞争和需求传导状态的证据。没有 `product-profile` 的 `READY` 或没有明确的
+产品—应用关系时，映射会被阻断或标为 `INSUFFICIENT`，不会推导风口收入、估值或投资结论。
+
+应用映射 `READY` 后，继续检查风口需求是否传导到公司：
+
+```bash
+PYTHONPATH=src python -m industry_first_research demand-transmission \
+  --input data/company_application_mappings/<application-mapping>.json
+```
+
+传导阶段严格区分 `CONCEPT_LINKED`、`TECHNICALLY_FEASIBLE`、`CUSTOMER_QUALIFIED`、
+`ORDER_VALIDATED`、`REVENUE_VALIDATED`、`PROFIT_VALIDATED` 和
+`COMPETITIVE_VALIDATED`。订单前的新业务只保留为上行期权，无法完成利润和现金流验证时
+不得进入基准盈利、估值或投资结论。
+
+需求传导 `READY` 后，生成行业处境证据报告：
+
+```bash
+PYTHONPATH=src python -m industry_first_research industry-situation \
+  --input data/company_demand_transmission/<demand-transmission>.json
+```
+
+该阶段整理长期需求、价值链利润分配、供需、库存、价格、开工、竞争、政策/技术/海外
+因素、周期阶段、三个关键行业变量和反转验证条件。它不确认产业反转、不做生存分析、估值
+或投资结论；这些模块必须等待后续阶段。
+
+对适用的强周期或供需驱动行业，再生成产业供需与周期反转报告：
+
+```bash
+PYTHONPATH=src python -m industry_first_research cycle-reversal \
+  --input data/company_industry_situations/<industry-situation>.json
+```
+
+该阶段区分 `PRICE_REBOUND`、`TURNING_POINT_CANDIDATE` 和
+`INDUSTRIAL_REVERSAL_CONFIRMED`，并要求相应的需求、有效供给、库存、价格、供给退出和
+行业现金流证据。非适用行业明确标记 `NOT_APPLICABLE`；该报告不做生存、估值或投资结论。
+
+周期证据通过后，建立公司商业模式与竞争位置报告：
+
+```bash
+PYTHONPATH=src python -m industry_first_research competitive-position \
+  --input data/company_cycle_reversals/<cycle-reversal>.json
+```
+
+该阶段覆盖商业模式、收入结构、成本、技术、客户、渠道、资本、市场份额和竞争矩阵
+（成本、性能、良率、认证、交付、客户、规模、替代路线）。证据不完整时只输出缺口，
+不会把核心部件、高增长或单一竞争维度自动升级为护城河，也不做生存、估值或投资结论。
+
+竞争位置证据通过后，运行生存能力与极端压力测试闸门：
+
+```bash
+PYTHONPATH=src python -m industry_first_research survival-analysis \
+  --input data/company_competitive_positions/<competitive-position>.json
+```
+
+该步骤要求六个压力情景：低谷延长、再融资失败、经营冲击、资产减值、技术替代和治理冲击；
+每个情景必须保留现金跑道、债务缺口、最低现金余额、资本开支可削减程度、资产出售动作、
+融资依赖度和生存结果。`self_funded`、`refinancing_dependent`、`external_support_dependent`
+分开记录，证据不足时不输出生存者或反转受益者结论。
+
+生存闸门通过后，建立三情景估值框架和反向估值检查：
+
+```bash
+PYTHONPATH=src python -m industry_first_research valuation-scenarios \
+  --input data/company_survival_analysis/<survival-analysis>.json
+```
+
+该步骤要求悲观、基准、乐观三种情景，以及当前价格时点、历史财务、周期中枢利润、净债务
+和稀释、反向估值假设、证据支持假设、模型假设、基准情景排除项和敏感性。当前只生成
+可审计的估值框架，不计算目标价，不生成投资结论，也不把未验证风口或周期高点利润放进基准情景。
+
+估值框架之后可选生成市场结构辅助快照。输入必须先锁定标的、数据截止时间、周期、复权和
+OHLCV 快照：
+
+```bash
+PYTHONPATH=src python -m industry_first_research market-structure \
+  --input data/market_structure/<input>.json
+```
+
+该步骤只输出多周期趋势、波动、区间位置、确认状态和重绘风险，不输出买卖信号或自动交易；
+期货连续序列还必须保留主力、换月、拼接和复权规则。
+
+估值和市场结构资料完成后，运行对抗审查：
+
+```bash
+PYTHONPATH=src python -m industry_first_research adversarial-review \
+  --input data/company_valuation_scenarios/<valuation-scenarios>.json \
+  --market-structure data/market_structure/<snapshot>.json
+```
+
+审查主动检查未来信息、冲突证据、反证和失效条件、利润到现金流转换、基准排除项、网页
+AI 独立性、市场规模到公司利润的错误跳推、估值输出边界、市场结构信号泄漏和候选状态变更。
+结果为 `PASS`、`REVIEW` 或 `BLOCKED`，只记录问题，不改写事实或生成投资结论。
+
+对抗审查完成后，生成结构化公司研究报告和后续跟踪清单：
+
+```bash
+PYTHONPATH=src python -m industry_first_research research-report \
+  --input data/company_adversarial_reviews/<adversarial-review>.json
+```
+
+报告分开整理行业处境、公司质量、产品与需求传导、生存压力、估值框架、风险反证和跟踪
+清单。只有审查 `PASS` 且候选状态允许时标记 `REVIEWABLE`；该步骤不生成方向性投资结论、
+目标价或模拟决策快照，模拟记录必须等待用户确认。
+
+用户确认后，才可从 `REVIEWABLE` 研究报告创建不可覆盖的模拟决策快照：
+
+```bash
+PYTHONPATH=src python -m industry_first_research decision-snapshot \
+  --input data/company_research_reports/<research-report>.json \
+  --decision data/decision_inputs/<decision>.json \
+  --user-confirmed
+```
+
+快照保存研究对象、决策时间、数据截面、模拟动作、方向、价格/数量/资金假设、理由、风险、
+触发/失效条件、复查日期和基准，并固定为 `LOCKED`。期货快照必须绑定具体合约，不能绑定
+连续序列；修改只能创建新版本，不连接券商、不发送委托。
+
+达到快照中锁定的复查日期后，使用同一份锁定快照生成只读复盘与归因：
+
+```bash
+PYTHONPATH=src python -m industry_first_research attribution \
+  --input data/decision_snapshots/<decision-snapshot>.json \
+  --outcome data/attribution_inputs/<outcome>.json \
+  --closed-at 2026-08-19
+```
+
+公司结果要求标的与快照锁定的基准使用相同日期序列，并拆分价格、分红、汇率和成本；
+期货结果要求具体合约的逐日结算账本，并单列盯市、保证金、手续费、滑点、移仓和模拟强平。
+基准不允许在复盘时替换，未到复查日期或数据不可比时输出 `NOT_EVALUABLE`。解释性归因默认
+为 `ROUGH_ATTRIBUTION`，不会把相关性写成因果或生成交易结论。
+
+历史快照达到至少 3 个日期后，可生成只读趋势报告：
+
+```bash
+PYTHONPATH=src python -m industry_first_research trend --source cross --min-observations 3
+```
+
+行业雷达使用东方财富和同花顺两个公开来源，只有同名行业且方向一致时才标记为
+`CROSS_VALIDATED`，输出带日期、来源和证据状态的 `industry-radar.v1` JSON，并保存到
+`data/radar/`。单日行情只作为行业强弱线索，不会自动确认周期反转，也不会连接券商或执行交易。详见
+[`docs/industry-radar.md`](docs/industry-radar.md)。
+
 也可以直接运行：
 
 ```bash

@@ -46,6 +46,8 @@ class IndustryRadarSnapshot:
     evidence_completeness: str = "UNKNOWN"
     opportunity_types: tuple[str, ...] = ()
     reason: str = ""
+    match_method: str = "UNMATCHED"
+    source_ids: dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         payload = asdict(self)
@@ -65,6 +67,7 @@ class CompanyCandidate:
     score: float | None = None
     notes: tuple[str, ...] = ()
     metadata: dict[str, Any] = field(default_factory=dict)
+    light_profile: dict[str, Any] = field(default_factory=dict)
 
     def with_tier(self, tier: CompanyDataTier) -> "CompanyCandidate":
         return CompanyCandidate(
@@ -78,6 +81,7 @@ class CompanyCandidate:
             score=self.score,
             notes=self.notes,
             metadata=self.metadata,
+            light_profile=self.light_profile,
         )
 
     def with_metadata(self, metadata: dict[str, Any]) -> "CompanyCandidate":
@@ -92,6 +96,22 @@ class CompanyCandidate:
             score=self.score,
             notes=self.notes,
             metadata=metadata,
+            light_profile=self.light_profile,
+        )
+
+    def with_light_profile(self, profile: dict[str, Any]) -> "CompanyCandidate":
+        return CompanyCandidate(
+            company_id=self.company_id,
+            display_name=self.display_name,
+            industry_id=self.industry_id,
+            data_tier=self.data_tier,
+            source=self.source,
+            inclusion_reason=self.inclusion_reason,
+            hard_gate_status=self.hard_gate_status,
+            score=self.score,
+            notes=self.notes,
+            metadata=self.metadata,
+            light_profile=profile,
         )
 
     def to_dict(self) -> dict[str, Any]:

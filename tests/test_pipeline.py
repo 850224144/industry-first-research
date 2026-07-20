@@ -74,3 +74,50 @@ def test_full_market_deep_data_is_rejected_by_policy():
         assert "full-market" in str(error)
     else:
         raise AssertionError("full-market deep data must require a separate approved workflow")
+
+
+class RecordingCompanyPool:
+    def __init__(self, candidates_by_industry):
+        self.candidates_by_industry = candidates_by_industry
+        self.calls = []
+
+    def candidates(self, industry, limit):
+        self.calls.append((industry.industry_id, limit))
+        return self.candidates_by_industry.get(industry.industry_id, ())[:limit]
+
+
+class RecordingCompanyData:
+    def __init__(self):
+        self.calls = []
+
+    def enrich(self, candidates, tier):
+        self.calls.append((len(candidates), tier))
+        return [candidate.with_tier(tier) for candidate in candidates]
+
+
+def test_discovery_only_loads_company_data_for_selected_industries():
+    selected = snapshot("selected", IndustryState.CLEARING)
+    rejected = snapshot("rejected", IndustryState.DETERIORATING)
+    pool = RecordingCompanyPool({"selected": candidates("selected", 4), "rejected": candidates("rejected", 4)})
+    data = RecordingCompanyData()
+
+    result = IndustryFirstDiscovery(
+        InMemoryRadar([selected, rejected]),
+        pool,
+        data,
+        policy=ResourcePolicy(
+            company_pool_size=3,
+            supplemental_company_limit=2,
+            deep_company_limit=1,
+            ai_deep_company_limit=1,
+        ),
+    ).run("2026-07-19")
+
+    assert pool.calls == [("selected", 3)]
+    assert result.resource_audit["light_data_company_count"] == 3
+    assert [tier for _, tier in data.calls] == [
+        CompanyDataTier.LIGHT,
+        CompanyDataTier.SUPPLEMENTAL,
+        CompanyDataTier.DEEP,
+    ]
+    assert len(result.company_pools["selected"]) == 1
