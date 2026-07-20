@@ -1,4 +1,5 @@
 from industry_first_research.company_screen import screen_company_candidates
+from industry_first_research.industry_aliases import IndustryAliasRegistry
 from industry_first_research.models import CompanyCandidate
 
 
@@ -80,3 +81,40 @@ def test_unavailable_or_mismatched_profile_is_insufficient():
     result = report["items"][0]
     assert result["screen_state"] == "INSUFFICIENT"
     assert "LIGHT_DATA_UNAVAILABLE" in result["blockers"]
+
+
+def test_explicit_industry_alias_allows_hierarchical_company_label():
+    registry = IndustryAliasRegistry.from_dict(
+        {
+            "schema_version": "industry-aliases.v1",
+            "mappings": [
+                {
+                    "canonical_id": "baijiu",
+                    "canonical_name": "白酒",
+                    "aliases": {
+                        "tonghuashun": ["白酒"],
+                        "tonghuashun_company_profile": ["白酒Ⅱ", "白酒Ⅲ"],
+                    },
+                    "note": "test mapping",
+                }
+            ],
+        }
+    )
+    report = screen_company_candidates(
+        [
+            candidate(
+                status="VERIFIED",
+                legal_name="测试白酒",
+                main_business="白酒生产和销售",
+                reported_industry="白酒Ⅱ",
+                listing_market="上海证券交易所",
+            )
+        ],
+        expected_industry="白酒",
+        industry_alias_registry=registry,
+    )
+
+    result = report["items"][0]
+    assert result["screen_state"] == "PASS"
+    assert "INDUSTRY_MISMATCH" not in result["blockers"]
+    assert report["rules"]["industry_matching"]["alias_registry"]["mapping_count"] == 1

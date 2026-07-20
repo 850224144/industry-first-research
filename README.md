@@ -87,7 +87,7 @@ PYTHONPATH=src python -m industry_first_research discover --max-selected-industr
 对公司池的 LIGHT 资料做只读完整度筛选：
 
 ```bash
-PYTHONPATH=src python -m industry_first_research screen --input data/company_pools/tonghuashun-company-pool-881145-YYYY-MM-DD.json --expected-industry 电力
+PYTHONPATH=src python -m industry_first_research screen --input data/company_pools/tonghuashun-company-pool-881145-YYYY-MM-DD.json --expected-industry 电力 --alias-file docs/industry_aliases.v1.json
 ```
 
 将候选队列与人工核验的补充证据合并为只读证据包：

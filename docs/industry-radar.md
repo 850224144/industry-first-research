@@ -80,11 +80,13 @@ source is retained as `field_sources`; no market is inferred from the stock code
 To screen a saved company-pool snapshot for data completeness:
 
 ```text
-python -m industry_first_research screen --input data/company_pools/tonghuashun-company-pool-881145-YYYY-MM-DD.json --expected-industry 电力
+python -m industry_first_research screen --input data/company_pools/tonghuashun-company-pool-881145-YYYY-MM-DD.json --expected-industry 电力 --alias-file docs/industry_aliases.v1.json
 ```
 
 The result is `PASS`, `REVIEW`, or `INSUFFICIENT` for data quality only. It does not estimate
-value, rank investment merit, or create a trading decision.
+value, rank investment merit, or create a trading decision. Industry consistency uses the
+same explicit alias registry as the cross-source radar, so hierarchy labels such as `白酒`
+and `白酒Ⅱ` can match only when the source-specific mapping is declared.
 
 Turn a saved screen into a traceable review queue with:
 

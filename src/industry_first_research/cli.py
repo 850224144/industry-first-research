@@ -230,6 +230,22 @@ def main() -> None:
     screen.add_argument("--input", required=True, dest="input_path")
     screen.add_argument("--output-dir", default="data/company_screens", dest="output_dir")
     screen.add_argument("--expected-industry", default="", dest="expected_industry")
+    screen.add_argument(
+        "--alias-file",
+        default="docs/industry_aliases.v1.json",
+        dest="alias_file",
+        help="versioned explicit industry alias registry",
+    )
+    screen.add_argument(
+        "--expected-industry-source",
+        default="tonghuashun",
+        dest="expected_industry_source",
+    )
+    screen.add_argument(
+        "--reported-industry-source",
+        default="tonghuashun_company_profile",
+        dest="reported_industry_source",
+    )
     queue = subparsers.add_parser(
         "queue", help="build a conservative review queue from a company LIGHT screen"
     )
@@ -676,6 +692,7 @@ def main() -> None:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     elif args.command == "screen":
         try:
+            alias_registry = IndustryAliasRegistry.from_file(args.alias_file)
             payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
             raw_candidates = payload.get("candidates")
             if not isinstance(raw_candidates, list):
@@ -690,8 +707,18 @@ def main() -> None:
                 input_snapshot_id=str(payload.get("snapshot_id") or ""),
                 input_as_of=str(industry.get("as_of") or ""),
                 input_source=payload.get("source") or "",
+                industry_alias_registry=alias_registry,
+                expected_industry_source=args.expected_industry_source,
+                reported_industry_source=args.reported_industry_source,
             )
-        except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError, CompanyScreenError) as error:
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            CompanyScreenError,
+            IndustryAliasError,
+        ) as error:
             parser.error(str(error))
         report_id = f"company-light-screen-{Path(args.input_path).stem}"
         JsonSnapshotStore(Path(args.output_dir)).write(report_id, report)

@@ -33,9 +33,10 @@
       "canonical_name": "\u767d\u9152",
       "aliases": {
         "eastmoney": ["\u767d\u9152\u2161", "\u767d\u9152\u2162"],
-        "tonghuashun": ["\u767d\u9152"]
+        "tonghuashun": ["\u767d\u9152"],
+        "tonghuashun_company_profile": ["\u767d\u9152\u2161", "\u767d\u9152\u2162"]
       },
-      "note": "Eastmoney second- and third-level baijiu labels are mapped to Tonghuashun's baijiu category; this is an explicit category-level mapping, not fuzzy matching."
+      "note": "Eastmoney and Tonghuashun company-profile second- and third-level baijiu labels are mapped to Tonghuashun's baijiu category; this is an explicit category-level mapping, not fuzzy matching."
     },
     {
       "canonical_id": "insurance",

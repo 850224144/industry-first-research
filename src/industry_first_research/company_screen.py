@@ -7,6 +7,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from .cross_validation import normalize_industry_name
+from .industry_aliases import IndustryAliasRegistry
 from .models import CompanyCandidate
 
 
@@ -32,6 +33,9 @@ def screen_company_candidates(
     input_snapshot_id: str = "",
     input_as_of: str = "",
     input_source: Any = "",
+    industry_alias_registry: IndustryAliasRegistry | None = None,
+    expected_industry_source: str = "tonghuashun",
+    reported_industry_source: str = "tonghuashun_company_profile",
 ) -> dict[str, Any]:
     """Classify LIGHT data quality without estimating value or investment merit."""
 
@@ -41,6 +45,9 @@ def screen_company_candidates(
             expected_industry=expected_industry,
             require_main_business=require_main_business,
             require_source=require_source,
+            industry_alias_registry=industry_alias_registry,
+            expected_industry_source=expected_industry_source,
+            reported_industry_source=reported_industry_source,
         )
         for candidate in candidates
     ]
@@ -55,6 +62,15 @@ def screen_company_candidates(
         "rules": {
             "require_main_business": require_main_business,
             "require_source": require_source,
+            "industry_matching": {
+                "expected_source": expected_industry_source,
+                "reported_source": reported_industry_source,
+                "alias_registry": (
+                    industry_alias_registry.metadata()
+                    if industry_alias_registry is not None
+                    else None
+                ),
+            },
             "read_only": True,
             "investment_conclusion": False,
         },
@@ -77,6 +93,9 @@ def _screen_one(
     expected_industry: str,
     require_main_business: bool,
     require_source: bool,
+    industry_alias_registry: IndustryAliasRegistry | None,
+    expected_industry_source: str,
+    reported_industry_source: str,
 ) -> dict[str, Any]:
     profile = candidate.light_profile
     reasons: list[str] = []
@@ -100,7 +119,13 @@ def _screen_one(
             reasons.append(reason)
     reported_industry = str(profile.get("reported_industry") or "").strip()
     if expected_industry and reported_industry:
-        if normalize_industry_name(expected_industry) != normalize_industry_name(reported_industry):
+        if not _industries_match(
+            expected_industry,
+            reported_industry,
+            registry=industry_alias_registry,
+            expected_source=expected_industry_source,
+            reported_source=reported_industry_source,
+        ):
             blockers.append("INDUSTRY_MISMATCH")
     elif expected_industry and not reported_industry:
         reasons.append("REPORTED_INDUSTRY_MISSING")
@@ -129,6 +154,21 @@ def _screen_one(
         "review_only": True,
         "investment_conclusion": False,
     }
+
+
+def _industries_match(
+    expected: str,
+    reported: str,
+    *,
+    registry: IndustryAliasRegistry | None,
+    expected_source: str,
+    reported_source: str,
+) -> bool:
+    if registry is None:
+        return normalize_industry_name(expected) == normalize_industry_name(reported)
+    expected_key = registry.resolve(expected_source, expected)
+    reported_key = registry.resolve(reported_source, reported)
+    return expected_key == reported_key
 
 
 def _missing_light_fields(profile: dict[str, Any]) -> list[str]:
