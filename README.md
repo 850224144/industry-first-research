@@ -81,6 +81,9 @@ inferred from the stock code.
 PYTHONPATH=src python -m industry_first_research discover --max-selected-industries 3 --company-pool-size 10
 ```
 
+`discover` 默认只读取每个行业源的前 50 条行业雷达记录；可用 `--radar-limit` 调整雷达上限。
+它与每个入选行业的公司池大小 `--company-pool-size` 独立，仍然不会下载全市场个股深度数据。
+
 对公司池的 LIGHT 资料做只读完整度筛选：
 
 ```bash

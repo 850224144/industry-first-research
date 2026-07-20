@@ -99,6 +99,52 @@ def test_explicit_alias_match_is_audited():
     assert radar.metadata("2026-07-19")["alias_match_row_count"] == 1
 
 
+def test_primary_rows_with_same_explicit_alias_are_collapsed():
+    registry = IndustryAliasRegistry.from_dict(
+        {
+            "schema_version": "industry-aliases.v1",
+            "mappings": [
+                {
+                    "canonical_id": "baijiu",
+                    "canonical_name": "白酒",
+                    "aliases": {
+                        "eastmoney": ["白酒Ⅱ", "白酒Ⅲ"],
+                        "tonghuashun": ["白酒"],
+                    },
+                    "note": "test mapping",
+                }
+            ],
+        }
+    )
+    radar = CrossSourceIndustryRadar(
+        StaticRadar(
+            [
+                item("BK2", "白酒Ⅱ", IndustryState.CLEARING, "eastmoney"),
+                item("BK3", "白酒Ⅲ", IndustryState.CLEARING, "eastmoney"),
+            ],
+            "eastmoney",
+        ),
+        StaticRadar(
+            [item("881273", "白酒", IndustryState.CLEARING, "https://q.10jqka.com.cn")],
+            "tonghuashun",
+        ),
+        primary_name="eastmoney",
+        secondary_name="tonghuashun",
+        alias_registry=registry,
+    )
+
+    result = list(radar.snapshots("2026-07-19"))
+    metadata = radar.metadata("2026-07-19")
+
+    assert len(result) == 1
+    assert result[0].display_name == "白酒Ⅱ"
+    assert result[0].evidence_completeness == "CROSS_VALIDATED"
+    assert metadata["raw_primary_row_count"] == 2
+    assert metadata["primary_row_count"] == 1
+    assert metadata["primary_duplicate_group_count"] == 1
+    assert metadata["primary_collapsed_row_count"] == 1
+
+
 def test_ambiguous_alias_is_not_confirmed():
     registry = IndustryAliasRegistry.from_dict(
         {

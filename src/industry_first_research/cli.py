@@ -440,6 +440,12 @@ def main() -> None:
     )
     discover.add_argument("--as-of", default=None, dest="as_of")
     discover.add_argument("--max-selected-industries", type=int, default=3)
+    discover.add_argument(
+        "--radar-limit",
+        type=int,
+        default=50,
+        help="bounded number of industry rows read by each radar source",
+    )
     discover.add_argument("--company-pool-size", type=int, default=10)
     discover.add_argument("--output-dir", default="data/discovery", dest="output_dir")
     discover.add_argument(
@@ -625,8 +631,8 @@ def main() -> None:
         except IndustryAliasError as error:
             parser.error(str(error))
         radar_provider = CrossSourceIndustryRadar(
-            EastmoneyIndustryRadar(page_size=args.company_pool_size),
-            TonghuashunIndustryRadar(page_size=args.company_pool_size),
+            EastmoneyIndustryRadar(page_size=args.radar_limit),
+            TonghuashunIndustryRadar(page_size=args.radar_limit),
             primary_name="eastmoney",
             secondary_name="tonghuashun",
             alias_registry=alias_registry,

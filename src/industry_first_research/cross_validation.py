@@ -43,7 +43,10 @@ class CrossSourceIndustryRadar:
         self._metadata: dict[str, Any] = {}
 
     def snapshots(self, as_of: str) -> Iterable[IndustryRadarSnapshot]:
-        primary_items = list(self.primary.snapshots(as_of))
+        raw_primary_items = list(self.primary.snapshots(as_of))
+        primary_items, primary_duplicate_groups, primary_collapsed_rows = (
+            self._collapse_primary_alias_rows(raw_primary_items)
+        )
         secondary_items = list(self.secondary.snapshots(as_of))
         secondary_by_name: dict[str, list[IndustryRadarSnapshot]] = {}
         for item in secondary_items:
@@ -92,6 +95,9 @@ class CrossSourceIndustryRadar:
             "primary": _provider_metadata(self.primary, as_of, self.primary_name),
             "secondary": _provider_metadata(self.secondary, as_of, self.secondary_name),
             "primary_row_count": len(primary_items),
+            "raw_primary_row_count": len(raw_primary_items),
+            "primary_duplicate_group_count": primary_duplicate_groups,
+            "primary_collapsed_row_count": primary_collapsed_rows,
             "secondary_row_count": len(secondary_items),
             "matched_row_count": matched,
             "cross_validated_row_count": cross_validated,
@@ -106,6 +112,33 @@ class CrossSourceIndustryRadar:
             ),
         }
         return result
+
+    def _collapse_primary_alias_rows(
+        self, items: list[IndustryRadarSnapshot]
+    ) -> tuple[list[IndustryRadarSnapshot], int, int]:
+        """Keep one primary row per explicit canonical industry key.
+
+        A source may expose the same investable category at multiple hierarchy
+        levels, such as Eastmoney's ``白酒Ⅱ`` and ``白酒Ⅲ``. Once an explicit
+        registry maps those rows to one cross-source category, returning both
+        would load the same company pool twice. The first source row remains the
+        representative so the source's ordering is preserved; the collapse is
+        recorded in metadata rather than hidden.
+        """
+
+        groups: dict[str, list[IndustryRadarSnapshot]] = {}
+        order: list[str] = []
+        for item in items:
+            key = self._resolve_key(self.primary_name, item)
+            if key not in groups:
+                groups[key] = []
+                order.append(key)
+            groups[key].append(item)
+
+        collapsed = [groups[key][0] for key in order]
+        duplicate_groups = sum(1 for values in groups.values() if len(values) > 1)
+        collapsed_rows = sum(max(0, len(values) - 1) for values in groups.values())
+        return collapsed, duplicate_groups, collapsed_rows
 
     def _resolve_key(self, source: str, item: IndustryRadarSnapshot) -> str:
         if self.alias_registry is not None:

@@ -17,10 +17,17 @@ The command prints an `industry-radar.v1` JSON snapshot and stores the same payl
 `data/radar/<source>-industry-YYYY-MM-DD.json`.
 
 Each item contains the industry code, display name, date, quote signals, source URL, and an
-explicit evidence status. A row is `CROSS_VALIDATED` only when both sources have an exact
-normalized industry-name match and report the same daily direction. A conflicting match is
-`CONFLICTING`; a missing match is `SINGLE_SOURCE`. Both are marked `INSUFFICIENT` and held
-out of confirmation screening.
+explicit evidence status. A row is `CROSS_VALIDATED` only when both sources have either an
+exact normalized name or an explicit versioned alias match, and report the same daily
+direction. A conflicting match is `CONFLICTING`; a missing match is `SINGLE_SOURCE`. Both
+are marked `INSUFFICIENT` and held out of confirmation screening. The alias registry records
+category-level mappings such as Eastmoney's `白酒Ⅱ/白酒Ⅲ` to Tonghuashun's `白酒`; it does
+not use fuzzy matching.
+
+When several primary-source hierarchy rows resolve to the same explicit canonical key,
+the cross-source adapter keeps the first source row as the representative and records the
+duplicate group and collapsed-row counts in metadata. This prevents one investable category
+from loading the same company pool more than once while keeping the normalization auditable.
 
 The daily direction itself maps a non-negative change to `CLEARING` and a negative change to
 `DETERIORATING`. Even `CROSS_VALIDATED` remains a strength clue only; it does not confirm a
@@ -56,11 +63,14 @@ the adapter does not infer or fill missing facts.
 The end-to-end read-only discovery command is:
 
 ```text
-python -m industry_first_research discover --max-selected-industries 3 --company-pool-size 10
+python -m industry_first_research discover --radar-limit 50 --max-selected-industries 3 --company-pool-size 10
 ```
 
-It runs cross-source industry selection first, resolves source-specific industry IDs, then
-loads bounded company pools and LIGHT facts only for selected industries.
+`--radar-limit` controls the bounded number of industry rows scanned by each source;
+`--company-pool-size` controls the number of company candidates loaded per selected
+industry. They are intentionally independent. The command runs cross-source industry
+selection first, resolves source-specific industry IDs, then loads bounded company pools
+and LIGHT facts only for selected industries.
 
 With `--with-light-data`, the company pool first reads Tonghuashun LIGHT fields. If
 `listing_market` is missing, it performs a bounded Eastmoney company-survey lookup and
