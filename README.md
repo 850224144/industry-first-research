@@ -363,6 +363,18 @@ PYTHONPATH=src python -m industry_first_research thesis-check \
 这些命令只生成新鲜度、版本差异和建议论文状态；旧版本不覆盖，论文状态需要用户或后续
 语义复核确认后另建版本，价格下跌本身不会自动判定论文破裂。
 
+创建论文草稿或在用户确认后锁定论文版本：
+
+```bash
+PYTHONPATH=src python -m industry_first_research thesis-lock \
+  --input data/holding_theses/<thesis-input>.json \
+  --user-confirmed \
+  --output-dir data/holding_theses
+```
+
+修订已锁定论文时必须提供 `--previous-thesis`、递增 `version`、`supersedes_thesis_id`
+和 `revision_reason`；原论文不会被覆盖。
+
 用户确认后，才可从 `REVIEWABLE` 研究报告创建不可覆盖的模拟决策快照：
 
 ```bash

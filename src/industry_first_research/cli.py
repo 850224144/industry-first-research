@@ -62,6 +62,7 @@ from .tracking import (
     build_research_version_comparison,
 )
 from .scheduled_tasks import LocalScheduledTaskRunner, ScheduledTaskRunnerError
+from .holding_thesis import HoldingThesisError, build_holding_thesis
 from .decision_snapshot import DecisionSnapshotError, build_decision_snapshot
 from .attribution import AttributionError, build_attribution_report
 from .manual_evidence import (
@@ -502,6 +503,17 @@ def main() -> None:
     thesis_check.add_argument("--as-of", default="", dest="as_of")
     thesis_check.add_argument(
         "--output-dir", default="data/holding_thesis_checks", dest="output_dir"
+    )
+    thesis_lock = subparsers.add_parser(
+        "thesis-lock",
+        help="draft or user-confirm and lock a holding-thesis version",
+    )
+    thesis_lock.add_argument("--input", required=True, dest="input_path")
+    thesis_lock.add_argument("--user-confirmed", action="store_true", dest="user_confirmed")
+    thesis_lock.add_argument("--previous-thesis", default="", dest="previous_thesis_path")
+    thesis_lock.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    thesis_lock.add_argument(
+        "--output-dir", default="data/holding_theses", dest="output_dir"
     )
     decision_snapshot = subparsers.add_parser(
         "decision-snapshot",
@@ -1356,6 +1368,31 @@ def main() -> None:
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["check_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "thesis-lock":
+        try:
+            thesis = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            previous_thesis = None
+            if args.previous_thesis_path:
+                previous_thesis = json.loads(
+                    Path(args.previous_thesis_path).read_text(encoding="utf-8")
+                )
+            report = build_holding_thesis(
+                thesis,
+                user_confirmed=args.user_confirmed,
+                previous_thesis=previous_thesis,
+                snapshot_id=args.snapshot_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            HoldingThesisError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["snapshot_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "decision-snapshot":
         try:

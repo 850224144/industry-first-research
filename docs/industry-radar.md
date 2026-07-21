@@ -167,6 +167,19 @@ version and field changes, and propose `INTACT / WEAKENING / DAMAGED / BROKEN / 
 states. They do not rewrite an old report, commit a thesis status, create a decision snapshot, or
 treat price movement alone as thesis failure.
 
+Draft or lock a user-confirmed holding thesis:
+
+```text
+python -m industry_first_research thesis-lock \
+  --input data/holding_theses/<thesis-input>.json \
+  --user-confirmed \
+  --output-dir data/holding_theses
+```
+
+The lock requires the core thesis, 3-7 testable hypotheses, normal-volatility contract, red lines,
+three valuation anchors, timebox, and relative-opportunity comparison. Revisions create a new
+version and cannot overwrite the prior locked thesis.
+
 Build a supplemental evidence report from a queue and a manually prepared JSON record list:
 
 ```text
