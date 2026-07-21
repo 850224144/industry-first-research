@@ -513,6 +513,20 @@ locked-benchmark return, and excess return. Missing operation-date data or obser
 domestic futures continue through the specific-contract daily settlement ledger and are not mixed
 with stock returns.
 
+Identify a domestic futures research object:
+
+```text
+python -m industry_first_research futures-identify \
+  --input data/futures_inputs/<variety-contract-or-series>.json \
+  --output-dir data/futures_identities
+```
+
+The identity layer separates a futures variety, a specific monthly contract, a continuous research
+series, and a spot benchmark. A continuous series must retain its main-contract, roll, stitching,
+adjustment, and real-contract component rules, but always has `simulation_allowed=false`. Only a
+specific contract with exchange, contract code/month, last trade date, multiplier, tick size,
+settlement basis, and rule version can enter a simulation decision.
+
 Store immutable original-announcement assets and their version chain:
 
 ```text

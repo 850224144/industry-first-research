@@ -480,6 +480,18 @@ PYTHONPATH=src python -m industry_first_research portfolio-replay \
 `REVIEW_REQUIRED`。该组合账本仅覆盖上市公司全额资金口径；国内期货继续使用具体合约的逐日盯市账本，
 不与股票保证金/全额资金收益混合。
 
+识别国内商品期货研究对象：
+
+```bash
+PYTHONPATH=src python -m industry_first_research futures-identify \
+  --input data/futures_inputs/<variety-contract-or-series>.json \
+  --output-dir data/futures_identities
+```
+
+对象明确区分商品品种、具体月份合约、连续研究序列和现货基准。连续序列必须保存主力判定、
+换月、拼接、复权和真实合约组件规则，但 `simulation_allowed=false`；只有交易所、合约代码、
+月份、最后交易日、乘数、最小变动、结算口径和规则版本齐全的具体合约才可进入模拟决策。
+
 保存不可变原始公告资产和版本链：
 
 ```bash

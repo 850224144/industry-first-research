@@ -87,6 +87,7 @@ from .announcement_asset import (
     build_announcement_asset,
     build_announcement_impact,
 )
+from .futures_identity import FuturesIdentityError, identify_futures_object
 from .manual_evidence import (
     ManualEvidenceTemplateError,
     build_manual_evidence_template,
@@ -659,6 +660,15 @@ def main() -> None:
         "--output-dir", default="data/announcement_impacts", dest="output_dir"
     )
     announcement_impact.add_argument("--impact-id", default="", dest="impact_id")
+    futures_identify = subparsers.add_parser(
+        "futures-identify",
+        help="identify a domestic futures variety, contract, continuous series, or spot benchmark",
+    )
+    futures_identify.add_argument("--input", required=True, dest="input_path")
+    futures_identify.add_argument(
+        "--output-dir", default="data/futures_identities", dest="output_dir"
+    )
+    futures_identify.add_argument("--identity-id", default="", dest="identity_id")
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -1847,6 +1857,21 @@ def main() -> None:
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["impact_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "futures-identify":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = identify_futures_object(payload, identity_id=args.identity_id)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            FuturesIdentityError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["identity_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "evidence-template":
         try:
