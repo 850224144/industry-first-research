@@ -46,6 +46,7 @@ from .adversarial_review import (
     build_adversarial_review_report,
 )
 from .research_report import ResearchReportError, build_research_report
+from .research_pipeline import build_research_pipeline
 from .decision_snapshot import DecisionSnapshotError, build_decision_snapshot
 from .attribution import AttributionError, build_attribution_report
 from .manual_evidence import (
@@ -393,6 +394,18 @@ def main() -> None:
         "--output-dir", default="data/company_research_reports", dest="output_dir"
     )
     research_report.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    research_pipeline = subparsers.add_parser(
+        "research-pipeline",
+        help="run the bounded company deep-research stages as one pipeline",
+    )
+    research_pipeline.add_argument("--input", required=True, dest="input_path")
+    research_pipeline.add_argument(
+        "--market-structure", default="", dest="market_structure_path"
+    )
+    research_pipeline.add_argument(
+        "--output-dir", default="data/company_research_pipelines", dest="output_dir"
+    )
+    research_pipeline.add_argument("--snapshot-id", default="", dest="snapshot_id")
     decision_snapshot = subparsers.add_parser(
         "decision-snapshot",
         help="create an immutable user-confirmed simulation decision snapshot",
@@ -999,6 +1012,31 @@ def main() -> None:
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "research-pipeline":
+        try:
+            supplemental_report = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            market_structure_report = None
+            if args.market_structure_path:
+                market_structure_report = json.loads(
+                    Path(args.market_structure_path).read_text(encoding="utf-8")
+                )
+            report = build_research_pipeline(
+                supplemental_report,
+                market_structure_report=market_structure_report,
+                snapshot_id=args.snapshot_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["pipeline_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "decision-snapshot":
         try:

@@ -262,6 +262,16 @@ PYTHONPATH=src python -m industry_first_research research-report \
 清单。只有审查 `PASS` 且候选状态允许时标记 `REVIEWABLE`；该步骤不生成方向性投资结论、
 目标价或模拟决策快照，模拟记录必须等待用户确认。
 
+把一份补充证据包串成完整有限公司深研链路：
+
+```bash
+PYTHONPATH=src python -m industry_first_research research-pipeline \
+  --input data/company_supplemental/<supplemental>.json
+```
+
+该命令只复用现有证据闸门，不自动补事实、不升级 `WATCH`、不生成投资结论；每个阶段
+的完整快照保存在输出中的 `stages`，最终状态在 `final_state`。
+
 用户确认后，才可从 `REVIEWABLE` 研究报告创建不可覆盖的模拟决策快照：
 
 ```bash

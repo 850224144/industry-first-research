@@ -295,6 +295,19 @@ valuation framework, counterevidence, and follow-up checks separate. Only a pass
 with an eligible candidate is marked `REVIEWABLE`; no directional conclusion, target price,
 or decision snapshot is created, and simulation requires user confirmation.
 
+To run the complete bounded deep-research chain from one supplemental evidence package:
+
+```text
+python -m industry_first_research research-pipeline \
+  --input data/company_supplemental/<supplemental>.json
+```
+
+It runs product profile, application mapping, demand transmission, industry situation,
+cycle, competitive position, survival, valuation, adversarial review, and structured report
+in order. The output keeps every stage snapshot under `stages` and provides `stage_summary`.
+Missing evidence remains `PARTIAL`, `INSUFFICIENT`, or `BLOCKED`; the pipeline never promotes
+a `WATCH` item or creates an investment conclusion.
+
 After explicit user confirmation, create the immutable simulation decision snapshot:
 
 ```text
