@@ -439,5 +439,35 @@ does not use return to prove factual accuracy, and marks missing post-validation
 bias. The scorecard is read-only and cannot alter a locked decision, research conclusion, or
 execute a trade.
 
+Combine multiple user-confirmed company operations into a full-cash simulation portfolio:
+
+```text
+python -m industry_first_research portfolio-create \
+  --input data/simulation_portfolio_inputs/<portfolio-input>.json \
+  --decision data/decision_snapshots/<open>.json \
+  --decision data/decision_snapshots/<adjust-or-hold>.json \
+  --decision data/decision_snapshots/<exit>.json \
+  --output-dir data/simulation_portfolios
+```
+
+The portfolio only references `LOCKED` company decision snapshots. `ADJUST` quantities are target
+quantities and `HOLD` keeps the previous target; the original snapshots remain unchanged. Replay
+the portfolio with a dated asset and benchmark package:
+
+```text
+python -m industry_first_research portfolio-replay \
+  --input data/simulation_portfolios/<simulation-portfolio>.json \
+  --outcome data/simulation_portfolio_inputs/<dated-outcome>.json \
+  --closed-at YYYY-MM-DD \
+  --output-dir data/simulation_portfolio_replays
+```
+
+The replay reports daily cash, holdings, equity, dividends, fees, drawdown, portfolio return,
+locked-benchmark return, and excess return. Missing operation-date data or observations after
+`closed_at` produce `NOT_EVALUABLE`; negative cash under full-cash assumptions produces
+`REVIEW_REQUIRED`. This first portfolio ledger is for listed-company full-cash accounting only;
+domestic futures continue through the specific-contract daily settlement ledger and are not mixed
+with stock returns.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.

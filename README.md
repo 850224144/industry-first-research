@@ -416,6 +416,33 @@ PYTHONPATH=src python -m industry_first_research quality-scorecard \
 并保留机会发现的空结果、淘汰和选择偏差指标。它不生成综合总分，不用收益率证明事实正确，
 后验材料不足时输出 `NOT_EVALUABLE`；只读评分卡不会修改决策快照、研究结论或执行任何交易。
 
+把多次用户确认的公司模拟操作组成一个全额资金模拟组合：
+
+```bash
+PYTHONPATH=src python -m industry_first_research portfolio-create \
+  --input data/simulation_portfolio_inputs/<portfolio-input>.json \
+  --decision data/decision_snapshots/<open>.json \
+  --decision data/decision_snapshots/<adjust-or-hold>.json \
+  --decision data/decision_snapshots/<exit>.json \
+  --output-dir data/simulation_portfolios
+```
+
+组合只引用 `LOCKED` 的公司决策快照；`ADJUST` 的数量是调整后的目标数量，`HOLD` 保持原数量，
+原始快照和理由不会被组合层覆盖。使用带日期的行情与基准数据回放组合效果：
+
+```bash
+PYTHONPATH=src python -m industry_first_research portfolio-replay \
+  --input data/simulation_portfolios/<simulation-portfolio>.json \
+  --outcome data/simulation_portfolio_inputs/<dated-outcome>.json \
+  --closed-at YYYY-MM-DD \
+  --output-dir data/simulation_portfolio_replays
+```
+
+回放输出每日现金、持仓市值、组合权益、分红、费用、最大回撤、组合收益、锁定基准收益和超额收益。
+缺少操作日数据、出现复查日后的数据或现金假设不足时不会补算，结果标为 `NOT_EVALUABLE` 或
+`REVIEW_REQUIRED`。该组合账本仅覆盖上市公司全额资金口径；国内期货继续使用具体合约的逐日盯市账本，
+不与股票保证金/全额资金收益混合。
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash

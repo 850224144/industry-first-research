@@ -66,6 +66,11 @@ from .holding_thesis import HoldingThesisError, build_holding_thesis
 from .decision_snapshot import DecisionSnapshotError, build_decision_snapshot
 from .attribution import AttributionError, build_attribution_report
 from .quality_scorecard import QualityScorecardError, build_quality_scorecard
+from .simulation_portfolio import (
+    SimulationPortfolioError,
+    build_simulation_portfolio,
+    replay_simulation_portfolio,
+)
 from .manual_evidence import (
     ManualEvidenceTemplateError,
     build_manual_evidence_template,
@@ -567,6 +572,29 @@ def main() -> None:
         "--output-dir", default="data/quality_scorecards", dest="output_dir"
     )
     quality_scorecard.add_argument("--scorecard-id", default="", dest="scorecard_id")
+    portfolio_create = subparsers.add_parser(
+        "portfolio-create",
+        help="create an immutable full-cash company simulation portfolio",
+    )
+    portfolio_create.add_argument("--input", required=True, dest="input_path")
+    portfolio_create.add_argument(
+        "--decision", action="append", required=True, dest="decision_paths"
+    )
+    portfolio_create.add_argument(
+        "--output-dir", default="data/simulation_portfolios", dest="output_dir"
+    )
+    portfolio_create.add_argument("--portfolio-id", default="", dest="portfolio_id")
+    portfolio_replay = subparsers.add_parser(
+        "portfolio-replay",
+        help="replay a company simulation portfolio against dated price and benchmark data",
+    )
+    portfolio_replay.add_argument("--input", required=True, dest="input_path")
+    portfolio_replay.add_argument("--outcome", required=True, dest="outcome_path")
+    portfolio_replay.add_argument("--closed-at", default="", dest="closed_at")
+    portfolio_replay.add_argument(
+        "--output-dir", default="data/simulation_portfolio_replays", dest="output_dir"
+    )
+    portfolio_replay.add_argument("--replay-id", default="", dest="replay_id")
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -1506,6 +1534,60 @@ def main() -> None:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(
             report["scorecard_id"], report
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "portfolio-create":
+        try:
+            portfolio_input = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            decision_snapshots = [
+                json.loads(Path(path).read_text(encoding="utf-8"))
+                for path in args.decision_paths
+            ]
+            report = build_simulation_portfolio(
+                portfolio_input,
+                decision_snapshots,
+                portfolio_id=args.portfolio_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            SimulationPortfolioError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(
+            report["portfolio_id"], report
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "portfolio-replay":
+        try:
+            portfolio = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            outcome_input = json.loads(
+                Path(args.outcome_path).read_text(encoding="utf-8")
+            )
+            report = replay_simulation_portfolio(
+                portfolio,
+                outcome_input,
+                closed_at=args.closed_at,
+                replay_id=args.replay_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            SimulationPortfolioError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(
+            report["replay_id"], report
         )
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "evidence-template":
