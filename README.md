@@ -402,6 +402,20 @@ PYTHONPATH=src python -m industry_first_research attribution \
 基准不允许在复盘时替换，未到复查日期或数据不可比时输出 `NOT_EVALUABLE`。解释性归因默认
 为 `ROUGH_ATTRIBUTION`，不会把相关性写成因果或生成交易结论。
 
+对已完成的模拟复盘生成研究质量评分卡：
+
+```bash
+PYTHONPATH=src python -m industry_first_research quality-scorecard \
+  --input data/decision_snapshots/<decision-snapshot>.json \
+  --attribution data/attribution_results/<attribution>.json \
+  --research-report data/company_research_reports/<research-report>.json \
+  --output-dir data/quality_scorecards
+```
+
+评分卡分别复核事实准确性、状态判断、模型假设、风险识别、估值质量、决策过程和结果表现，
+并保留机会发现的空结果、淘汰和选择偏差指标。它不生成综合总分，不用收益率证明事实正确，
+后验材料不足时输出 `NOT_EVALUABLE`；只读评分卡不会修改决策快照、研究结论或执行任何交易。
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash

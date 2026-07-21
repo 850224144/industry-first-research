@@ -422,5 +422,22 @@ reasons, risks, triggers, invalidators, review date, and benchmark as `LOCKED`. 
 snapshots must bind a specific contract rather than a continuous series; revisions create a
 new version, and no broker order or execution is performed.
 
+After a simulation review is closed, generate a dimensioned research-quality scorecard:
+
+```text
+python -m industry_first_research quality-scorecard \
+  --input data/decision_snapshots/<decision-snapshot>.json \
+  --attribution data/attribution_results/<attribution>.json \
+  --research-report data/company_research_reports/<research-report>.json \
+  --output-dir data/quality_scorecards
+```
+
+The scorecard reviews fact accuracy, state judgment, model assumptions, risk identification,
+valuation quality, decision process, and outcome performance separately. It has no total score,
+does not use return to prove factual accuracy, and marks missing post-validation as
+`NOT_EVALUABLE`. Opportunity-discovery metrics retain empty scans, eliminations, and selection
+bias. The scorecard is read-only and cannot alter a locked decision, research conclusion, or
+execute a trade.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.

@@ -65,6 +65,7 @@ from .scheduled_tasks import LocalScheduledTaskRunner, ScheduledTaskRunnerError
 from .holding_thesis import HoldingThesisError, build_holding_thesis
 from .decision_snapshot import DecisionSnapshotError, build_decision_snapshot
 from .attribution import AttributionError, build_attribution_report
+from .quality_scorecard import QualityScorecardError, build_quality_scorecard
 from .manual_evidence import (
     ManualEvidenceTemplateError,
     build_manual_evidence_template,
@@ -539,6 +540,33 @@ def main() -> None:
         "--output-dir", default="data/attribution_results", dest="output_dir"
     )
     attribution.add_argument("--attribution-id", default="", dest="attribution_id")
+    quality_scorecard = subparsers.add_parser(
+        "quality-scorecard",
+        help="review research quality dimensions without collapsing them into a total score",
+    )
+    quality_scorecard.add_argument("--input", required=True, dest="input_path")
+    quality_scorecard.add_argument(
+        "--research-report", default="", dest="research_report_path"
+    )
+    quality_scorecard.add_argument(
+        "--attribution", default="", dest="attribution_path"
+    )
+    quality_scorecard.add_argument(
+        "--thesis-check", default="", dest="thesis_check_path"
+    )
+    quality_scorecard.add_argument(
+        "--freshness", default="", dest="freshness_path"
+    )
+    quality_scorecard.add_argument(
+        "--assessments", default="", dest="assessments_path"
+    )
+    quality_scorecard.add_argument(
+        "--opportunity-scan", default="", dest="opportunity_scan_path"
+    )
+    quality_scorecard.add_argument(
+        "--output-dir", default="data/quality_scorecards", dest="output_dir"
+    )
+    quality_scorecard.add_argument("--scorecard-id", default="", dest="scorecard_id")
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -1442,6 +1470,42 @@ def main() -> None:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(
             report["attribution_id"], report
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "quality-scorecard":
+        try:
+            decision_snapshot = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+
+            def optional_json(path: str) -> object | None:
+                return (
+                    json.loads(Path(path).read_text(encoding="utf-8"))
+                    if path
+                    else None
+                )
+
+            report = build_quality_scorecard(
+                decision_snapshot,
+                research_report=optional_json(args.research_report_path),
+                attribution_report=optional_json(args.attribution_path),
+                thesis_check=optional_json(args.thesis_check_path),
+                freshness_report=optional_json(args.freshness_path),
+                assessments=optional_json(args.assessments_path),
+                opportunity_scan=optional_json(args.opportunity_scan_path),
+                scorecard_id=args.scorecard_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            QualityScorecardError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(
+            report["scorecard_id"], report
         )
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "evidence-template":
