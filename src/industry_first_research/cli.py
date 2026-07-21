@@ -88,6 +88,10 @@ from .announcement_asset import (
     build_announcement_impact,
 )
 from .futures_identity import FuturesIdentityError, identify_futures_object
+from .futures_fundamentals import (
+    FuturesFundamentalsError,
+    build_futures_fundamentals_report,
+)
 from .manual_evidence import (
     ManualEvidenceTemplateError,
     build_manual_evidence_template,
@@ -669,6 +673,21 @@ def main() -> None:
         "--output-dir", default="data/futures_identities", dest="output_dir"
     )
     futures_identify.add_argument("--identity-id", default="", dest="identity_id")
+    futures_fundamentals = subparsers.add_parser(
+        "futures-fundamentals",
+        help="build an evidence-bound domestic futures fundamentals and contract report",
+    )
+    futures_fundamentals.add_argument("--identity", required=True, dest="identity_path")
+    futures_fundamentals.add_argument("--input", required=True, dest="input_path")
+    futures_fundamentals.add_argument(
+        "--market-structure", default="", dest="market_structure_path"
+    )
+    futures_fundamentals.add_argument(
+        "--output-dir", default="data/futures_fundamentals", dest="output_dir"
+    )
+    futures_fundamentals.add_argument(
+        "--snapshot-id", default="", dest="snapshot_id"
+    )
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -1872,6 +1891,36 @@ def main() -> None:
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["identity_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "futures-fundamentals":
+        try:
+            identity_report = json.loads(
+                Path(args.identity_path).read_text(encoding="utf-8")
+            )
+            evidence_input = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            market_structure_report = None
+            if args.market_structure_path:
+                market_structure_report = json.loads(
+                    Path(args.market_structure_path).read_text(encoding="utf-8")
+                )
+            report = build_futures_fundamentals_report(
+                identity_report,
+                evidence_input,
+                market_structure_report=market_structure_report,
+                snapshot_id=args.snapshot_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            FuturesFundamentalsError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "evidence-template":
         try:

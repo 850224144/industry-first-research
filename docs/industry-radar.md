@@ -527,6 +527,24 @@ adjustment, and real-contract component rules, but always has `simulation_allowe
 specific contract with exchange, contract code/month, last trade date, multiplier, tick size,
 settlement basis, and rule version can enter a simulation decision.
 
+Build the evidence-bound F1-F10 fundamentals and contract package after identity validation:
+
+```text
+python -m industry_first_research futures-fundamentals \
+  --identity data/futures_identities/<identity>.json \
+  --input data/futures_inputs/<fundamentals>.json \
+  --output-dir data/futures_fundamentals
+```
+
+The input uses `futures-fundamentals-input.v1` and fixes the research cutoff with `as_of`. It may
+be assembled from official exchange material, Eastmoney, AKShare, or manually verified fallback
+evidence. The report keeps `variety_view`, `contract_view`, `market_structure`, and
+`simulation_view` separate, preserves field lineage, and only derives arithmetic with supplied
+units and dates. It does not fetch data, infer missing values, select a main contract, calculate an
+intrinsic value, emit a trading signal, or create a decision snapshot. Missing spot, inventory/
+warrant, basis, term-structure, or delivery evidence lowers the result to `PARTIAL` or
+`INSUFFICIENT`; continuous series and spot benchmarks remain research-only.
+
 Store immutable original-announcement assets and their version chain:
 
 ```text

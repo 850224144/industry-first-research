@@ -492,6 +492,22 @@ PYTHONPATH=src python -m industry_first_research futures-identify \
 换月、拼接、复权和真实合约组件规则，但 `simulation_allowed=false`；只有交易所、合约代码、
 月份、最后交易日、乘数、最小变动、结算口径和规则版本齐全的具体合约才可进入模拟决策。
 
+在身份确认后，使用交易所、东方财富、AKShare 或人工核验后的有界证据包生成 F1-F10 期货研究底座：
+
+```bash
+PYTHONPATH=src python -m industry_first_research futures-fundamentals \
+  --identity data/futures_identities/<identity>.json \
+  --input data/futures_inputs/<fundamentals>.json \
+  --output-dir data/futures_fundamentals
+```
+
+输入使用 `futures-fundamentals-input.v1`，研究截面由 `as_of` 固定，字段可附带
+`evidence_ids`、来源、单位和字段状态。报告分别保存 `variety_view`、`contract_view`、
+`market_structure` 和 `simulation_view`：它会计算已提供且单位明确的现货/合约差、基差、成本差、
+库存与仓单变化，但不会补齐缺失数据、计算“内在价值”、选主力合约或创建决策快照。缺少现货、
+库存/仓单、基差、期限结构或交割规则时，报告会降级为 `PARTIAL` / `INSUFFICIENT`，并列出补证清单。
+价格情景只是悲观、基准、乐观观察区间；只有具体月份合约且用户后续确认，才可能进入现有模拟决策流程。
+
 保存不可变原始公告资产和版本链：
 
 ```bash
