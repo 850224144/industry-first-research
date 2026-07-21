@@ -100,6 +100,28 @@ LIGHT data never becomes `CANDIDATE` by itself. Every queue item retains its rul
 source, date, reasons, blockers, and evidence gaps. The queue is review-only and cannot
 place orders or produce an investment conclusion.
 
+Initialize the bounded local refresh schedule:
+
+```text
+python -m industry_first_research schedule-init --output-dir data/scheduler
+```
+
+Plan one local tick, optionally with an imported event list:
+
+```text
+python -m industry_first_research schedule-plan \
+  --schedule data/scheduler/schedule-default.json \
+  --state data/scheduler/state-default.json \
+  --events data/scheduler/events.json \
+  --now 2026-07-21T09:00:00+08:00
+```
+
+The scheduler records `industry_radar_refresh`, `daily_delta_scan`, `event_triggered_scan`,
+and `company_pool_refresh`, with idempotent event IDs, bounded capacities, retry metadata,
+and degraded/final-failure states. It is read-only and does not create a decision snapshot.
+The plan can be invoked by a local macOS `launchd` or cron job. Source handlers remain separate
+from scheduling so a source failure can degrade the affected task without changing conclusions.
+
 Build a supplemental evidence report from a queue and a manually prepared JSON record list:
 
 ```text

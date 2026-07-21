@@ -300,6 +300,27 @@ PYTHONPATH=src python -m industry_first_research incremental-update \
 当前阶段会先生成增量影响计划，再完整重跑有限公司研究链路；不会静默覆盖旧结论、自动改变
 方向性判断或创建模拟决策。
 
+初始化本地持续跟踪调度状态：
+
+```bash
+PYTHONPATH=src python -m industry_first_research schedule-init \
+  --output-dir data/scheduler
+```
+
+生成一轮到期任务计划，并可导入人工或采集器产生的事件：
+
+```bash
+PYTHONPATH=src python -m industry_first_research schedule-plan \
+  --schedule data/scheduler/schedule-default.json \
+  --state data/scheduler/state-default.json \
+  --events data/scheduler/events.json \
+  --now 2026-07-21T09:00:00+08:00
+```
+
+调度器只负责计划、去重、范围约束、重试和降级留痕；不下载全市场深度数据、不调用
+网页 AI、不改变研究方向结论，也不创建模拟决策。任务执行器将由后续数据适配器接入，
+本地计划可以由 macOS `launchd`、cron 或其他定时器周期调用。
+
 用户确认后，才可从 `REVIEWABLE` 研究报告创建不可覆盖的模拟决策快照：
 
 ```bash

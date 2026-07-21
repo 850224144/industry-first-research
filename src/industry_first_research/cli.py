@@ -49,6 +49,12 @@ from .adversarial_review import (
 from .research_report import ResearchReportError, build_research_report
 from .research_pipeline import build_research_pipeline
 from .incremental_update import IncrementalUpdateError, build_incremental_update
+from .scheduler import (
+    SchedulerError,
+    build_default_schedule,
+    build_scheduler_plan,
+    build_scheduler_state,
+)
 from .decision_snapshot import DecisionSnapshotError, build_decision_snapshot
 from .attribution import AttributionError, build_attribution_report
 from .manual_evidence import (
@@ -426,6 +432,26 @@ def main() -> None:
         "--output-dir", default="data/company_incremental_updates", dest="output_dir"
     )
     incremental_update.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    schedule_init = subparsers.add_parser(
+        "schedule-init",
+        help="create the bounded local research schedule and state",
+    )
+    schedule_init.add_argument("--schedule-id", default="default", dest="schedule_id")
+    schedule_init.add_argument("--as-of", default="", dest="as_of")
+    schedule_init.add_argument(
+        "--output-dir", default="data/scheduler", dest="output_dir"
+    )
+    schedule_plan = subparsers.add_parser(
+        "schedule-plan",
+        help="plan due local refresh tasks and event-triggered scans",
+    )
+    schedule_plan.add_argument("--schedule", required=True, dest="schedule_path")
+    schedule_plan.add_argument("--state", required=True, dest="state_path")
+    schedule_plan.add_argument("--events", default="", dest="events_path")
+    schedule_plan.add_argument("--now", default="", dest="now")
+    schedule_plan.add_argument(
+        "--output-dir", default="data/scheduler", dest="output_dir"
+    )
     decision_snapshot = subparsers.add_parser(
         "decision-snapshot",
         help="create an immutable user-confirmed simulation decision snapshot",
@@ -1100,6 +1126,76 @@ def main() -> None:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["update_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "schedule-init":
+        try:
+            schedule = build_default_schedule(
+                schedule_id=args.schedule_id,
+                as_of=args.as_of,
+            )
+            state = build_scheduler_state(schedule)
+        except SchedulerError as error:
+            parser.error(str(error))
+        store = JsonSnapshotStore(Path(args.output_dir))
+        schedule_path = store.write(f"schedule-{schedule['schedule_id']}", schedule)
+        state_path = store.write(f"state-{schedule['schedule_id']}", state)
+        print(
+            json.dumps(
+                {
+                    "schedule": schedule,
+                    "state": state,
+                    "schedule_path": str(schedule_path),
+                    "state_path": str(state_path),
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+    elif args.command == "schedule-plan":
+        try:
+            schedule = json.loads(
+                Path(args.schedule_path).read_text(encoding="utf-8")
+            )
+            state = json.loads(Path(args.state_path).read_text(encoding="utf-8"))
+            events: list[Mapping[str, object]] = []
+            if args.events_path:
+                events_payload = json.loads(
+                    Path(args.events_path).read_text(encoding="utf-8")
+                )
+                if isinstance(events_payload, Mapping):
+                    events_payload = events_payload.get("events")
+                if not isinstance(events_payload, list):
+                    raise SchedulerError("events input must be an events list")
+                events = events_payload
+            plan, updated_state = build_scheduler_plan(
+                schedule,
+                state,
+                events,
+                now=args.now,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            SchedulerError,
+        ) as error:
+            parser.error(str(error))
+        store = JsonSnapshotStore(Path(args.output_dir))
+        plan_path = store.write(plan["plan_id"], plan)
+        state_path = store.write(f"state-{plan['schedule_id']}", updated_state)
+        print(
+            json.dumps(
+                {
+                    "plan": plan,
+                    "updated_state": updated_state,
+                    "plan_path": str(plan_path),
+                    "state_path": str(state_path),
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
     elif args.command == "decision-snapshot":
         try:
             research_report = json.loads(
