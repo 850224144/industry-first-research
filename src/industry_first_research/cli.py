@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Mapping
 import json
 from pathlib import Path
 
@@ -47,6 +48,7 @@ from .adversarial_review import (
 )
 from .research_report import ResearchReportError, build_research_report
 from .research_pipeline import build_research_pipeline
+from .incremental_update import IncrementalUpdateError, build_incremental_update
 from .decision_snapshot import DecisionSnapshotError, build_decision_snapshot
 from .attribution import AttributionError, build_attribution_report
 from .manual_evidence import (
@@ -406,6 +408,24 @@ def main() -> None:
         "--output-dir", default="data/company_research_pipelines", dest="output_dir"
     )
     research_pipeline.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    incremental_update = subparsers.add_parser(
+        "incremental-update",
+        help="compare new evidence with a prior pipeline and create a new version",
+    )
+    incremental_update.add_argument(
+        "--previous-pipeline", required=True, dest="previous_pipeline_path"
+    )
+    incremental_update.add_argument(
+        "--previous-supplemental", required=True, dest="previous_supplemental_path"
+    )
+    incremental_update.add_argument(
+        "--evidence", required=True, dest="evidence_path"
+    )
+    incremental_update.add_argument("--as-of", default="", dest="as_of")
+    incremental_update.add_argument(
+        "--output-dir", default="data/company_incremental_updates", dest="output_dir"
+    )
+    incremental_update.add_argument("--snapshot-id", default="", dest="snapshot_id")
     decision_snapshot = subparsers.add_parser(
         "decision-snapshot",
         help="create an immutable user-confirmed simulation decision snapshot",
@@ -1044,6 +1064,41 @@ def main() -> None:
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["pipeline_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "incremental-update":
+        try:
+            previous_pipeline = json.loads(
+                Path(args.previous_pipeline_path).read_text(encoding="utf-8")
+            )
+            previous_supplemental = json.loads(
+                Path(args.previous_supplemental_path).read_text(encoding="utf-8")
+            )
+            evidence_payload = json.loads(
+                Path(args.evidence_path).read_text(encoding="utf-8")
+            )
+            if isinstance(evidence_payload, Mapping):
+                evidence_records = evidence_payload.get("records")
+            else:
+                evidence_records = evidence_payload
+            if not isinstance(evidence_records, list):
+                raise IncrementalUpdateError("evidence input must be a records list")
+            report = build_incremental_update(
+                previous_pipeline,
+                previous_supplemental,
+                evidence_records,
+                as_of=args.as_of,
+                snapshot_id=args.snapshot_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            IncrementalUpdateError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["update_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "decision-snapshot":
         try:

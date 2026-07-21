@@ -313,6 +313,21 @@ in order. The output keeps every stage snapshot under `stages` and provides `sta
 Missing evidence remains `PARTIAL`, `INSUFFICIENT`, or `BLOCKED`; the pipeline never promotes
 a `WATCH` item or creates an investment conclusion.
 
+For a prior pipeline, compare and apply new evidence with:
+
+```text
+python -m industry_first_research incremental-update \
+  --previous-pipeline data/company_research_pipelines/<pipeline>.json \
+  --previous-supplemental data/company_supplemental/<supplemental>.json \
+  --evidence data/supplemental_evidence/<new-records>.json \
+  --as-of YYYY-MM-DD
+```
+
+The update report preserves the old version, classifies evidence changes, records the earliest
+affected module and creates a new bounded pipeline version. Evidence IDs are immutable. The
+current executor uses a full-chain fallback after impact planning, while keeping the plan
+ready for future partial recomputation.
+
 After explicit user confirmation, create the immutable simulation decision snapshot:
 
 ```text

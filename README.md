@@ -286,6 +286,20 @@ PYTHONPATH=src python -m industry_first_research research-pipeline \
 该命令只复用现有证据闸门，不自动补事实、不升级 `WATCH`、不生成投资结论；每个阶段
 的完整快照保存在输出中的 `stages`，最终状态在 `final_state`。
 
+对已有研究做增量更新：
+
+```bash
+PYTHONPATH=src python -m industry_first_research incremental-update \
+  --previous-pipeline data/company_research_pipelines/<pipeline>.json \
+  --previous-supplemental data/company_supplemental/<supplemental>.json \
+  --evidence data/supplemental_evidence/<new-records>.json \
+  --as-of 2026-07-21
+```
+
+该命令保留旧版本，检查证据 ID 是否被篡改，识别新增/变化/冲突字段并映射受影响模块。
+当前阶段会先生成增量影响计划，再完整重跑有限公司研究链路；不会静默覆盖旧结论、自动改变
+方向性判断或创建模拟决策。
+
 用户确认后，才可从 `REVIEWABLE` 研究报告创建不可覆盖的模拟决策快照：
 
 ```bash
