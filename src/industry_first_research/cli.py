@@ -71,6 +71,11 @@ from .simulation_portfolio import (
     build_simulation_portfolio,
     replay_simulation_portfolio,
 )
+from .opportunity_candidate import (
+    OpportunityCandidateError,
+    build_opportunity_candidate,
+    build_opportunity_scan,
+)
 from .manual_evidence import (
     ManualEvidenceTemplateError,
     build_manual_evidence_template,
@@ -595,6 +600,23 @@ def main() -> None:
         "--output-dir", default="data/simulation_portfolio_replays", dest="output_dir"
     )
     portfolio_replay.add_argument("--replay-id", default="", dest="replay_id")
+    opportunity_candidate = subparsers.add_parser(
+        "opportunity-candidate",
+        help="evaluate one industry-first opportunity candidate without a total score",
+    )
+    opportunity_candidate.add_argument("--input", required=True, dest="input_path")
+    opportunity_candidate.add_argument(
+        "--output-dir", default="data/opportunity_candidates", dest="output_dir"
+    )
+    opportunity_candidate.add_argument("--candidate-id", default="", dest="candidate_id")
+    opportunity_scan = subparsers.add_parser(
+        "opportunity-scan",
+        help="evaluate a bounded opportunity candidate scan and retain an empty result",
+    )
+    opportunity_scan.add_argument("--input", required=True, dest="input_path")
+    opportunity_scan.add_argument(
+        "--output-dir", default="data/opportunity_scans", dest="output_dir"
+    )
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -869,6 +891,88 @@ def main() -> None:
                 "read_only": True,
                 "execution_enabled": False,
                 "status_counts": _light_profile_status_counts(scan),
+            },
+        }
+        opportunity_candidates = []
+        for industry_id, candidates in scan.company_pools.items():
+            industry = next(
+                (item for item in scan.selected_industries if item.industry_id == industry_id),
+                None,
+            )
+            for candidate in candidates:
+                candidate_assessments = (
+                    candidate.metadata.get("opportunity_assessments") or {}
+                )
+                cycle_assessment = candidate_assessments.get("cycle_reversal") or {}
+                screening_inputs = candidate.metadata.get("screening_inputs") or {}
+                survival_value = screening_inputs.get("survival")
+                evidence_refs = [
+                    str(candidate.source or "").strip(),
+                    str(candidate.light_profile.get("source") or "").strip(),
+                ]
+                evidence_refs = [item for item in evidence_refs if item]
+                opportunity_types = list(industry.opportunity_types) if industry else []
+                candidate_payload = {
+                    "schema_version": "opportunity-candidate-input.v1",
+                    "as_of": as_of,
+                    "candidate": {
+                        "candidate_id": f"{industry_id}-{candidate.company_id}",
+                        "company_id": candidate.company_id,
+                        "display_name": candidate.display_name,
+                        "industry_id": industry_id,
+                    },
+                    "opportunity_types": opportunity_types,
+                    "dimensions": {
+                        "downside_protection": {
+                            "status": "PARTIAL" if survival_value else "NOT_EVALUABLE",
+                            "survival_gate_pass": (
+                                None
+                                if survival_value is None
+                                else survival_value in {"strong", "adequate"}
+                            ),
+                            "evidence_refs": evidence_refs,
+                        },
+                        "inflection_evidence": {
+                            "status": "PARTIAL" if cycle_assessment.get("status") in {"WATCH", "PASS"} else "NOT_EVALUABLE",
+                            "independent_signal_types": 0,
+                            "normal_update_cycles": 0,
+                            "evidence_refs": evidence_refs,
+                        },
+                        "profit_convexity": {"status": "NOT_EVALUABLE", "evidence_refs": []},
+                        "expectation_gap": {"status": "NOT_EVALUABLE", "not_obviously_overpriced": False, "evidence_refs": []},
+                    },
+                    "hard_gates": {
+                        "identity": {"status": "PASS" if candidate.company_id and candidate.display_name else "BLOCKED", "evidence_refs": evidence_refs},
+                        "company_light_data": {"status": "PASS" if candidate.light_profile.get("status") == "READY" else "INSUFFICIENT", "evidence_refs": evidence_refs},
+                    },
+                    "clocks": {
+                        "industry_clock": {"state": industry.state.value if industry else "UNKNOWN", "evidence_refs": []},
+                        "company_clock": {"state": "SURVIVAL_SECURE" if screening_inputs.get("survival") in {"strong", "adequate"} else "UNKNOWN", "evidence_refs": evidence_refs},
+                        "market_clock": {"state": "UNKNOWN", "evidence_refs": []},
+                    },
+                    "evidence_refs": evidence_refs,
+                    "deep_research": {"complete": candidate.data_tier.value == "AI_DEEP"},
+                }
+                opportunity_candidates.append(build_opportunity_candidate(candidate_payload))
+        payload["opportunity_candidates"] = opportunity_candidates
+        payload["opportunity_discovery"] = {
+            "schema_version": "opportunity-scan.v1",
+            "candidate_count": len(opportunity_candidates),
+            "items": opportunity_candidates,
+            "state_counts": {
+                state: sum(1 for item in opportunity_candidates if item["status"] == state)
+                for state in ("DISCOVERED", "WATCH", "CANDIDATE", "REVIEWABLE", "REJECTED", "EXPIRED")
+            },
+            "empty_result": not any(
+                item["status"] in {"CANDIDATE", "REVIEWABLE"}
+                for item in opportunity_candidates
+            ),
+            "policy": {
+                "derived_from_existing_discovery": True,
+                "full_market_company_data": False,
+                "not_investment_conclusion": True,
+                "read_only": True,
+                "execution_enabled": False,
             },
         }
         JsonSnapshotStore(Path(args.output_dir)).write(
@@ -1589,6 +1693,38 @@ def main() -> None:
         JsonSnapshotStore(Path(args.output_dir)).write(
             report["replay_id"], report
         )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "opportunity-candidate":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = build_opportunity_candidate(payload, candidate_id=args.candidate_id)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            OpportunityCandidateError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(
+            report["candidate_id"], report
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "opportunity-scan":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = build_opportunity_scan(payload)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            OpportunityCandidateError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["scan_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "evidence-template":
         try:

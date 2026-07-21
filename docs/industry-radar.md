@@ -72,6 +72,31 @@ industry. They are intentionally independent. The command runs cross-source indu
 selection first, resolves source-specific industry IDs, then loads bounded company pools
 and LIGHT facts only for selected industries.
 
+The discovery snapshot also contains a derived `opportunity_discovery` view. It preserves the four
+dimensions (`downside_protection`, `inflection_evidence`, `profit_convexity`, `expectation_gap`),
+the three clocks, hard-gate results, missing evidence, candidate state, and rejection records.
+Missing LIGHT evidence remains `NOT_EVALUABLE` rather than becoming a rejection. This thin layer
+reuses the existing radar, company-pool, and screening results; it does not load full-market company
+data or create an investment conclusion or simulation record.
+
+For a manually assembled four-dimension evidence package, evaluate one candidate or a bounded scan:
+
+```text
+python -m industry_first_research opportunity-candidate \
+  --input data/opportunity_candidate_inputs/<candidate>.json \
+  --output-dir data/opportunity_candidates
+
+python -m industry_first_research opportunity-scan \
+  --input data/opportunity_candidate_inputs/<scan>.json \
+  --output-dir data/opportunity_scans
+```
+
+`CANDIDATE` requires passed survival/governance gates, at least two independent leading-signal types
+across two normal update cycles, and an expectation gap that is not obviously overpriced.
+`REVIEWABLE` additionally requires product/profit-source review, survival stress testing, reverse
+valuation, and adversarial review. Empty scans, rejected candidates, and re-entry conditions remain
+auditable; no state is an investment conclusion.
+
 With `--with-light-data`, the company pool first reads Tonghuashun LIGHT fields. If
 `listing_market` is missing, it performs a bounded Eastmoney company-survey lookup and
 accepts the value only when the returned company code matches the candidate. The field

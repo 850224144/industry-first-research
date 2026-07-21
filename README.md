@@ -84,6 +84,27 @@ PYTHONPATH=src python -m industry_first_research discover --max-selected-industr
 `discover` 默认只读取每个行业源的前 50 条行业雷达记录；可用 `--radar-limit` 调整雷达上限。
 它与每个入选行业的公司池大小 `--company-pool-size` 独立，仍然不会下载全市场个股深度数据。
 
+`discover` 输出还包含派生的 `opportunity_discovery` 候选视图，保留下行保护、拐点证据、利润弹性、
+未充分定价四维，行业/公司/市场三个时钟，硬闸门、缺口、候选状态和淘汰记录。LIGHT 资料缺失
+保持为 `NOT_EVALUABLE`，不会被误判为失败。该层复用现有雷达、公司池和筛选结果，不加载全市场
+公司深度数据，也不生成投资结论或模拟记录。
+
+手工准备完整四维证据后，可单独评估候选或一轮有界扫描：
+
+```bash
+PYTHONPATH=src python -m industry_first_research opportunity-candidate \
+  --input data/opportunity_candidate_inputs/<candidate>.json \
+  --output-dir data/opportunity_candidates
+
+PYTHONPATH=src python -m industry_first_research opportunity-scan \
+  --input data/opportunity_candidate_inputs/<scan>.json \
+  --output-dir data/opportunity_scans
+```
+
+`CANDIDATE` 要求生存/治理闸门通过、至少两类独立领先信号覆盖两个正常更新周期，且估值未明显透支；
+`REVIEWABLE` 还要求产品盈利来源、生存压力测试、反向估值和对抗审查完成。空集、淘汰对象和重新
+进入条件均保留，状态不是投资结论。
+
 对公司池的 LIGHT 资料做只读完整度筛选：
 
 ```bash
