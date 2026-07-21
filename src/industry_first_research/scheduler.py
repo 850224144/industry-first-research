@@ -392,6 +392,7 @@ def _ensure_task(
         "trigger": str(job["trigger"]),
         "event_id": str(event.get("event_id") or "") if event else "",
         "event_type": str(event.get("event_type") or "") if event else "",
+        "event": deepcopy(dict(event)) if event else {},
         "status": "PENDING",
         "attempts": 0,
         "max_attempts": int(job.get("max_attempts") or 1),
@@ -522,7 +523,10 @@ def _normalise_event(raw_event: Mapping[str, Any]) -> dict[str, Any]:
         "severity": str(raw_event.get("severity") or "NORMAL"),
         "evidence_ids": [str(value) for value in raw_event.get("evidence_ids") or []],
         "payload_ref": str(raw_event.get("payload_ref") or ""),
+        "payload": deepcopy(dict(raw_event.get("payload") or {})),
     }
+    if not isinstance(raw_event.get("payload") or {}, Mapping):
+        raise SchedulerError("event payload must be an object")
     if not event_id:
         event_id = "event-" + _event_fingerprint(base)[:20]
     return {"event_id": event_id, **base}
@@ -686,6 +690,7 @@ def _event_fingerprint(event: Mapping[str, Any]) -> str:
             "severity",
             "evidence_ids",
             "payload_ref",
+            "payload",
         )
     }
     return hashlib.sha256(

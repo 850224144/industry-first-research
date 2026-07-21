@@ -61,6 +61,7 @@ from .tracking import (
     build_holding_thesis_check,
     build_research_version_comparison,
 )
+from .scheduled_tasks import LocalScheduledTaskRunner, ScheduledTaskRunnerError
 from .decision_snapshot import DecisionSnapshotError, build_decision_snapshot
 from .attribution import AttributionError, build_attribution_report
 from .manual_evidence import (
@@ -457,6 +458,19 @@ def main() -> None:
     schedule_plan.add_argument("--now", default="", dest="now")
     schedule_plan.add_argument(
         "--output-dir", default="data/scheduler", dest="output_dir"
+    )
+    schedule_run = subparsers.add_parser(
+        "schedule-run",
+        help="execute a planned local refresh through bounded read-only adapters",
+    )
+    schedule_run.add_argument("--state", required=True, dest="state_path")
+    schedule_run.add_argument("--plan", required=True, dest="plan_path")
+    schedule_run.add_argument("--now", default="", dest="now")
+    schedule_run.add_argument("--output-root", default="data", dest="output_root")
+    schedule_run.add_argument(
+        "--alias-file",
+        default="docs/industry_aliases.v1.json",
+        dest="alias_file",
     )
     freshness = subparsers.add_parser(
         "freshness",
@@ -1233,6 +1247,33 @@ def main() -> None:
                 indent=2,
             )
         )
+    elif args.command == "schedule-run":
+        try:
+            state = json.loads(Path(args.state_path).read_text(encoding="utf-8"))
+            plan = json.loads(Path(args.plan_path).read_text(encoding="utf-8"))
+            runner = LocalScheduledTaskRunner(
+                data_root=args.output_root,
+                alias_file=args.alias_file,
+            )
+            execution = runner.execute(state, plan, now=args.now)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ScheduledTaskRunnerError,
+        ) as error:
+            parser.error(str(error))
+        execution_id = f"scheduler-execution-{execution['plan_id']}"
+        execution["execution_id"] = execution_id
+        JsonSnapshotStore(Path(args.output_root) / "scheduler" / "executions").write(
+            execution_id, execution
+        )
+        JsonSnapshotStore(Path(args.output_root) / "scheduler").write(
+            f"state-{execution['state']['schedule_id']}", execution["state"]
+        )
+        print(json.dumps(execution, ensure_ascii=False, indent=2))
     elif args.command == "freshness":
         try:
             supplemental_report = json.loads(

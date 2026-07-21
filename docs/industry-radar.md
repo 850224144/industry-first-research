@@ -122,6 +122,19 @@ and degraded/final-failure states. It is read-only and does not create a decisio
 The plan can be invoked by a local macOS `launchd` or cron job. Source handlers remain separate
 from scheduling so a source failure can degrade the affected task without changing conclusions.
 
+Execute a saved plan with the existing bounded adapters:
+
+```text
+python -m industry_first_research schedule-run \
+  --state data/scheduler/state-default.json \
+  --plan data/scheduler/<scheduler-plan>.json \
+  --output-root data
+```
+
+The runner writes radar snapshots, daily delta summaries, event review records, or a bounded LIGHT
+company pool. It does not invoke deep company research, modify a thesis, create a decision snapshot,
+or place an order.
+
 For continuous tracking, classify evidence freshness:
 
 ```text

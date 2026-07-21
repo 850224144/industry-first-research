@@ -318,8 +318,20 @@ PYTHONPATH=src python -m industry_first_research schedule-plan \
 ```
 
 调度器只负责计划、去重、范围约束、重试和降级留痕；不下载全市场深度数据、不调用
-网页 AI、不改变研究方向结论，也不创建模拟决策。任务执行器将由后续数据适配器接入，
-本地计划可以由 macOS `launchd`、cron 或其他定时器周期调用。
+网页 AI、不改变研究方向结论，也不创建模拟决策。`schedule-run` 通过现有数据适配器执行
+受限任务，本地计划可以由 macOS `launchd`、cron 或其他定时器周期调用。
+
+执行已生成的本地任务计划：
+
+```bash
+PYTHONPATH=src python -m industry_first_research schedule-run \
+  --state data/scheduler/state-default.json \
+  --plan data/scheduler/<scheduler-plan>.json \
+  --output-root data
+```
+
+执行器复用现有行业雷达和公司池适配器；每日增量只生成行业趋势与候选容量摘要，事件任务
+只生成受影响模块的待复核记录，公司池刷新只加载 10-30 家 LIGHT 数据，不自动进入深研。
 
 检查证据新鲜度：
 
