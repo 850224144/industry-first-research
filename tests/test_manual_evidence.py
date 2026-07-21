@@ -45,6 +45,32 @@ def test_manual_template_rejects_unknown_company():
         build_manual_evidence_template(queue_report(), company_ids=["999999"])
 
 
+def test_deep_company_profile_reuses_all_research_stage_fields():
+    template = build_manual_evidence_template(
+        queue_report(), company_ids=["300317"], profile="deep-company"
+    )
+
+    assert template["field_profile"] == "deep-company"
+    assert template["record_count"] == len(template["fields"])
+    assert {
+        "company_scope",
+        "product_list",
+        "application_mapping",
+        "demand_evidence",
+        "cycle_state",
+        "competitive_matrix",
+        "stress_tests",
+        "valuation_method",
+        "counterevidence",
+        "next_check_at",
+    }.issubset(template["fields"])
+
+
+def test_manual_template_rejects_unknown_profile():
+    with pytest.raises(ManualEvidenceTemplateError, match="unsupported field profile"):
+        build_manual_evidence_template(queue_report(), profile="unknown")
+
+
 def test_supplemental_rejects_empty_evidence_values():
     record = {
         "evidence_id": "ev-1",

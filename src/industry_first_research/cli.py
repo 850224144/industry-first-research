@@ -439,6 +439,13 @@ def main() -> None:
         "--field", action="append", default=None, dest="fields"
     )
     evidence_template.add_argument(
+        "--profile",
+        choices=("listing-market", "deep-company"),
+        default="",
+        dest="profile",
+        help="predefined evidence field set; --field can append custom fields",
+    )
+    evidence_template.add_argument(
         "--company-id", action="append", default=None, dest="company_ids"
     )
     evidence_template.add_argument(
@@ -1093,7 +1100,8 @@ def main() -> None:
             queue_report = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
             template = build_manual_evidence_template(
                 queue_report,
-                fields=args.fields or ("listing_market",),
+                fields=args.fields,
+                profile=args.profile,
                 company_ids=args.company_ids,
                 snapshot_id=args.snapshot_id or Path(args.input_path).stem,
             )

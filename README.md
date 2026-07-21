@@ -111,6 +111,20 @@ PYTHONPATH=src python -m industry_first_research evidence-template \
   --field listing_market
 ```
 
+为 1-3 家公司生成完整深研字段模板时，可直接使用预设：
+
+```bash
+PYTHONPATH=src python -m industry_first_research evidence-template \
+  --input data/candidate_queues/<queue>.json \
+  --profile deep-company \
+  --company-id 600519 \
+  --company-id 000858 \
+  --company-id 000568
+```
+
+`deep-company` 复用产品、应用、需求传导、行业处境、周期、竞争、生存、估值和反证模块
+已有字段；模板仍为空白，不能直接作为已核验事实。
+
 The template does not assert a value. Manually verified records must retain the company,
 field, source, date, evidence tier, and verification status. Empty values are rejected;
 `listing_market` cannot be inferred from a stock code or market convention.

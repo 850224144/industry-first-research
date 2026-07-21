@@ -5,6 +5,15 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from .application_mapping import DEFAULT_REQUIRED_FIELDS as APPLICATION_FIELDS
+from .competitive_position import DEFAULT_REQUIRED_FIELDS as COMPETITIVE_FIELDS
+from .cycle_reversal import DEFAULT_REQUIRED_FIELDS as CYCLE_FIELDS
+from .demand_transmission import DEFAULT_REQUIRED_FIELDS as TRANSMISSION_FIELDS
+from .industry_situation import DEFAULT_REQUIRED_FIELDS as INDUSTRY_FIELDS
+from .product_profile import DEFAULT_REQUIRED_FIELDS as PRODUCT_FIELDS
+from .survival_analysis import DEFAULT_REQUIRED_FIELDS as SURVIVAL_FIELDS
+from .valuation_scenarios import DEFAULT_REQUIRED_FIELDS as VALUATION_FIELDS
+
 
 class ManualEvidenceTemplateError(ValueError):
     """Raised when a manual evidence template cannot be generated."""
@@ -12,12 +21,37 @@ class ManualEvidenceTemplateError(ValueError):
 
 TEMPLATE_SCHEMA_VERSION = "company-manual-evidence-template.v1"
 DEFAULT_FIELDS = ("listing_market",)
+FIELD_PROFILES = {
+    "listing-market": DEFAULT_FIELDS,
+    "deep-company": tuple(
+        dict.fromkeys(
+            (
+                "company_scope",
+                "reporting_scope",
+                "key_products",
+                "key_risks",
+                *PRODUCT_FIELDS,
+                *APPLICATION_FIELDS,
+                *TRANSMISSION_FIELDS,
+                *INDUSTRY_FIELDS,
+                *CYCLE_FIELDS,
+                *COMPETITIVE_FIELDS,
+                *SURVIVAL_FIELDS,
+                *VALUATION_FIELDS,
+                "counterevidence",
+                "follow_up_checks",
+                "next_check_at",
+            )
+        )
+    ),
+}
 
 
 def build_manual_evidence_template(
     queue_report: Mapping[str, Any],
     *,
-    fields: Sequence[str] = DEFAULT_FIELDS,
+    fields: Sequence[str] | None = None,
+    profile: str = "",
     company_ids: Sequence[str] | None = None,
     snapshot_id: str = "",
 ) -> dict[str, Any]:
@@ -33,7 +67,7 @@ def build_manual_evidence_template(
     if not isinstance(raw_items, list):
         raise ManualEvidenceTemplateError("queue report has no items list")
 
-    normalised_fields = _normalise_fields(fields)
+    normalised_fields = _resolve_fields(fields, profile)
     requested_ids = _normalise_company_ids(company_ids)
     items = _normalise_items(raw_items, requested_ids)
     if not items:
@@ -66,6 +100,7 @@ def build_manual_evidence_template(
         "input_snapshot_id": str(queue_report.get("input_snapshot_id") or ""),
         "as_of": str(queue_report.get("as_of") or ""),
         "source": str(queue_report.get("source") or ""),
+        "field_profile": profile or "custom",
         "fields": list(normalised_fields),
         "company_ids": [item["company_id"] for item in items],
         "record_count": len(records),
@@ -84,6 +119,29 @@ def build_manual_evidence_template(
         "investment_conclusion": False,
         "execution_enabled": False,
     }
+
+
+def _resolve_fields(
+    fields: Sequence[str] | None, profile: str
+) -> tuple[str, ...]:
+    profile_name = str(profile or "").strip()
+    if profile_name and profile_name not in FIELD_PROFILES:
+        raise ManualEvidenceTemplateError(
+            "unsupported field profile: "
+            + profile_name
+            + "; supported profiles: "
+            + ", ".join(sorted(FIELD_PROFILES))
+        )
+    base = FIELD_PROFILES[profile_name] if profile_name else DEFAULT_FIELDS
+    if fields is None:
+        return _normalise_fields(base)
+    if isinstance(fields, (str, bytes, bytearray)):
+        raise ManualEvidenceTemplateError("fields must be a string list")
+    try:
+        combined = (*base, *fields) if profile_name else tuple(fields)
+    except TypeError as error:
+        raise ManualEvidenceTemplateError("fields must be a string list") from error
+    return _normalise_fields(combined)
 
 
 def _normalise_fields(fields: Sequence[str]) -> tuple[str, ...]:

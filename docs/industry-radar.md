@@ -128,6 +128,11 @@ python -m industry_first_research evidence-template \
   --field listing_market
 ```
 
+For a full company deep-research template, use `--profile deep-company`; it reuses the
+required fields declared by the existing product, application, transmission, industry,
+cycle, competition, survival, and valuation gates. Additional `--field` values may be
+appended. The records remain blank until manually verified.
+
 The template is intentionally blank. Fill a record only after manual verification and
 keep `company_id`, `field`, `source`, `as_of`, `evidence_tier`, and
 `verification_status`. Do not infer `listing_market` from a stock code or market
