@@ -55,6 +55,12 @@ from .scheduler import (
     build_scheduler_plan,
     build_scheduler_state,
 )
+from .tracking import (
+    TrackingError,
+    build_evidence_freshness_report,
+    build_holding_thesis_check,
+    build_research_version_comparison,
+)
 from .decision_snapshot import DecisionSnapshotError, build_decision_snapshot
 from .attribution import AttributionError, build_attribution_report
 from .manual_evidence import (
@@ -451,6 +457,37 @@ def main() -> None:
     schedule_plan.add_argument("--now", default="", dest="now")
     schedule_plan.add_argument(
         "--output-dir", default="data/scheduler", dest="output_dir"
+    )
+    freshness = subparsers.add_parser(
+        "freshness",
+        help="classify supplemental evidence freshness without changing conclusions",
+    )
+    freshness.add_argument("--input", required=True, dest="input_path")
+    freshness.add_argument("--as-of", default="", dest="as_of")
+    freshness.add_argument(
+        "--output-dir", default="data/research_freshness", dest="output_dir"
+    )
+    version_compare = subparsers.add_parser(
+        "compare-versions",
+        help="compare two research versions and preserve conclusion boundaries",
+    )
+    version_compare.add_argument("--previous-pipeline", required=True, dest="previous_pipeline_path")
+    version_compare.add_argument("--current-pipeline", required=True, dest="current_pipeline_path")
+    version_compare.add_argument("--previous-supplemental", default="", dest="previous_supplemental_path")
+    version_compare.add_argument("--current-supplemental", default="", dest="current_supplemental_path")
+    version_compare.add_argument(
+        "--output-dir", default="data/research_version_comparisons", dest="output_dir"
+    )
+    thesis_check = subparsers.add_parser(
+        "thesis-check",
+        help="check a holding thesis against current evidence without committing a new thesis",
+    )
+    thesis_check.add_argument("--thesis", required=True, dest="thesis_path")
+    thesis_check.add_argument("--supplemental", required=True, dest="supplemental_path")
+    thesis_check.add_argument("--previous-supplemental", default="", dest="previous_supplemental_path")
+    thesis_check.add_argument("--as-of", default="", dest="as_of")
+    thesis_check.add_argument(
+        "--output-dir", default="data/holding_thesis_checks", dest="output_dir"
     )
     decision_snapshot = subparsers.add_parser(
         "decision-snapshot",
@@ -1196,6 +1233,89 @@ def main() -> None:
                 indent=2,
             )
         )
+    elif args.command == "freshness":
+        try:
+            supplemental_report = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            report = build_evidence_freshness_report(
+                supplemental_report,
+                as_of=args.as_of,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            TrackingError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "compare-versions":
+        try:
+            previous_pipeline = json.loads(
+                Path(args.previous_pipeline_path).read_text(encoding="utf-8")
+            )
+            current_pipeline = json.loads(
+                Path(args.current_pipeline_path).read_text(encoding="utf-8")
+            )
+            previous_supplemental = None
+            current_supplemental = None
+            if args.previous_supplemental_path:
+                previous_supplemental = json.loads(
+                    Path(args.previous_supplemental_path).read_text(encoding="utf-8")
+                )
+            if args.current_supplemental_path:
+                current_supplemental = json.loads(
+                    Path(args.current_supplemental_path).read_text(encoding="utf-8")
+                )
+            report = build_research_version_comparison(
+                previous_pipeline,
+                current_pipeline,
+                previous_supplemental,
+                current_supplemental,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            TrackingError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["comparison_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "thesis-check":
+        try:
+            thesis = json.loads(Path(args.thesis_path).read_text(encoding="utf-8"))
+            supplemental_report = json.loads(
+                Path(args.supplemental_path).read_text(encoding="utf-8")
+            )
+            previous_supplemental = None
+            if args.previous_supplemental_path:
+                previous_supplemental = json.loads(
+                    Path(args.previous_supplemental_path).read_text(encoding="utf-8")
+                )
+            report = build_holding_thesis_check(
+                thesis,
+                supplemental_report,
+                as_of=args.as_of,
+                previous_supplemental=previous_supplemental,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            TrackingError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["check_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "decision-snapshot":
         try:
             research_report = json.loads(

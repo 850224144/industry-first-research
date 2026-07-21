@@ -321,6 +321,36 @@ PYTHONPATH=src python -m industry_first_research schedule-plan \
 网页 AI、不改变研究方向结论，也不创建模拟决策。任务执行器将由后续数据适配器接入，
 本地计划可以由 macOS `launchd`、cron 或其他定时器周期调用。
 
+检查证据新鲜度：
+
+```bash
+PYTHONPATH=src python -m industry_first_research freshness \
+  --input data/company_supplemental/<supplemental>.json \
+  --as-of 2026-07-21
+```
+
+比较两次研究版本：
+
+```bash
+PYTHONPATH=src python -m industry_first_research compare-versions \
+  --previous-pipeline data/company_research_pipelines/<old-pipeline>.json \
+  --current-pipeline data/company_research_pipelines/<new-pipeline>.json \
+  --previous-supplemental data/company_supplemental/<old-supplemental>.json \
+  --current-supplemental data/company_supplemental/<new-supplemental>.json
+```
+
+检查用户已锁定的持有论文：
+
+```bash
+PYTHONPATH=src python -m industry_first_research thesis-check \
+  --thesis data/holding_theses/<thesis>.json \
+  --supplemental data/company_supplemental/<supplemental>.json \
+  --as-of 2026-07-21
+```
+
+这些命令只生成新鲜度、版本差异和建议论文状态；旧版本不覆盖，论文状态需要用户或后续
+语义复核确认后另建版本，价格下跌本身不会自动判定论文破裂。
+
 用户确认后，才可从 `REVIEWABLE` 研究报告创建不可覆盖的模拟决策快照：
 
 ```bash

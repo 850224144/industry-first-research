@@ -122,6 +122,38 @@ and degraded/final-failure states. It is read-only and does not create a decisio
 The plan can be invoked by a local macOS `launchd` or cron job. Source handlers remain separate
 from scheduling so a source failure can degrade the affected task without changing conclusions.
 
+For continuous tracking, classify evidence freshness:
+
+```text
+python -m industry_first_research freshness \
+  --input data/company_supplemental/<supplemental>.json \
+  --as-of YYYY-MM-DD
+```
+
+Compare two immutable research versions:
+
+```text
+python -m industry_first_research compare-versions \
+  --previous-pipeline data/company_research_pipelines/<old>.json \
+  --current-pipeline data/company_research_pipelines/<new>.json \
+  --previous-supplemental data/company_supplemental/<old>.json \
+  --current-supplemental data/company_supplemental/<new>.json
+```
+
+Check a user-confirmed holding thesis locally:
+
+```text
+python -m industry_first_research thesis-check \
+  --thesis data/holding_theses/<thesis>.json \
+  --supplemental data/company_supplemental/<supplemental>.json \
+  --as-of YYYY-MM-DD
+```
+
+The tracking reports mark `FRESH`, `REFRESH_DUE`, `EXPIRED`, and future-data blocks, explain
+version and field changes, and propose `INTACT / WEAKENING / DAMAGED / BROKEN / EXPIRED` thesis
+states. They do not rewrite an old report, commit a thesis status, create a decision snapshot, or
+treat price movement alone as thesis failure.
+
 Build a supplemental evidence report from a queue and a manually prepared JSON record list:
 
 ```text
