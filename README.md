@@ -274,6 +274,18 @@ PYTHONPATH=src python -m industry_first_research market-structure \
 该步骤只输出多周期趋势、波动、区间位置、确认状态和重绘风险，不输出买卖信号或自动交易；
 期货连续序列还必须保留主力、换月、拼接和复权规则。
 
+并列检查本地结构、`czsc` 和 `chan.py`（外部包为可选依赖）：
+
+```bash
+PYTHONPATH=src python -m industry_first_research market-structure-compare \
+  --input data/market_structure/<input>.json \
+  --output-dir data/market_structure_comparisons
+```
+
+结果分别保存每个实现的版本、状态、结构字段和原始输出哈希。未安装或未配置 runner 的外部
+实现会记录 `PACKAGE_NOT_INSTALLED` 或 `RUNNER_NOT_CONFIGURED`，不影响本地结构结果；实现之间
+出现差异时标记 `DIVERGENT` 并降低置信度，不拼接为共识信号，也不输出自动买卖建议。
+
 估值和市场结构资料完成后，运行对抗审查：
 
 ```bash

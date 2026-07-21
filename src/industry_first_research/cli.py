@@ -42,6 +42,12 @@ from .valuation_scenarios import (
     build_valuation_scenarios_report,
 )
 from .market_structure import MarketStructureError, build_market_structure_report
+from .market_structure_adapters import (
+    ChanPyAdapter,
+    CzscAdapter,
+    MarketStructureAdapterError,
+    build_market_structure_comparison,
+)
 from .adversarial_review import (
     AdversarialReviewError,
     build_adversarial_review_report,
@@ -400,6 +406,17 @@ def main() -> None:
         "--output-dir", default="data/market_structure", dest="output_dir"
     )
     market_structure.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    market_structure_compare = subparsers.add_parser(
+        "market-structure-compare",
+        help="compare local, czsc, and chan.py structure results without trading signals",
+    )
+    market_structure_compare.add_argument("--input", required=True, dest="input_path")
+    market_structure_compare.add_argument(
+        "--output-dir", default="data/market_structure_comparisons", dest="output_dir"
+    )
+    market_structure_compare.add_argument(
+        "--comparison-id", default="", dest="comparison_id"
+    )
     adversarial_review = subparsers.add_parser(
         "adversarial-review",
         help="audit a valuation package for evidence and boundary violations",
@@ -1244,6 +1261,30 @@ def main() -> None:
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "market-structure-compare":
+        try:
+            market_structure_input = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            report = build_market_structure_comparison(
+                market_structure_input,
+                adapters=(CzscAdapter(), ChanPyAdapter()),
+                comparison_id=args.comparison_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            MarketStructureError,
+            MarketStructureAdapterError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(
+            report["comparison_id"], report
+        )
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "adversarial-review":
         try:

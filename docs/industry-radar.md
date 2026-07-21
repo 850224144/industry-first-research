@@ -380,6 +380,20 @@ The snapshot reports multi-timeframe trend, volatility, range position, confirma
 repaint risk only. It emits no buy/sell signal or automatic order; continuous futures series
 must also retain their main-contract, roll, stitching, and adjustment rules.
 
+Compare local structure, `czsc`, and `chan.py` outputs side by side:
+
+```text
+python -m industry_first_research market-structure-compare \
+  --input data/market_structure/<input>.json \
+  --output-dir data/market_structure_comparisons
+```
+
+Each implementation keeps its own version, status, normalized structure fields, and raw-output
+hash. Missing optional packages or unconfigured runners are recorded as
+`PACKAGE_NOT_INSTALLED` or `RUNNER_NOT_CONFIGURED` without blocking the local result. Different
+states become `DIVERGENT` and lower confidence; outputs are never merged into a consensus trading
+signal.
+
 After valuation and optional market-structure inputs are prepared, run adversarial review:
 
 ```text
