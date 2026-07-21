@@ -508,5 +508,29 @@ locked-benchmark return, and excess return. Missing operation-date data or obser
 domestic futures continue through the specific-contract daily settlement ledger and are not mixed
 with stock returns.
 
+Store immutable original-announcement assets and their version chain:
+
+```text
+python -m industry_first_research announcement-asset \
+  --input data/announcement_inputs/<announcement>.json \
+  --raw-content data/announcement_inputs/<original-file> \
+  --output-dir data/announcement_assets
+```
+
+The raw file is copied under `raw/`; the manifest retains subject, document type, source,
+publication/capture times, parser version, content hash, version, and correction/supplement/
+withdrawal relationships. Create a review-only affected-module record:
+
+```text
+python -m industry_first_research announcement-impact \
+  --input data/announcement_assets/<document>-v<version>.json \
+  --research-cutoff YYYY-MM-DDTHH:MM:SS+08:00 \
+  --output-dir data/announcement_impacts
+```
+
+Announcement assets and impact records update the evidence timeline and review queue only; they
+do not overwrite historical research, holding theses, or decision snapshots. A correction published
+after the cutoff is never backfilled into pre-cutoff research.
+
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.

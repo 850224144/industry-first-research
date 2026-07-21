@@ -82,6 +82,11 @@ from .opportunity_candidate import (
     build_opportunity_candidate,
     build_opportunity_scan,
 )
+from .announcement_asset import (
+    AnnouncementAssetError,
+    build_announcement_asset,
+    build_announcement_impact,
+)
 from .manual_evidence import (
     ManualEvidenceTemplateError,
     build_manual_evidence_template,
@@ -634,6 +639,26 @@ def main() -> None:
     opportunity_scan.add_argument(
         "--output-dir", default="data/opportunity_scans", dest="output_dir"
     )
+    announcement_asset = subparsers.add_parser(
+        "announcement-asset",
+        help="store an immutable original announcement manifest and raw-content hash",
+    )
+    announcement_asset.add_argument("--input", required=True, dest="input_path")
+    announcement_asset.add_argument("--raw-content", default="", dest="raw_content_path")
+    announcement_asset.add_argument(
+        "--output-dir", default="data/announcement_assets", dest="output_dir"
+    )
+    announcement_asset.add_argument("--asset-id", default="", dest="asset_id")
+    announcement_impact = subparsers.add_parser(
+        "announcement-impact",
+        help="create a review-only module-impact record from an announcement asset",
+    )
+    announcement_impact.add_argument("--input", required=True, dest="input_path")
+    announcement_impact.add_argument("--research-cutoff", default="", dest="research_cutoff")
+    announcement_impact.add_argument(
+        "--output-dir", default="data/announcement_impacts", dest="output_dir"
+    )
+    announcement_impact.add_argument("--impact-id", default="", dest="impact_id")
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -1766,6 +1791,62 @@ def main() -> None:
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["scan_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "announcement-asset":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            raw_content = None
+            raw_content_uri = ""
+            if args.raw_content_path:
+                source_path = Path(args.raw_content_path)
+                raw_content = source_path.read_bytes()
+                document_id = str(payload.get("document_id") or args.asset_id).strip()
+                version = int(payload.get("version") or 1)
+                raw_target = (
+                    Path(args.output_dir)
+                    / "raw"
+                    / f"{document_id}-v{version}{source_path.suffix or '.bin'}"
+                )
+                raw_target.parent.mkdir(parents=True, exist_ok=True)
+                raw_target.write_bytes(raw_content)
+                raw_content_uri = str(raw_target)
+            report = build_announcement_asset(
+                payload,
+                raw_content=raw_content,
+                raw_content_uri=raw_content_uri,
+                asset_id=args.asset_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            AnnouncementAssetError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(
+            report["document_id"] + "-v" + str(report["version"]), report
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "announcement-impact":
+        try:
+            asset = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = build_announcement_impact(
+                asset,
+                research_cutoff=args.research_cutoff,
+                impact_id=args.impact_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            AnnouncementAssetError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["impact_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "evidence-template":
         try:

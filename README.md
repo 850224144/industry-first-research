@@ -476,6 +476,28 @@ PYTHONPATH=src python -m industry_first_research portfolio-replay \
 `REVIEW_REQUIRED`。该组合账本仅覆盖上市公司全额资金口径；国内期货继续使用具体合约的逐日盯市账本，
 不与股票保证金/全额资金收益混合。
 
+保存不可变原始公告资产和版本链：
+
+```bash
+PYTHONPATH=src python -m industry_first_research announcement-asset \
+  --input data/announcement_inputs/<announcement>.json \
+  --raw-content data/announcement_inputs/<original-file> \
+  --output-dir data/announcement_assets
+```
+
+公告原件复制到 `raw/`，清单保留主体、公告类型、来源、发布时间、抓取时间、解析器版本、内容哈希、
+版本和更正/补充/撤回关系。生成受影响模块的待复核记录：
+
+```bash
+PYTHONPATH=src python -m industry_first_research announcement-impact \
+  --input data/announcement_assets/<document>-v<version>.json \
+  --research-cutoff YYYY-MM-DDTHH:MM:SS+08:00 \
+  --output-dir data/announcement_impacts
+```
+
+公告资产和影响记录只更新证据时间线与待复核模块，不覆盖历史研究、持有论文或决策快照；截止日之后
+发布的更正不会回填到截止日以前的研究。
+
 历史快照达到至少 3 个日期后，可生成只读趋势报告：
 
 ```bash
