@@ -14,6 +14,7 @@ from .eastmoney import EastmoneyAPIError, EastmoneyIndustryRadar
 from .eastmoney_company_survey import EastmoneyCompanySurveyData
 from .industry_aliases import IndustryAliasRegistry
 from .models import CompanyDataTier, IndustryRadarSnapshot, IndustryState
+from .opportunity_tracking import build_opportunity_tracking_report
 from .scheduler import (
     RetryableTaskError,
     execute_scheduler_plan,
@@ -160,6 +161,17 @@ class LocalScheduledTaskRunner:
         )
         report["trigger_task_id"] = str(task.get("task_id") or "")
         report["candidate_delta"] = candidate_summary
+        current_scan, previous_scan = _latest_opportunity_scans(
+            Path(scope.get("opportunity_scan_dir") or self.data_root / "opportunity_scans"),
+            as_of=as_of,
+        )
+        report["opportunity_tracking"] = build_opportunity_tracking_report(
+            current_scan,
+            previous_scan=previous_scan,
+            trend_report=report,
+            candidate_delta=candidate_summary,
+            as_of=as_of,
+        )
         report["resource_audit"] = {
             "industry_only_first": True,
             "candidate_capacity": candidate_summary["candidate_capacity"],
@@ -346,3 +358,32 @@ def _candidate_queue_summary(
             for item in items[:watch_capacity]
         ],
     }
+
+
+def _latest_opportunity_scans(
+    input_dir: Path, *, as_of: str
+) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    """Return the two latest bounded candidate snapshots at or before ``as_of``."""
+
+    snapshots: list[tuple[str, dict[str, Any]]] = []
+    if not input_dir.exists():
+        return None, None
+    for path in sorted(input_dir.glob("*.json")):
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            continue
+        if payload.get("schema_version") not in {
+            "opportunity-scan.v1",
+            "industry-discovery.v1",
+        }:
+            continue
+        snapshot_as_of = str(payload.get("as_of") or "")
+        if snapshot_as_of and snapshot_as_of <= as_of:
+            snapshots.append((snapshot_as_of, payload))
+    snapshots.sort(key=lambda item: item[0])
+    if not snapshots:
+        return None, None
+    current = snapshots[-1][1]
+    previous = snapshots[-2][1] if len(snapshots) > 1 else None
+    return current, previous

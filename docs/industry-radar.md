@@ -160,6 +160,11 @@ The runner writes radar snapshots, daily delta summaries, event review records, 
 company pool. It does not invoke deep company research, modify a thesis, create a decision snapshot,
 or place an order.
 
+The daily delta artifact also contains `opportunity_tracking`, which compares the latest two bounded
+candidate snapshots, their dimension changes, industry trend observations, queue changes, and affected
+modules. Trend or queue movement alone creates a review item and cannot upgrade or downgrade a
+candidate; without a candidate snapshot the report explicitly uses `NO_SNAPSHOT`.
+
 For continuous tracking, classify evidence freshness:
 
 ```text

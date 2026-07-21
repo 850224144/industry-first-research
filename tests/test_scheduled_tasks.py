@@ -97,6 +97,52 @@ def test_radar_task_reuses_provider_and_writes_bounded_snapshot(tmp_path):
     assert snapshot["resource_audit"]["full_market_deep_data"] is False
 
 
+def test_daily_delta_writes_opportunity_tracking_without_inventing_state(tmp_path):
+    radar_dir = tmp_path / "radar"
+    radar_dir.mkdir()
+    for day in ("2026-07-19", "2026-07-20", "2026-07-21"):
+        (radar_dir / f"cross-industry-{day}.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "industry-radar.v1",
+                    "source": {"provider": "cross", "as_of": day},
+                    "items": [
+                        {
+                            "industry_id": "881273",
+                            "display_name": "白酒",
+                            "as_of": day,
+                            "state": "CLEARING",
+                            "evidence_completeness": "CROSS_VALIDATED",
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+    schedule = build_default_schedule()
+    state = build_scheduler_state(schedule)
+    plan, state = build_scheduler_plan(
+        schedule, state, now="2026-07-21T09:00:00+08:00"
+    )
+    task_id = next(
+        task["task_id"] for task in plan["tasks"] if task["task_type"] == "daily_delta_scan"
+    )
+    runner = LocalScheduledTaskRunner(data_root=tmp_path)
+    result = runner.execute(
+        state,
+        {**plan, "task_ids": [task_id]},
+        now="2026-07-21T09:00:00+08:00",
+    )
+
+    assert result["results"][0]["status"] == "SUCCEEDED"
+    report = json.loads(
+        (tmp_path / "scheduled_deltas" / "daily-delta-cross-2026-07-21.json").read_text()
+    )
+    tracking = report["opportunity_tracking"]
+    assert tracking["current_scan_status"] == "NO_SNAPSHOT"
+    assert tracking["state_transition_requires_new_evidence"] is True
+
+
 def test_event_task_writes_affected_module_review_only_record(tmp_path):
     event = {
         "event_id": "event-earnings-1",
