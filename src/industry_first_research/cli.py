@@ -176,6 +176,10 @@ from .futures_fundamentals import (
     FuturesFundamentalsError,
     build_futures_fundamentals_report,
 )
+from .futures_refresh import (
+    FuturesRefreshMappingError,
+    build_futures_fundamentals_input_from_refresh,
+)
 from .futures_tracking import FuturesTrackingError, build_futures_tracking_report
 from .futures_company_exposure import (
     FuturesCompanyExposureError,
@@ -1091,6 +1095,22 @@ def main() -> None:
     )
     futures_fundamentals.add_argument(
         "--snapshot-id", default="", dest="snapshot_id"
+    )
+    futures_input_from_refresh = subparsers.add_parser(
+        "futures-input-from-refresh",
+        help="map an explicit data refresh into a review-only futures fundamentals input",
+    )
+    futures_input_from_refresh.add_argument(
+        "--refresh", required=True, dest="refresh_path"
+    )
+    futures_input_from_refresh.add_argument(
+        "--mapping", required=True, dest="mapping_path"
+    )
+    futures_input_from_refresh.add_argument(
+        "--input-id", default="", dest="input_id"
+    )
+    futures_input_from_refresh.add_argument(
+        "--output-dir", default="data/futures_inputs", dest="output_dir"
     )
     futures_tracking = subparsers.add_parser(
         "futures-tracking",
@@ -3444,6 +3464,32 @@ def main() -> None:
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "futures-input-from-refresh":
+        try:
+            refresh_report = json.loads(
+                Path(args.refresh_path).read_text(encoding="utf-8")
+            )
+            mapping = json.loads(
+                Path(args.mapping_path).read_text(encoding="utf-8")
+            )
+            report = build_futures_fundamentals_input_from_refresh(
+                refresh_report,
+                mapping,
+                input_id=args.input_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            FuturesRefreshMappingError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            report["report_id"], report
+        )
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "futures-tracking":
         try:

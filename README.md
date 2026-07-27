@@ -46,6 +46,7 @@
 - 期货回放已接入统一归因和研究质量评分卡回归：保留保证金口径，不与股票全额资金收益直接相减，并将期货结果表现与事实/状态/模型质量分开评价。
 - 行业适配器配置已扩展到 7 类：通用、周期制造、消费品牌、金融服务、软件/SaaS、医药健康和公用事业；金融服务、公用事业等非物理周期行业不会生成库存/产能周期模型。
 - 商品品种适配器配置已覆盖黑色、能源化工、农产品、有色和新能源材料 5 类，支持 `RB`/`HC`、`SC`、`M`、`CU`/`BC`、`LC`；当前只完成配置契约、目录解析和字段验收，不抓取数据、不产生方向结论。
+- 期货刷新结果已可按显式品种映射转换为 `futures-fundamentals-input.v1`：转换保留刷新哈希、来源、查询 ID、数据哈希和字段路径，映射值默认标为 `UNVERIFIED`，必须经过人工证据闸门后才能进入正式基本面报告。
 - 期货持续跟踪已接入：按交易所/品种/对象类型/具体合约比较已保存的基本面报告，生成不可变变化清单、受影响模块和 `decision_review` 人工复核投影，并关联研究版本；没有历史快照时只输出 `INITIALIZED`/待复核，不产生方向结论。
 - 公开稿最小链路已接入：`public-draft` 从显式哈希锁定的公司/期货报告生成脱敏 Markdown 与 `public-draft.v1` JSON，`validate-public-draft` 校验正文哈希和未发布边界；不联网、不登录、不调用微信公众号接口。
 - 有界数据源刷新已接入：`data-refresh` 只执行显式 `data-source-refresh-input.v1` 查询清单，按交易所/公司披露、东方财富、AKShare、BaoStock 主备路由保存实际返回、失败尝试、截断状态、来源健康、受影响模块、`decision_review` 和研究版本；不配置清单时不发网络请求。
@@ -808,6 +809,19 @@ PYTHONPATH=src python -m industry_first_research futures-fundamentals \
 库存与仓单变化，但不会补齐缺失数据、计算“内在价值”、选主力合约或创建决策快照。缺少现货、
 库存/仓单、基差、期限结构或交割规则时，报告会降级为 `PARTIAL` / `INSUFFICIENT`，并列出补证清单。
 价格情景只是悲观、基准、乐观观察区间；只有具体月份合约且用户后续确认，才可能进入现有模拟决策流程。
+
+将已经完成主备路由的数据刷新结果映射为期货基本面输入：
+
+```bash
+PYTHONPATH=src python -m industry_first_research futures-input-from-refresh \
+  --refresh data/data_source_refreshes/<refresh>.json \
+  --mapping config/futures_fundamentals_refresh_mapping.example.json \
+  --output-dir data/futures_inputs
+```
+
+映射文件中的 `value_path`、`rows_path` 和 `date_path` 都指向来源适配器标准化后的结果，
+不会执行模糊匹配。查询对象必须与映射中的 `variety_id` 一致；失败或其他品种的刷新结果会被拒绝。
+该命令只生成待复核输入，不把原始刷新直接升级为事实、不生成方向结论，也不创建模拟决策。
 
 将已确认的期货品种与上市公司产品暴露连接时，必须提供公司产品、明确角色和证据：
 

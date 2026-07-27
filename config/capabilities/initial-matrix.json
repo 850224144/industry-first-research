@@ -425,6 +425,34 @@
       "validated_at": "2026-07-27"
     },
     {
+      "capability_id": "futures.refresh-to-fundamentals-input",
+      "capability_name": "期货刷新结果到基本面输入的显式映射",
+      "component": "industry-first-research",
+      "component_version": "futures-fundamentals-refresh-mapping-rules.v1",
+      "interfaces": [
+        "build_futures_fundamentals_input_from_refresh",
+        "validate_futures_refresh_mapping",
+        "futures-input-from-refresh CLI"
+      ],
+      "output_quality": "按品种和查询 ID 从标准化刷新结果生成待复核输入，保留刷新/来源/字段路径血缘并覆盖 CU、RB、SC、M、LC 回归",
+      "license_status": "PROJECT_LICENSE_AND_PUBLIC_ENDPOINTS_REVIEW_REQUIRED",
+      "temporal_cutoff_support": "refresh_content_hash_and_mapping_as_of_required",
+      "safety_boundary": "explicit_mapping_only; subject_id_match_required; unverified_by_default; no_fact_promotion; no_directional_conclusion; no_decision_snapshot; no_execution",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "复用 data-source-refresh.v1、DataSourceRouter、futures-fundamentals.v1 和人工证据闸门；新增仅为标准化结果路径映射、品种主体校验和字段级刷新血缘",
+      "capability_gap": "缺少 data-source-refresh.v1 到 futures-fundamentals-input.v1 的显式字段/序列映射协议",
+      "evidence_refs": [
+        "futures_refresh.py",
+        "futures_fundamentals.py",
+        "data_refresh.py",
+        "tests/test_futures_refresh.py",
+        "config/futures_fundamentals_refresh_mapping.example.json",
+        "outputs/投研分析系统-需求文档.md",
+        "outputs/投研分析系统-设计文档.md"
+      ],
+      "validated_at": "2026-07-27"
+    },
+    {
       "capability_id": "evidence.refresh-promotion-gate",
       "capability_name": "刷新快照到统一证据层的人工字段映射闸门",
       "component": "industry-first-research + evidence",

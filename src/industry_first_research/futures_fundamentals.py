@@ -279,6 +279,7 @@ def _normalise_field(field: str, raw: Any, as_of: date) -> dict[str, Any]:
             "as_of": [],
             "evidence_tiers": [],
             "notes": [],
+            "metadata": {},
         }
     if isinstance(raw, Mapping):
         status = str(raw.get("status") or "VERIFIED").upper()
@@ -301,6 +302,7 @@ def _normalise_field(field: str, raw: Any, as_of: date) -> dict[str, Any]:
             "as_of": list(dict.fromkeys(as_of_values)),
             "evidence_tiers": _string_list(raw.get("evidence_tiers")),
             "notes": _string_list(raw.get("notes")),
+            "metadata": dict(raw.get("metadata") or {}),
         }
     return {
         "status": "UNVERIFIED",
@@ -311,6 +313,7 @@ def _normalise_field(field: str, raw: Any, as_of: date) -> dict[str, Any]:
         "as_of": [],
         "evidence_tiers": [],
         "notes": ["field was supplied without explicit lineage metadata"],
+        "metadata": {},
     }
 
 

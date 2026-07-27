@@ -30,6 +30,75 @@ def test_checked_in_catalog_contains_all_disclosure_template_families():
     assert all(item["url_contract"]["required_params"] for item in catalog["templates"])
 
 
+def test_checked_in_source_fixtures_cover_all_template_families():
+    catalog = load_template_catalog(CATALOG)
+    fixtures = [
+        (
+            "official_exchange",
+            "official_exchange_a_share.json",
+            "https://exchange.example/notice/exchange-demo-20260430-001",
+            "listed_company",
+            "600438",
+            "exchange-demo-20260430-001",
+            "annual_report",
+        ),
+        (
+            "company_disclosure",
+            "company_disclosure_html.html",
+            "https://company.example/notice/company-demo-20260506-001",
+            "listed_company",
+            "000001",
+            "company-demo-20260506-001",
+            "annual_report",
+        ),
+        (
+            "eastmoney_announcement",
+            "eastmoney_announcement_json.json",
+            "https://eastmoney.example/notice/eastmoney-demo-20260710-001",
+            "listed_company",
+            "300001",
+            "eastmoney-demo-20260710-001",
+            "earnings_preview",
+        ),
+        (
+            "futures_exchange_disclosure",
+            "futures_exchange_html.html",
+            "https://futures.example/notice/futures-demo-20260715-001",
+            "futures_variety",
+            "RB",
+            "futures-demo-20260715-001",
+            "industry_data_release",
+        ),
+    ]
+
+    for (
+        template_id,
+        fixture_name,
+        source_url,
+        subject_type,
+        subject_id,
+        document_id,
+        document_type,
+    ) in fixtures:
+        template = get_template(catalog, template_id)
+        raw = (Path(__file__).parent / "fixtures" / "announcements" / fixture_name).read_bytes()
+        report = parse_announcement_input(
+            {"source_url": source_url, "research_as_of": "2026-07-23"},
+            raw,
+            template,
+            subject_type=subject_type,
+        )
+
+        assert report["status"] == "READY"
+        assert report["subject_type"] == subject_type
+        assert report["subject_id"] == subject_id
+        assert report["document_id"] == document_id
+        assert report["document_type"] == document_type
+        assert report["content_hash"]
+        assert report["field_locators"]
+        assert report["source_attempts"][0]["content_hash"] == report["content_hash"]
+
+
 def test_json_snapshot_is_parsed_with_field_lineage_and_cutoff_metadata():
     template = get_template(load_template_catalog(CATALOG), "official_exchange")
     raw = json.dumps(

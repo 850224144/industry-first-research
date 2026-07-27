@@ -143,6 +143,15 @@ from .financial_model import (
     build_financial_model_report,
     validate_financial_model_report,
 )
+from .futures_fundamentals import (
+    FuturesFundamentalsError,
+    build_futures_fundamentals_report,
+)
+from .futures_refresh import (
+    FuturesRefreshMappingError,
+    build_futures_fundamentals_input_from_refresh,
+    validate_futures_refresh_mapping,
+)
 from .futures_tracking import (
     FuturesTrackingError,
     build_futures_tracking_report,
@@ -320,6 +329,11 @@ __all__ = [
     "FinancialModelError",
     "build_financial_model_report",
     "validate_financial_model_report",
+    "FuturesFundamentalsError",
+    "build_futures_fundamentals_report",
+    "FuturesRefreshMappingError",
+    "build_futures_fundamentals_input_from_refresh",
+    "validate_futures_refresh_mapping",
     "SourceHealthError",
     "build_source_health_snapshot",
     "validate_source_health_snapshot",

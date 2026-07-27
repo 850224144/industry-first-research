@@ -1,0 +1,149 @@
+{
+  "schema_version": "futures-fundamentals-input.v1",
+  "report_id": "fixture-cu-complete",
+  "as_of": "2026-07-20",
+  "source": "fixed-regression-fixture",
+  "fields": {
+    "supply_demand_balance": {
+      "status": "VERIFIED",
+      "value": "balanced",
+      "unit": "CNY/ton",
+      "evidence_ids": ["fixture-supply-demand"],
+      "sources": ["official_exchange"],
+      "as_of": ["2026-07-20"],
+      "evidence_tiers": ["A"]
+    },
+    "production_and_utilization": {
+      "status": "VERIFIED",
+      "value": "utilization 80%",
+      "unit": "CNY/ton",
+      "evidence_ids": ["fixture-production"],
+      "sources": ["official_exchange"],
+      "as_of": ["2026-07-20"],
+      "evidence_tiers": ["A"]
+    },
+    "imports_exports": {
+      "status": "VERIFIED",
+      "value": "net imports stable",
+      "unit": "CNY/ton",
+      "evidence_ids": ["fixture-trade"],
+      "sources": ["official_exchange"],
+      "as_of": ["2026-07-20"],
+      "evidence_tiers": ["A"]
+    },
+    "inventory_by_location": {
+      "status": "VERIFIED",
+      "value": {"social": 100},
+      "unit": "ton",
+      "evidence_ids": ["fixture-inventory"],
+      "sources": ["official_exchange"],
+      "as_of": ["2026-07-20"],
+      "evidence_tiers": ["A"]
+    },
+    "exchange_inventory_and_warrants": {
+      "status": "VERIFIED",
+      "value": {"inventory": 20},
+      "unit": "ton",
+      "evidence_ids": ["fixture-warrants"],
+      "sources": ["official_exchange"],
+      "as_of": ["2026-07-20"],
+      "evidence_tiers": ["A"]
+    },
+    "spot_benchmark": {
+      "status": "VERIFIED",
+      "value": {"price": 100},
+      "unit": "CNY/ton",
+      "evidence_ids": ["fixture-spot"],
+      "sources": ["official_exchange"],
+      "as_of": ["2026-07-20"],
+      "evidence_tiers": ["A"]
+    },
+    "production_and_import_cost": {
+      "status": "VERIFIED",
+      "value": {"cash_cost": 80, "full_cost": 95},
+      "unit": "CNY/ton",
+      "evidence_ids": ["fixture-cost"],
+      "sources": ["official_exchange"],
+      "as_of": ["2026-07-20"],
+      "evidence_tiers": ["A"]
+    },
+    "industry_margin": {
+      "status": "VERIFIED",
+      "value": {"margin": 20},
+      "unit": "CNY/ton",
+      "evidence_ids": ["fixture-margin"],
+      "sources": ["official_exchange"],
+      "as_of": ["2026-07-20"],
+      "evidence_tiers": ["A"]
+    },
+    "basis_and_calendar_spread": {
+      "status": "VERIFIED",
+      "value": "basis stable",
+      "unit": "CNY/ton",
+      "evidence_ids": ["fixture-basis"],
+      "sources": ["official_exchange"],
+      "as_of": ["2026-07-20"],
+      "evidence_tiers": ["A"]
+    },
+    "term_structure": {
+      "status": "VERIFIED",
+      "value": "backwardation",
+      "unit": "CNY/ton",
+      "evidence_ids": ["fixture-term"],
+      "sources": ["official_exchange"],
+      "as_of": ["2026-07-20"],
+      "evidence_tiers": ["A"]
+    },
+    "seasonality": {
+      "status": "VERIFIED",
+      "value": "seasonal demand",
+      "unit": "CNY/ton",
+      "evidence_ids": ["fixture-seasonality"],
+      "sources": ["official_exchange"],
+      "as_of": ["2026-07-20"],
+      "evidence_tiers": ["A"]
+    },
+    "open_interest_and_available_member_positions": {
+      "status": "VERIFIED",
+      "value": {"open_interest": 1000},
+      "unit": "CNY/ton",
+      "evidence_ids": ["fixture-open-interest"],
+      "sources": ["official_exchange"],
+      "as_of": ["2026-07-20"],
+      "evidence_tiers": ["A"]
+    },
+    "delivery_rules_and_warrant_expiry": {
+      "status": "VERIFIED",
+      "value": {"warrant_expiry": "2026-11-30"},
+      "unit": "CNY/ton",
+      "evidence_ids": ["fixture-delivery"],
+      "sources": ["official_exchange"],
+      "as_of": ["2026-07-20"],
+      "evidence_tiers": ["A"]
+    }
+  },
+  "observations": {
+    "spot_price": [{"date": "2026-07-20", "value": 100}],
+    "contract_settlement": [{"date": "2026-07-20", "value": 98, "contract_code": "CU2612"}],
+    "basis": [{"date": "2026-07-20", "value": 2}],
+    "calendar_spread": [{"date": "2026-07-20", "value": 1}],
+    "inventory": [
+      {"date": "2026-07-19", "value": 110},
+      {"date": "2026-07-20", "value": 100}
+    ],
+    "exchange_inventory": [{"date": "2026-07-20", "value": 20}],
+    "registered_warrants": [{"date": "2026-07-20", "value": 8}],
+    "open_interest": [{"date": "2026-07-20", "value": 1000}]
+  },
+  "price_scenarios": {
+    "BEAR": {"low": 70, "high": 90, "evidence_ids": ["fixture-bear"]},
+    "BASE": {"low": 90, "high": 110, "evidence_ids": ["fixture-base"]},
+    "BULL": {"low": 110, "high": 135, "evidence_ids": ["fixture-bull"]}
+  },
+  "assessments": {
+    "variety_bias": "CONDITIONALLY_TIGHT",
+    "contract_relative_value": "NEUTRAL",
+    "conditional_conclusion": "only if inventory remains controlled",
+    "evidence_ids": ["fixture-assessment"]
+  }
+}

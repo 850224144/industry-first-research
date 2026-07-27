@@ -1,0 +1,51 @@
+{
+  "schema_version": "futures-fundamentals-refresh-mapping.v1",
+  "mapping_id": "cu-refresh-example",
+  "variety_id": "CU",
+  "as_of": "2026-07-25",
+  "field_mappings": [
+    {
+      "target": "spot_benchmark",
+      "query_id": "cu-spot-benchmark",
+      "value_path": "data.0",
+      "unit": "CNY/ton"
+    },
+    {
+      "target": "inventory_by_location",
+      "query_id": "cu-inventory",
+      "value_path": "data.0",
+      "unit": "ton"
+    },
+    {
+      "target": "exchange_inventory_and_warrants",
+      "query_id": "cu-exchange-inventory",
+      "value_path": "data.0",
+      "unit": "ton"
+    }
+  ],
+  "observation_mappings": [
+    {
+      "target": "spot_price",
+      "query_id": "cu-spot-benchmark",
+      "rows_path": "data",
+      "date_path": "date",
+      "value_path": "price",
+      "unit": "CNY/ton"
+    },
+    {
+      "target": "inventory",
+      "query_id": "cu-inventory",
+      "rows_path": "data",
+      "date_path": "date",
+      "value_path": "inventory",
+      "unit": "ton"
+    }
+  ],
+  "policy": {
+    "paths_are_post_normalization": true,
+    "manual_evidence_confirmation_required": true,
+    "automatic_fact_promotion": false,
+    "directional_conclusion": false,
+    "execution_enabled": false
+  }
+}
