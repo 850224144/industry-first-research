@@ -6,6 +6,8 @@ from collections import Counter
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from .company_scope import CompanyScopeError, normalize_scope_reports, scope_item_for_company
+
 
 class ProductProfileError(ValueError):
     """Raised when a product profile cannot be derived safely."""
@@ -34,6 +36,7 @@ _SUPPLEMENTAL_STATES = {"READY", "PARTIAL", "INSUFFICIENT", "BLOCKED"}
 def build_product_profile_report(
     supplemental_report: Mapping[str, Any],
     *,
+    company_scope_reports: Mapping[str, Mapping[str, Any]] | None = None,
     required_fields: Sequence[str] = DEFAULT_REQUIRED_FIELDS,
     rule_version: str = RULE_VERSION,
     snapshot_id: str = "",
@@ -42,6 +45,10 @@ def build_product_profile_report(
 
     if not isinstance(supplemental_report, Mapping):
         raise ProductProfileError("input supplemental report must be a JSON object")
+    try:
+        scope_reports = normalize_scope_reports(company_scope_reports)
+    except CompanyScopeError as error:
+        raise ProductProfileError(str(error)) from error
     if supplemental_report.get("schema_version") != (
         "company-supplemental-evidence.v1"
     ):
@@ -79,6 +86,7 @@ def build_product_profile_report(
             _build_item(
                 raw_item,
                 company_records,
+                scope_report=scope_reports.get(company_id),
                 required_fields=fields,
                 rule_version=rule_version,
             )
@@ -126,6 +134,7 @@ def _build_item(
     item: Mapping[str, Any],
     records: Sequence[Mapping[str, Any]],
     *,
+    scope_report: Mapping[str, Any] | None = None,
     required_fields: Sequence[str],
     rule_version: str,
 ) -> dict[str, Any]:
@@ -153,6 +162,29 @@ def _build_item(
         field for field in required_product_fields if fields[field]["status"] == "MISSING"
     ]
     scope_status = fields["company_scope"]["status"]
+    scope_projection = None
+    if scope_report is not None:
+        try:
+            scope_projection = scope_item_for_company(scope_report, company_id)
+        except CompanyScopeError as error:
+            raise ProductProfileError(str(error)) from error
+        if scope_projection is None:
+            scope_status = "CONFLICTING"
+        else:
+            scope_state = scope_projection["researchability_state"]
+            scope_status = {
+                "READY": "VERIFIED",
+                "PARTIAL": "UNVERIFIED",
+                "INSUFFICIENT": "MISSING",
+                "BLOCKED": "CONFLICTING",
+            }.get(scope_state, "MISSING")
+            fields["company_scope"] = {
+                "status": scope_status,
+                "values": [scope_state],
+                "evidence_ids": scope_projection["evidence_ids"],
+                "sources": [scope_projection["scope_id"]],
+                "as_of": [str(scope_report.get("as_of") or "")],
+            }
     product_profile_state = _profile_state(
         candidate_state=candidate_state,
         supplemental_state=supplemental_state,
@@ -190,6 +222,7 @@ def _build_item(
         "supplemental_state": supplemental_state,
         "product_profile_state": product_profile_state,
         "scope_state": scope_status,
+        "company_scope": scope_projection,
         "rule_version": rule_version,
         "fields": fields,
         "verified_fields": verified_fields,

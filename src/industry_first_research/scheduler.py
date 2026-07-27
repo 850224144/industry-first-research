@@ -15,10 +15,17 @@ SCHEDULE_RULE_VERSION = "research-scheduler-rules.v1"
 TASK_TYPES = (
     "industry_radar_refresh",
     "daily_delta_scan",
+    "futures_fundamentals_delta_scan",
+    "data_source_refresh",
     "event_triggered_scan",
     "company_pool_refresh",
 )
-_INTERVAL_TASK_TYPES = {"industry_radar_refresh", "daily_delta_scan"}
+_INTERVAL_TASK_TYPES = {
+    "industry_radar_refresh",
+    "daily_delta_scan",
+    "futures_fundamentals_delta_scan",
+    "data_source_refresh",
+}
 _EVENT_TASK_TYPES = {"event_triggered_scan", "company_pool_refresh"}
 _EVENT_TYPES = {
     "announcement_correction",
@@ -97,6 +104,34 @@ def build_default_schedule(*, schedule_id: str = "default", as_of: str = "") -> 
                     "candidate_capacity": 15,
                     "watch_capacity": 60,
                     "deep_research_limit": 3,
+                },
+            },
+            {
+                "job_id": "futures-fundamentals-delta-scan",
+                "task_type": "futures_fundamentals_delta_scan",
+                "enabled": True,
+                "trigger": "interval",
+                "interval_seconds": 86400,
+                "max_attempts": 3,
+                "backoff_seconds": [60, 300, 900],
+                "scope": {
+                    "futures_report_dir": "data/futures_fundamentals",
+                    "futures_report_limit": 50,
+                    "futures_varieties": [],
+                },
+            },
+            {
+                "job_id": "data-source-refresh",
+                "task_type": "data_source_refresh",
+                "enabled": True,
+                "trigger": "interval",
+                "interval_seconds": 86400,
+                "max_attempts": 3,
+                "backoff_seconds": [60, 300, 900],
+                "scope": {
+                    "refresh_manifest_path": "data/source_refresh_manifest.json",
+                    "query_limit": 20,
+                    "row_limit": 500,
                 },
             },
             {
@@ -491,6 +526,7 @@ def _mark_job_failure(state: dict[str, Any], task: Mapping[str, Any], current: d
 
 
 def _execution_result(task: Mapping[str, Any]) -> dict[str, Any]:
+    result = task.get("result") if isinstance(task.get("result"), Mapping) else {}
     return {
         "task_id": str(task["task_id"]),
         "task_type": str(task["task_type"]),
@@ -499,6 +535,14 @@ def _execution_result(task: Mapping[str, Any]) -> dict[str, Any]:
         "result_status": str(task.get("result_status") or ""),
         "last_error": str(task.get("last_error") or ""),
         "degradation": str(task.get("degradation") or ""),
+        "research_version_id": str(result.get("research_version_id") or ""),
+        "research_version_path": str(result.get("research_version_path") or ""),
+        "source_health_snapshot_id": str(
+            result.get("source_health_snapshot_id") or ""
+        ),
+        "source_health_snapshot_path": str(
+            result.get("source_health_snapshot_path") or ""
+        ),
     }
 
 

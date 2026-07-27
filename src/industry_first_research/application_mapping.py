@@ -171,6 +171,7 @@ def _build_item(
 
     return {
         "company_id": company_id,
+        "company_scope": item.get("company_scope"),
         "display_name": str(item.get("display_name") or ""),
         "industry_id": str(item.get("industry_id") or ""),
         "candidate_state": candidate_state,

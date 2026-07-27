@@ -32,6 +32,8 @@ def snapshot(*, subject_type="listed_company", direction="BULLISH"):
         "status": "LOCKED",
         "subject_type": subject_type,
         "subject_id": decision["subject_id"],
+        "research_id": "research-report-001",
+        "research_version_id": "research-version-001",
         "decision": decision,
         "immutable": True,
         "simulation_only": True,
@@ -65,6 +67,7 @@ def test_company_attribution_uses_locked_benchmark_and_observable_components():
     assert report["return_components"]["dividend_return"] == pytest.approx(0.02)
     assert report["return_components"]["cost_return"] == pytest.approx(-0.01)
     assert report["comparison"]["benchmark_id"] == "000300"
+    assert report["research_version_id"] == "research-version-001"
     assert report["policy"]["locked_snapshot_unchanged"] is True
 
 

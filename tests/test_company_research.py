@@ -98,3 +98,31 @@ def test_company_research_does_not_invent_missing_sections():
     assert snapshot.research_status == "INSUFFICIENT"
     assert snapshot.identity is None
     assert len(snapshot.errors) == 3
+
+
+def test_company_research_preserves_company_scope_and_degrades_status():
+    router = DataSourceRouter(
+        [FakeAdapter("akshare", payload={"data": []})],
+        FreeDataSourcePolicy(listed_company_sources=("akshare",)),
+    )
+    scope = {
+        "schema_version": "company-scope.v1",
+        "scope_id": "company-scope-600438",
+        "company_id": "600438.SH",
+        "researchability_state": "PARTIAL",
+        "as_of": "2026-07-18",
+        "field_status": {},
+        "evidence_ids": ["scope-1"],
+        "blockers": [],
+        "unknowns": ["debt_attribution"],
+    }
+    snapshot = CompanyResearchAssembler(router).collect(
+        CompanyResearchQuery(
+            company_id="600438.SH",
+            as_of="2026-07-18",
+            company_scope=scope,
+            identity_query={"required_fields": ["data"]},
+        )
+    )
+    assert snapshot.research_status == "INSUFFICIENT"
+    assert snapshot.company_scope["scope_id"] == "company-scope-600438"

@@ -8,6 +8,7 @@ from industry_first_research.futures_identity import (
     FuturesIdentityError,
     identify_futures_object,
 )
+from industry_first_research.market_registry import MarketRegistry
 
 
 def base(object_type="futures_contract"):
@@ -116,4 +117,35 @@ def test_invalid_component_is_rejected():
     payload = base("continuous_series")
     payload["continuous_series_rule"] = {"components": [{}]}
     with pytest.raises(FuturesIdentityError, match="component 0"):
+        identify_futures_object(payload)
+
+
+def test_futures_identity_locks_market_registry_reference():
+    registry = MarketRegistry(
+        [
+            {
+                "market_id": "SHFE",
+                "display_name": "上海期货交易所",
+                "asset_class": "FUTURES",
+                "currency": "CNY",
+                "timezone": "Asia/Shanghai",
+                "calendar_version": "SHFE-2026-v1",
+            }
+        ],
+        registry_id="test-markets",
+        version="v1",
+    )
+    report = identify_futures_object(base(), market_registry=registry)
+    assert report["market_reference"]["registry_id"] == "test-markets"
+    assert report["calendar_version"] == "SHFE-2026-v1"
+    assert report["policy"]["market_registry_locked"] is True
+
+
+def test_futures_identity_rejects_equity_market_reference():
+    payload = base()
+    payload["market_reference"] = {
+        "schema_version": "market-reference.v1",
+        "market": {"market_id": "SHFE", "asset_class": "EQUITY"},
+    }
+    with pytest.raises(FuturesIdentityError, match="asset_class"):
         identify_futures_object(payload)

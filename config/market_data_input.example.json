@@ -1,0 +1,39 @@
+{
+  "schema_version": "market-data-input.v1",
+  "subject_type": "listed_company",
+  "subject_id": "600438.SH",
+  "display_name": "通威股份",
+  "market": "SSE",
+  "currency": "CNY",
+  "source": "baostock",
+  "source_version": "0.8.8",
+  "timeframe": "daily",
+  "adjustment": "QFQ",
+  "trading_calendar_version": "SSE-2026-v1",
+  "research_as_of": "2026-07-18T15:00:00+08:00",
+  "last_market_at": "2026-07-18T15:00:00+08:00",
+  "raw_file_uri": "data/raw/market/600438-2026-07-18.json",
+  "content_hash": "replace-with-raw-file-sha256",
+  "missing_data_status": "COMPLETE",
+  "corporate_action_status": "APPLIED",
+  "series": {
+    "daily": [
+      {
+        "timestamp": "2026-07-17T15:00:00+08:00",
+        "open": 10.0,
+        "high": 10.5,
+        "low": 9.8,
+        "close": 10.2,
+        "volume": 1000000
+      },
+      {
+        "timestamp": "2026-07-18T15:00:00+08:00",
+        "open": 10.2,
+        "high": 10.7,
+        "low": 10.0,
+        "close": 10.6,
+        "volume": 1200000
+      }
+    ]
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "schema_version": "industry-adapter.v1",
+  "adapter_id": "healthcare",
+  "display_name": "医药与健康",
+  "aliases": ["医药", "医疗", "健康", "医药健康"],
+  "supported_industry_ids": ["pharma", "medical_device", "healthcare", "medical_services"],
+  "supported_industry_names": ["医药", "医疗器械", "医疗服务", "医药健康"],
+  "supported_industry_families": ["healthcare", "pharma"],
+  "business_models": ["创新药", "仿制药", "医疗器械", "医疗服务", "医药流通"],
+  "classification_attributes": {
+    "cyclicality": "NON_CYCLICAL",
+    "asset_intensity": "MIXED",
+    "demand_rigidity": "RELATIVELY_RIGID",
+    "competition_type": "CLINICAL_AND_REGULATORY",
+    "technology_risk": "HIGH",
+    "policy_sensitivity": "HIGH"
+  },
+  "required_metrics": [
+    "pipeline_or_product_approval",
+    "reimbursement_and_tender_status",
+    "volume_price_and_market_share",
+    "gross_margin",
+    "research_and_development_spend",
+    "cash_runway",
+    "receivables_and_inventory",
+    "regulatory_and_quality_risk"
+  ],
+  "valuation_methods": ["rnpv_or_pipeline_value", "normalized_earnings", "three_scenario_cashflow"],
+  "survival_questions": [
+    "研发失败、集采降价或监管事件发生时现金跑道是否足够",
+    "核心产品、适应症或器械注册证能否维持竞争位置",
+    "利润和现金流是否被应收、库存、并购或一次性授权收益扭曲"
+  ],
+  "product_application_questions": [
+    "公司主要依靠哪些药品、器械、服务或渠道赚钱",
+    "产品的临床价值、客户采购理由和替代路线是什么",
+    "研发、注册、准入、放量、收入和利润是否逐级验证"
+  ],
+  "demand_transmission_stages": ["PRECLINICAL_OR_PROTOTYPE", "APPROVED", "REIMBURSEMENT_OR_TENDER", "REVENUE_VALIDATED", "PROFIT_VALIDATED"],
+  "lifecycle_status": "ACTIVE",
+  "acceptance_samples": [
+    {"sample_id": "healthcare-evidence-gated", "description": "医药健康必须区分研发、批准、准入、收入和利润验证，不以概念或单一市场规模推导估值"}
+  ]
+}

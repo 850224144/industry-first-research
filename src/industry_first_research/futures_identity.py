@@ -7,6 +7,8 @@ from datetime import date, datetime
 import re
 from typing import Any
 
+from .market_registry import MarketRegistry, MarketRegistryError
+
 
 FUTURES_INPUT_SCHEMA_VERSION = "futures-object-input.v1"
 FUTURES_IDENTITY_SCHEMA_VERSION = "futures-object-identity.v1"
@@ -44,6 +46,7 @@ def identify_futures_object(
     payload: Mapping[str, Any],
     *,
     identity_id: str = "",
+    market_registry: MarketRegistry | None = None,
 ) -> dict[str, Any]:
     """Validate a futures object without inferring missing exchange metadata."""
 
@@ -63,6 +66,25 @@ def identify_futures_object(
         return _blocked(payload, object_type, f"unsupported domestic futures exchange: {exchange}")
     if not variety_id and not variety_name:
         return _blocked(payload, object_type, "variety_id or variety_name is required")
+
+    market_reference = payload.get("market_reference")
+    if market_registry is not None:
+        try:
+            market_reference = market_registry.reference(exchange)
+        except MarketRegistryError as error:
+            return _blocked(payload, object_type, str(error))
+        if market_reference["market"]["asset_class"] != "FUTURES":
+            return _blocked(payload, object_type, "market registry asset_class is not FUTURES")
+    elif market_reference is not None:
+        if not isinstance(market_reference, Mapping):
+            raise FuturesIdentityError("market_reference must be an object")
+        reference_market = market_reference.get("market")
+        if not isinstance(reference_market, Mapping):
+            raise FuturesIdentityError("market_reference has no market definition")
+        if str(reference_market.get("market_id") or "").upper() != exchange:
+            raise FuturesIdentityError("market_reference market_id does not match futures exchange")
+        if str(reference_market.get("asset_class") or "").upper() != "FUTURES":
+            raise FuturesIdentityError("market_reference asset_class must be FUTURES")
 
     missing: list[str] = []
     warnings: list[str] = []
@@ -125,6 +147,10 @@ def identify_futures_object(
         "status": status,
         "as_of": str(payload["as_of"]),
         "exchange": exchange,
+        "currency": str(payload.get("currency") or (market_reference or {}).get("market", {}).get("currency") or "CNY"),
+        "timezone": str((market_reference or {}).get("market", {}).get("timezone") or "Asia/Shanghai"),
+        "calendar_version": str((market_reference or {}).get("market", {}).get("calendar_version") or payload.get("calendar_version") or ""),
+        "market_reference": dict(market_reference) if isinstance(market_reference, Mapping) else None,
         "variety_id": variety_id,
         "variety_name": variety_name,
         "contract": dict(contract),
@@ -144,6 +170,7 @@ def identify_futures_object(
             "review_only": True,
             "investment_conclusion": False,
             "execution_enabled": False,
+            "market_registry_locked": isinstance(market_reference, Mapping),
         },
         "read_only": True,
         "review_only": True,

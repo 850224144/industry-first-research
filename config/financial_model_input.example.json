@@ -1,0 +1,20 @@
+{
+  "schema_version": "financial-model-input.v1",
+  "report_id": "financial-example-600438",
+  "as_of": "2026-07-23",
+  "items": [
+    {
+      "model_item_id": "financial-600438",
+      "company_id": "600438",
+      "scope_id": "company-scope-600438",
+      "facts": {
+        "revenue": {"value": 0, "status": "UNKNOWN", "evidence_ids": []},
+        "operating_cashflow": {"value": 0, "status": "UNKNOWN", "evidence_ids": []},
+        "cash": {"value": 0, "status": "UNKNOWN", "evidence_ids": []},
+        "debt": {"value": 0, "status": "UNKNOWN", "evidence_ids": []}
+      },
+      "stress_tests": [],
+      "valuation_scenarios": []
+    }
+  ]
+}

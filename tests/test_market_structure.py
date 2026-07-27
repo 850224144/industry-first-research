@@ -77,3 +77,28 @@ def test_continuous_series_requires_locked_rule_and_wrong_schema_is_rejected():
 
     with pytest.raises(MarketStructureError, match="market-structure-input.v1"):
         build_market_structure_report({"schema_version": "other"})
+
+
+def test_market_structure_consumes_source_aware_market_data_snapshot():
+    payload = {
+        "schema_version": "market-data-input.v1",
+        "subject_type": "listed_company",
+        "subject_id": "600438",
+        "display_name": "测试标的",
+        "market": "SSE",
+        "source": "baostock",
+        "source_version": "0.8.8",
+        "research_as_of": "2026-07-25T15:00:00+08:00",
+        "last_market_at": "2026-07-25T15:00:00+08:00",
+        "raw_file_uri": "data/raw/600438.json",
+        "content_hash": "raw-001",
+        "trading_calendar_version": "SSE-2026-v1",
+        "adjustment": "QFQ",
+        "series": {"daily": bars()},
+    }
+    report = build_market_structure_report(
+        {"schema_version": "market-structure-input.v1", "subject_type": "listed_company", "subject_id": "placeholder", "as_of": "2026-07-25T15:00:00+08:00", "timeframes": {"daily": bars()}},
+        market_data_snapshot=payload,
+    )
+    assert report["subject"]["subject_id"] == "600438"
+    assert report["market_data_snapshot_id"].startswith("market-data-")

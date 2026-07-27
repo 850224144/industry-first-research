@@ -1,0 +1,29 @@
+{
+  "schema_version": "futures-simulation-outcome.v1",
+  "contract_series": {
+    "CU2608": [
+      {
+        "date": "2026-08-03",
+        "settlement": 78000,
+        "margin_rate": 0.1,
+        "rule_version": "SHFE-rule-version-at-date",
+        "price_limit_status": "NORMAL",
+        "can_trade": true,
+        "can_exit": true
+      },
+      {
+        "date": "2026-08-04",
+        "settlement": 78200,
+        "margin_rate": 0.1,
+        "rule_version": "SHFE-rule-version-at-date",
+        "price_limit_status": "NORMAL",
+        "can_trade": true,
+        "can_exit": true
+      }
+    ]
+  },
+  "benchmark_series": [
+    {"date": "2026-08-03", "value": 100},
+    {"date": "2026-08-04", "value": 101}
+  ]
+}

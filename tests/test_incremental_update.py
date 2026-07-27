@@ -128,3 +128,73 @@ def test_incremental_update_rejects_mutating_an_immutable_evidence_id():
             [_record("scope-1", "company_scope", "合并主体")],
             as_of="2026-07-21",
         )
+
+
+def test_incremental_update_records_execution_mode_and_lineage():
+    old = _supplemental([_record("scope-1", "company_scope", "上市主体")])
+    previous_pipeline = build_research_pipeline(old)
+    scope = {
+        "schema_version": "company-scope.v1",
+        "scope_id": "company-scope-600519",
+        "company_id": "600519",
+        "researchability_state": "PARTIAL",
+        "as_of": "2026-07-20",
+        "content_hash": "scope-hash",
+        "field_status": {},
+        "evidence_ids": ["scope-ev"],
+        "blockers": [],
+        "unknowns": ["debt_attribution"],
+    }
+    update = build_incremental_update(
+        previous_pipeline,
+        old,
+        [_record("scope-2", "company_scope", "合并主体", "2026-07-21")],
+        as_of="2026-07-21",
+        execution_mode="MANUAL_WEB_AI",
+        company_scope_reports={"600519": scope},
+    )
+    assert update["execution_mode"] == "MANUAL_WEB_AI"
+    assert update["policy"]["manual_web_ai_is_import_only"] is True
+    assert update["lineage"]["company_scope"]["status"] == "REFRESHED"
+    assert update["updated_pipeline"]["company_scope_review"] == "SUPPLIED"
+
+
+def test_incremental_update_reuses_upstream_stages_for_market_structure_only_change():
+    old = _supplemental([_record("scope-1", "company_scope", "上市主体")])
+    previous_pipeline = build_research_pipeline(old, snapshot_id="pipeline-market-old")
+    market_structure = {
+        "schema_version": "market-structure-snapshot.v1",
+        "timeframes": {"daily": {"state": "RANGE"}},
+    }
+
+    update = build_incremental_update(
+        previous_pipeline,
+        old,
+        [],
+        as_of="2026-07-21",
+        market_structure_report=market_structure,
+    )
+
+    plan = update["recompute_plan"]
+    assert plan["strategy"] == "PARTIAL_DOWNSTREAM_CHAIN"
+    assert plan["rerun_from"] == "adversarial_review"
+    assert plan["reused_modules"] == [
+        "product_profile",
+        "application_mapping",
+        "demand_transmission",
+        "industry_situation",
+        "cycle_reversal",
+        "competitive_position",
+        "survival_analysis",
+        "valuation_scenarios",
+    ]
+    assert plan["recomputed_modules"] == ["adversarial_review", "research_report"]
+    assert update["updated_supplemental_id"] == old["report_id"]
+    assert (
+        update["updated_pipeline"]["stages"]["valuation_scenarios"]
+        == previous_pipeline["stages"]["valuation_scenarios"]
+    )
+    assert (
+        update["updated_pipeline"]["stages"]["research_report"]
+        != previous_pipeline["stages"]["research_report"]
+    )

@@ -1,5 +1,21 @@
 # Industry Radar
 
+Before selecting a research route, the local task resolver can normalise a company, industry,
+futures, opportunity-discovery, or thesis-check request:
+
+```text
+python -m industry_first_research resolve-task \
+  --input-text "研究 600438.SH" \
+  --as-of YYYY-MM-DD \
+  --output-dir data/research_tasks
+```
+
+The resolver performs classification only. A bare security code does not imply an exchange unless
+it matches one unique record in an explicit local lightweight security-master snapshot; a company
+name does not bypass exact security-master confirmation, and a futures variety without an exchange
+remains `NEEDS_CONFIRMATION`. The task envelope is immutable, review-only, and always has
+`execution_enabled=false`.
+
 The live industry radar has two read-only adapters: Eastmoney's public industry quote
 endpoint and Tonghuashun's public industry table.
 
@@ -36,7 +52,53 @@ cycle reversal, company quality, valuation, or an investment decision.
 The adapter is intentionally bounded to industry rows. It does not download full-market
 company data, place orders, connect to broker accounts, or use web AI output as evidence.
 
+When an explicit `research-asset-candidate-set.v1` import from `luopan` or `ai-berkshire` is supplied,
+the opportunity discovery command uses that bounded candidate set before its public company-pool
+fallback. Only structured candidate-set imports are accepted. Each candidate keeps source project,
+import ID, evidence IDs, scope, and reuse strategy; unsupported initial markets and duplicates are
+retained in rejection metadata. An upstream report or watchlist is never treated as full-market
+security master data.
+
+Industry classification and analysis contracts are configuration-driven:
+
+```text
+python -m industry_first_research industry-adapters \
+  --directory config/industries/adapters \
+  --output-dir data/industry_adapters
+
+python -m industry_first_research industry-profile \
+  --input data/industry_profile_inputs/<profile>.json \
+  --directory config/industries/adapters \
+  --output-dir data/industry_profiles
+```
+
+The registry includes generic company, cyclical manufacturing, and consumer-brand examples.
+An adapter selects required metrics, valuation methods, survival questions, product/application
+questions, and demand-transmission stages. Unknown profiles fall back to `generic_company` with
+lower confidence. Non-cyclical adapters return no cycle model. Classification is a candidate
+contract rather than a verified fact; product exposure still requires explicit product and
+evidence, and the adapter never fetches data or produces an investment conclusion.
+
 For source diagnostics, `--source eastmoney` and `--source tonghuashun` can be run separately.
+
+## Data-source health
+
+The system also writes an immutable `data-source-health.v1` snapshot. It records each configured
+adapter's type, version, capabilities, availability, and reason when unavailable, then builds a
+primary/fallback/rejected route for `listed_company`, `industry`, `futures_contract`, and
+`announcement` subjects.
+
+```text
+source-health -> data/source_health/<snapshot>.json (immutable)
+real fetch    -> DataSourceAttempt[] + final data snapshot
+research version / scheduler audit -> source_health_snapshot_id
+```
+
+Health is adapter readiness only. It does not prove that a remote endpoint is reachable, returns
+non-empty data, or contains the required fields. The real router fetch must still run and preserve
+every attempt. Missing optional AKShare or BaoStock dependencies are recorded as unavailable and
+do not prevent other configured sources from being tried in order. A health snapshot cannot be
+overwritten; a repeated check uses a new snapshot ID.
 
 To summarize repeated cross-source observations, save snapshots on multiple dates and run:
 
@@ -55,6 +117,62 @@ python -m industry_first_research company-pool --industry-id 881145 --industry-n
 
 This reads only the public industry detail table and records `visible_table_only=true` and
 `full_industry_membership_loaded=false`. It is a candidate list, not company-level research.
+
+Project a selected pool into the lightweight security master:
+
+```text
+python -m industry_first_research security-master \
+  --input data/company_pools/tonghuashun-company-pool-881145-YYYY-MM-DD.json \
+  --output-dir data/security_master
+```
+
+The projection stores only identity, listing/trading status, industry membership, source
+lineage, and the research cutoff. It does not download or accept full-market prices, financials,
+valuation, technical indicators, or announcement text. Membership history is effective-dated
+with `[effective_from, effective_to)` intervals. A `BOUNDED` pool cannot close a prior
+membership merely because the company is absent from this pool; only a declared `FULL_MARKET`
+input can treat absence as an exit signal. A research candidate-set import is retained as a
+boundary rejection and cannot enter the securities master.
+
+Validate the saved snapshot with:
+
+```text
+python -m industry_first_research security-master-validate \
+  --input data/security_master/<snapshot>.json
+```
+
+Before deep company research, create a company-scope snapshot. It keeps the listed
+entity, consolidated group, subsidiaries, associates, unconsolidated assets, and related
+parties separate, and binds product/financial facts to one of those objects:
+
+```text
+python -m industry_first_research company-scope \
+  --input config/company_scope_input.example.json \
+  --output-dir data/company_scopes
+```
+
+Market structure and later replay should consume a source-aware market-data snapshot.
+It records source version, exchange, adjustment, calendar, cutoff, raw-file hash, missing
+data, corporate actions, and continuous-series segments:
+
+```text
+python -m industry_first_research market-data \
+  --input config/market_data_input.example.json \
+  --market-registry config/market_registry.v1.json \
+  --output-dir data/market_data
+```
+
+The registry fixes exchange, asset class, currency, timezone, calendar version, and price
+conventions. A market snapshot can be rejected when its market reference does not match the
+registry version used for the research cutoff.
+
+Pass the saved snapshot to `market-structure` with `--market-data`. A continuous futures
+series remains research-only; simulation must bind a real contract.
+
+The same market snapshot can be supplied to a decision snapshot with repeated
+`--market-data` arguments. The locked record keeps the snapshot IDs and content hashes,
+so later attribution can identify the exact source and adjustment convention used at the
+decision cutoff.
 
 Use `--with-light-data` to add source-bound company name, main business, reported industry,
 and listing market fields. Missing pages or fields are recorded as `UNAVAILABLE` or `PARTIAL`;
@@ -157,8 +275,11 @@ python -m industry_first_research schedule-run \
 ```
 
 The runner writes radar snapshots, daily delta summaries, event review records, or a bounded LIGHT
-company pool. It does not invoke deep company research, modify a thesis, create a decision snapshot,
-or place an order.
+company pool. An event can additionally request a local incremental refresh by explicitly supplying
+the paths to the previous pipeline, previous supplemental evidence, and new evidence records. That
+path reuses the existing incremental builder and writes new immutable supplemental, pipeline, update,
+and research-version artifacts; it never mutates the old version, calls a model, modifies a thesis,
+creates a decision snapshot, or places an order. Events without all three paths remain review-only.
 
 The daily delta artifact also contains `opportunity_tracking`, which compares the latest two bounded
 candidate snapshots, their dimension changes, industry trend observations, queue changes, and affected
@@ -182,6 +303,22 @@ python -m industry_first_research compare-versions \
   --previous-supplemental data/company_supplemental/<old>.json \
   --current-supplemental data/company_supplemental/<new>.json
 ```
+
+Every pipeline and scheduler refresh also creates a lightweight `research-version.v1` manifest. It
+links the research cutoff, prior version, pipeline/evidence/market artifacts, affected modules,
+execution mode, rule versions, and content hashes without copying report bodies. Validate or prepare
+a no-network replay with:
+
+```text
+python -m industry_first_research validate-research-version \
+  --input data/research_versions/<version>.json
+
+python -m industry_first_research replay-research-version \
+  --version data/research_versions/<version>.json
+```
+
+Replay is local-only and read-only. Missing or conflicting artifacts produce `REFERENCE_ONLY` or
+`BLOCKED`; they are never silently fetched or replaced.
 
 Check a user-confirmed holding thesis locally:
 
@@ -428,7 +565,8 @@ To run the complete bounded deep-research chain from one supplemental evidence p
 
 ```text
 python -m industry_first_research research-pipeline \
-  --input data/company_supplemental/<supplemental>.json
+  --input data/company_supplemental/<supplemental>.json \
+  --evidence-bundle data/evidence/<bundle>.json
 ```
 
 It runs product profile, application mapping, demand transmission, industry situation,
@@ -436,6 +574,24 @@ cycle, competitive position, survival, valuation, adversarial review, and struct
 in order. The output keeps every stage snapshot under `stages` and provides `stage_summary`.
 Missing evidence remains `PARTIAL`, `INSUFFICIENT`, or `BLOCKED`; the pipeline never promotes
 a `WATCH` item or creates an investment conclusion.
+
+When supplied, `--evidence-bundle` connects the unified source/evidence layer to the pipeline.
+The pipeline records the bundle ID, evidence manifest hash, bundle status, and cutoff status. It
+does not silently turn free-form bundle content into stage facts; stage gates still require their
+own explicit field evidence. Future or unknown-publication evidence is marked `REVIEW_REQUIRED`
+and cannot backfill an earlier pipeline version.
+
+Validate the platform capability reuse matrix before adding a new module:
+
+```text
+python -m industry_first_research capability-matrix \
+  --input config/capabilities/initial-matrix.json \
+  --output-dir data/capabilities
+```
+
+The matrix records interfaces, output quality, license status, cutoff support, safety boundary,
+reuse decision, and any `capability_gap`. `NEW_DEVELOPMENT` requires an explicit gap; a field,
+schema, or protocol mismatch should normally be handled by a thin adapter.
 
 For a prior pipeline, compare and apply new evidence with:
 
@@ -458,13 +614,17 @@ After explicit user confirmation, create the immutable simulation decision snaps
 python -m industry_first_research decision-snapshot \
   --input data/company_research_reports/<research-report>.json \
   --decision data/decision_inputs/<decision>.json \
+  --evidence-bundle data/evidence/<bundle>.json \
+  --execution-plan data/research_execution/<plan>.json \
   --user-confirmed
 ```
 
 The snapshot locks the subject, cutoff, action, direction, price/quantity/capital assumptions,
-reasons, risks, triggers, invalidators, review date, and benchmark as `LOCKED`. Futures
-snapshots must bind a specific contract rather than a continuous series; revisions create a
-new version, and no broker order or execution is performed.
+reasons, risks, triggers, invalidators, review date, and benchmark as `LOCKED`. When supplied, it
+also locks the evidence bundle ID, evidence manifest hash, research depth, execution mode, and
+execution plan ID; a bundle or plan newer than the decision cutoff is rejected. Futures snapshots
+must bind a specific contract rather than a continuous series; revisions create a new version, and
+no broker order or execution is performed.
 
 After a simulation review is closed, generate a dimensioned research-quality scorecard:
 
@@ -482,6 +642,19 @@ does not use return to prove factual accuracy, and marks missing post-validation
 `NOT_EVALUABLE`. Opportunity-discovery metrics retain empty scans, eliminations, and selection
 bias. The scorecard is read-only and cannot alter a locked decision, research conclusion, or
 execute a trade.
+
+For a process-level opportunity-discovery review, aggregate preserved scans separately:
+
+```text
+python -m industry_first_research opportunity-quality \
+  --input data/opportunity_quality/<quality-input>.json \
+  --output-dir data/opportunity_quality
+```
+
+This report calculates declared scan coverage, watch-to-candidate and candidate-to-deep-research
+rates, state transitions, observed dwell time, and empty-scan frequency. False-positive,
+false-negative, and hard-gate accuracy metrics remain `NOT_EVALUABLE` until a later explicit review
+sample is supplied. The module never uses later returns to rewrite an earlier candidate state.
 
 Combine multiple user-confirmed company operations into a full-cash simulation portfolio:
 
@@ -545,6 +718,77 @@ intrinsic value, emit a trading signal, or create a decision snapshot. Missing s
 warrant, basis, term-structure, or delivery evidence lowers the result to `PARTIAL` or
 `INSUFFICIENT`; continuous series and spot benchmarks remain research-only.
 
+Map explicit futures-company exposures with:
+
+```text
+python -m industry_first_research futures-company-exposure \
+  --futures-report data/futures_fundamentals/<report>.json \
+  --input data/futures_company_exposures/<input>.json \
+  --output-dir data/futures_company_exposures
+```
+
+The `futures-company-exposure-input.v1` contract requires an exact product match and an explicit
+`PRODUCER`, `CONSUMER`, `PROCESSOR`, `TRADER`, or `BILATERAL` role. It records the revenue/cost
+link, pricing lag, inventory effect, hedging policy, transmission assumptions, and evidence IDs.
+An existing `company-product-profile.v1` report can be supplied with `--product-profile`. Industry
+labels alone never create an exposure. Only a verified exact product match can expose a conditional
+directional reading or illustrative scenario bridge; no company profit forecast, target price,
+investment conclusion, or order is generated. A non-`READY` futures report limits the mapping to
+`PARTIAL` at most.
+
+Commodity variety adapters are configuration-driven. List the validated registry with:
+
+```text
+python -m industry_first_research commodity-adapters \
+  --directory config/commodities \
+  --output-dir data/commodity_adapters
+```
+
+Validate one adapter against a futures fundamentals package with:
+
+```text
+python -m industry_first_research commodity-adapter-validate \
+  --directory config/commodities \
+  --adapter CU \
+  --futures-report data/futures_fundamentals/<report>.json \
+  --fundamentals data/futures_inputs/<fundamentals>.json \
+  --output-dir data/commodity_adapter_validations
+```
+
+An adapter defines variety and exchange scope, spot benchmarks, supply/demand indicators,
+inventory/warrant locations, cost and margin components, seasonality, delivery constraints,
+scenario method, and acceptance samples. It is a data contract, not a data fetcher or trading
+model. The first checked-in example is `config/commodities/copper.json`; adding another variety
+should normally add or revise configuration and acceptance samples rather than fork the shared
+fundamentals, evidence, or simulation code.
+
+Reuse the existing local research work trees with the read-only research-asset adapter:
+
+```text
+python -m industry_first_research research-assets \
+  --mode discover \
+  --root . \
+  --identifier NVIDIA \
+  --as-of 2026-07-21 \
+  --output-dir data/research_assets
+```
+
+The adapter indexes `vendor/luopan` and `vendor/ai-berkshire`, recording the source project,
+path, file hash, modification time, research date, upstream version, mapping version, and
+temporal status. A dated asset after the research cutoff remains visible in `excluded_items`
+but is not eligible for reuse. `profile` maps explicit identity/business candidates;
+`candidate-set` imports a bounded watchlist or candidate list; `artifact` creates a manifest-only
+reference; `scorecard` imports only explicit structured scores and never infers a score from prose.
+`validate-identity` compares mapped identity candidates with authoritative source records without
+mutating the source asset.
+
+`DIRECT_REUSE` is limited to candidate identity fields, `REUSE_WITH_CHECK` covers industry,
+business, product, bounded candidates, and structured scorecards, `METHOD_REUSE` covers method
+guides, and `REFERENCE_ONLY` covers valuation, target price, buy/sell views, and external
+conclusions. The `luopan` company pool is representative rather than complete and cannot enter
+the securities master directly. All imported artifacts remain read-only and review-only; they
+cannot create verified facts, investment conclusions, target prices, or orders.
+
 Store immutable original-announcement assets and their version chain:
 
 ```text
@@ -568,6 +812,97 @@ python -m industry_first_research announcement-impact \
 Announcement assets and impact records update the evidence timeline and review queue only; they
 do not overwrite historical research, holding theses, or decision snapshots. A correction published
 after the cutoff is never backfilled into pre-cutoff research.
+
+Map an announcement impact or other event to the saved research-version manifests:
+
+```text
+python -m industry_first_research research-impact-queue \
+  --event data/announcement_impacts/<impact>.json \
+  --versions-dir data/research_versions \
+  --output-dir data/research_impact_queues
+
+python -m industry_first_research validate-research-impact-queue \
+  --input data/research_impact_queues/<queue>.json
+```
+
+The queue matches subject identity and cutoff time. A pre-cutoff event requests a revised version;
+a post-cutoff event requests a next version without backfilling history. An unmatched event remains
+as `NO_MATCHING_VERSION` so an event cannot disappear merely because no report existed yet.
+
+## Unified evidence and lineage
+
+The evidence layer provides one immutable, evidence-only contract for source documents, extracted
+facts, model assumptions, upstream research artifacts, bounded candidate sets, and scorecards. It
+does not produce an investment conclusion or a trading instruction. Build a source manifest first,
+then assemble and optionally reconcile a bounded evidence input:
+
+```text
+python -m industry_first_research source-document \
+  --input data/source_inputs/<document>.json \
+  --raw-content data/source_inputs/<original-file> \
+  --output-dir data/source_documents
+
+python -m industry_first_research evidence \
+  --input data/evidence_inputs/<input>.json \
+  --output-dir data/evidence \
+  --reconcile
+```
+
+Every source document keeps its source name/type, URL or raw URI, issuer/subject, publication and
+capture times, research cutoff, source/parser versions, SHA-256 content hash, and correction chain.
+Every evidence item keeps the metric, value/unit/period, source document version, publication time,
+evidence tier, evidence status, verification status, source locator, and field-level lineage.
+`published_at` is the information-availability clock; `period` is the business period. A fact
+published after `research_as_of` is excluded from that historical bundle and is never backfilled.
+
+The evidence statuses are `verified_fact`, `cross_validated`, `company_claim`, `market_signal`,
+`model_assumption`, and `unknown`. Web AI records remain `C_external_ai_lead` or
+`D_unverified_model_claim` until an explicit independent/manual verification is recorded. A
+reconciliation groups records by the declared subject/metric/period/unit key, retains all source
+values, and never averages disagreement. It may select a value by explicit manual override or
+source priority; unresolved disagreement remains `CONFLICTING` and must lower downstream conclusion
+strength. A new correction or restatement creates a new object and supersedes the old one; it does
+not mutate historical research.
+
+## Research execution and cost audit
+
+Research depth and model execution are orthogonal. Normalize a request and create a bounded local
+execution plan:
+
+```text
+python -m industry_first_research research-request \
+  --input data/research_inputs/<request>.json \
+  --output-dir data/research_execution
+
+python -m industry_first_research research-plan \
+  --input data/research_execution/<request>.json \
+  --output-dir data/research_execution
+```
+
+The plan supports `QUICK`, `STANDARD`, and `DEEP`, independently of `LOCAL_ONLY`, `LLM_ASSISTED`,
+and `MANUAL_WEB_AI`. Data collection, deterministic metrics, market structure calculation,
+valuation formulas, simulation records, and benchmark attribution remain local. Model tasks are
+limited to semantic product/application mapping, industry relationship reasoning, conflict
+explanation, synthesis, and adversarial review. A missing model or exhausted token/cost budget
+degrades to `LOCAL_ONLY`; the plan preserves the last locked conclusion and emits deferred review
+tasks rather than inventing a new semantic conclusion.
+
+Each authorized model call is recorded separately:
+
+```text
+python -m industry_first_research llm-run \
+  --input data/research_execution/<llm-run>.json \
+  --output-dir data/research_execution
+
+python -m industry_first_research execution-audit \
+  --plan data/research_execution/<plan>.json \
+  --runs data/research_execution/<runs>.json \
+  --output-dir data/research_execution
+```
+
+The audit retains research depth, execution mode, trigger, affected modules, model/method version,
+evidence manifest hash, input/output tokens, estimated cost, timestamps, status, and plan violations.
+This protocol records model execution but does not call a model or enable trading.
 
 For offline development, the adapter accepts an injected byte fetcher; see
 `tests/test_eastmoney.py`.

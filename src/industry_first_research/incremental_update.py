@@ -9,12 +9,17 @@ import hashlib
 import json
 from typing import Any
 
-from .research_pipeline import build_research_pipeline
+from .research_pipeline import (
+    build_incremental_research_pipeline,
+    build_research_pipeline,
+)
 from .supplemental_evidence import build_supplemental_evidence_report
+from .company_scope import CompanyScopeError, normalize_scope_reports
 
 
 INCREMENTAL_UPDATE_SCHEMA_VERSION = "company-incremental-update.v1"
 RULE_VERSION = "company-incremental-update-rules.v1"
+_EXECUTION_MODES = {"LOCAL_ONLY", "LLM_ASSISTED", "MANUAL_WEB_AI"}
 
 _STAGE_ORDER = (
     "product_profile",
@@ -158,16 +163,34 @@ def build_incremental_update(
     *,
     as_of: str = "",
     snapshot_id: str = "",
+    execution_mode: str = "LOCAL_ONLY",
+    company_scope_reports: Mapping[str, Mapping[str, Any]] | None = None,
+    market_structure_report: Mapping[str, Any] | None = None,
+    evidence_bundle: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Compare new evidence, identify affected stages, and create a new version.
 
-    The old pipeline and old supplemental report are never mutated. The current
-    implementation reruns the existing bounded chain after producing the impact
-    plan; the plan still records the earliest affected stage so a future executor
-    can replace the full-chain fallback with partial recomputation.
+    The old pipeline and old supplemental report are never mutated. New raw
+    evidence safely starts at ``product_profile``; an independent market
+    structure refresh can reuse upstream stages and start at
+    ``adversarial_review``. The returned plan records whether the update used a
+    partial downstream chain or the bounded full-pipeline fallback.
     """
 
     _validate_pipeline(previous_pipeline)
+    mode = str(execution_mode or "LOCAL_ONLY").strip().upper()
+    if mode not in _EXECUTION_MODES:
+        raise IncrementalUpdateError(
+            "execution_mode must be LOCAL_ONLY, LLM_ASSISTED, or MANUAL_WEB_AI"
+        )
+    try:
+        normalized_scope_reports = normalize_scope_reports(company_scope_reports)
+    except CompanyScopeError as error:
+        raise IncrementalUpdateError(str(error)) from error
+    if market_structure_report is not None and not isinstance(market_structure_report, Mapping):
+        raise IncrementalUpdateError("market_structure_report must be an object")
+    if evidence_bundle is not None and not isinstance(evidence_bundle, Mapping):
+        raise IncrementalUpdateError("evidence_bundle must be an object")
     queue = _queue_from_supplemental(previous_supplemental)
     required_fields = previous_supplemental.get("required_fields") or ()
     if not isinstance(required_fields, list):
@@ -219,20 +242,56 @@ def build_incremental_update(
     )
     updated_queue = {**queue, "as_of": effective_as_of}
     merged_records = [*old_records, *accepted_new_records]
-    merged_supplemental = build_supplemental_evidence_report(
-        updated_queue,
-        merged_records,
-        required_fields=required_fields,
-        snapshot_id=_version_id(
-            previous_pipeline, effective_as_of, snapshot_id, "supplemental"
-        ),
+    if accepted_new_records:
+        merged_supplemental = build_supplemental_evidence_report(
+            updated_queue,
+            merged_records,
+            required_fields=required_fields,
+            snapshot_id=_version_id(
+                previous_pipeline, effective_as_of, snapshot_id, "supplemental"
+            ),
+        )
+    else:
+        # No new evidence means the immutable supplemental input can be reused.
+        # This is what permits a market-structure-only update to skip all
+        # evidence-driven stages without manufacturing a new fact snapshot.
+        merged_supplemental = dict(previous_supplemental)
+
+    partial_market_update = bool(
+        not accepted_new_records
+        and market_structure_report is not None
+        and not normalized_scope_reports
+        and evidence_bundle is None
     )
-    updated_pipeline = build_research_pipeline(
-        merged_supplemental,
-        snapshot_id=_version_id(
-            previous_pipeline, effective_as_of, snapshot_id, "pipeline"
-        ),
-    )
+    if partial_market_update:
+        updated_pipeline = build_incremental_research_pipeline(
+            previous_pipeline,
+            merged_supplemental,
+            rerun_from="adversarial_review",
+            market_structure_report=market_structure_report,
+            snapshot_id=_version_id(
+                previous_pipeline, effective_as_of, snapshot_id, "pipeline"
+            ),
+        )
+        recompute_plan = dict(updated_pipeline.get("incremental_recompute") or {})
+        recompute_plan["strategy"] = "PARTIAL_DOWNSTREAM_CHAIN"
+    else:
+        updated_pipeline = build_research_pipeline(
+            merged_supplemental,
+            market_structure_report=market_structure_report,
+            evidence_bundle=evidence_bundle,
+            company_scope_reports=normalized_scope_reports,
+            snapshot_id=_version_id(
+                previous_pipeline, effective_as_of, snapshot_id, "pipeline"
+            ),
+        )
+        recompute_plan = {
+            "strategy": "FULL_PIPELINE_FALLBACK",
+            "rerun_from": "product_profile" if accepted_new_records else "research_report",
+            "recomputed_modules": list(_STAGE_ORDER),
+            "reused_modules": [],
+            "previous_pipeline_preserved": True,
+        }
 
     company_updates = []
     for item in queue["items"]:
@@ -272,6 +331,7 @@ def build_incremental_update(
         "previous_pipeline_id": str(previous_pipeline.get("pipeline_id") or ""),
         "previous_supplemental_id": str(previous_supplemental.get("report_id") or ""),
         "updated_pipeline_id": str(updated_pipeline.get("pipeline_id") or ""),
+        "research_version_id": "",
         "updated_supplemental_id": str(merged_supplemental.get("report_id") or ""),
         "new_evidence_count": len(accepted_new_records),
         "change_count": sum(change["change_type"] != "DUPLICATE" for change in all_changes),
@@ -279,14 +339,33 @@ def build_incremental_update(
             [change for change in all_changes if change["change_type"] != "DUPLICATE"]
         ),
         "company_updates": company_updates,
-        "execution_mode": "FULL_CHAIN_FALLBACK",
-        "execution_note": "Impact planning is incremental; current stage executor reruns the bounded chain for consistency.",
+        "execution_mode": mode,
+        "execution_note": _execution_note(mode),
+        "deferred_review_modules": sorted(
+            {
+                module
+                for item in company_updates
+                if item["thesis_review_state"] == "REVIEW_REQUIRED"
+                for module in item["affected_modules"]
+            }
+        ),
+        "recompute_plan": recompute_plan,
+        "lineage": _lineage_summary(
+            previous_pipeline,
+            updated_pipeline,
+            normalized_scope_reports,
+            market_structure_report,
+            evidence_bundle,
+        ),
         "updated_supplemental": merged_supplemental,
         "updated_pipeline": updated_pipeline,
         "policy": {
             "old_versions_preserved": True,
             "immutable_evidence_ids": True,
             "candidate_state_preserved": True,
+            "execution_mode_explicit": True,
+            "llm_is_not_called_by_incremental_builder": True,
+            "manual_web_ai_is_import_only": True,
             "automatic_directional_conclusion": False,
             "automatic_decision_snapshot": False,
             "read_only": True,
@@ -307,6 +386,69 @@ def _validate_pipeline(report: Mapping[str, Any]) -> None:
         raise IncrementalUpdateError("previous pipeline must be company-research-pipeline.v1")
     if not isinstance(report.get("stages"), Mapping):
         raise IncrementalUpdateError("previous pipeline has no stages")
+
+
+def _execution_note(mode: str) -> str:
+    return {
+        "LOCAL_ONLY": (
+            "Deterministic evidence gates are refreshed locally; no model call is made. "
+            "Affected modules remain in the review queue until any semantic review is confirmed."
+        ),
+        "LLM_ASSISTED": (
+            "The update is marked for authorized semantic assistance, but this builder does not "
+            "invoke a model; llm_runs must be recorded separately before using model output."
+        ),
+        "MANUAL_WEB_AI": (
+            "The update accepts manually imported web-AI evidence only; it does not log in, browse, "
+            "scrape, or call a web-AI service."
+        ),
+    }[mode]
+
+
+def _lineage_summary(
+    previous_pipeline: Mapping[str, Any],
+    updated_pipeline: Mapping[str, Any],
+    scope_reports: Mapping[str, Mapping[str, Any]],
+    market_structure_report: Mapping[str, Any] | None,
+    evidence_bundle: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    previous_scope_ids = list(previous_pipeline.get("company_scope_ids") or [])
+    current_scope_ids = sorted(
+        str(item.get("scope_id") or "")
+        for item in scope_reports.values()
+        if str(item.get("scope_id") or "")
+    )
+    previous_market_id = str(previous_pipeline.get("market_data_snapshot_id") or "")
+    current_market_id = str(
+        (market_structure_report or {}).get("market_data_snapshot_id") or ""
+    )
+    return {
+        "previous_pipeline_id": str(previous_pipeline.get("pipeline_id") or ""),
+        "updated_pipeline_id": str(updated_pipeline.get("pipeline_id") or ""),
+        "company_scope": {
+            "previous_ids": previous_scope_ids,
+            "current_ids": current_scope_ids,
+            "status": (
+                "REFRESHED"
+                if current_scope_ids
+                else "NOT_SUPPLIED"
+                if not previous_scope_ids
+                else "REVIEW_REQUIRED_PREVIOUS_SCOPE_NOT_REHYDRATED"
+            ),
+        },
+        "market_data": {
+            "previous_id": previous_market_id,
+            "current_id": current_market_id,
+            "status": (
+                "REFRESHED"
+                if current_market_id
+                else "NOT_SUPPLIED"
+                if not previous_market_id
+                else "REVIEW_REQUIRED_PREVIOUS_MARKET_DATA_NOT_REHYDRATED"
+            ),
+        },
+        "evidence_bundle_id": str((evidence_bundle or {}).get("bundle_id") or ""),
+    }
 
 
 def _queue_from_supplemental(report: Mapping[str, Any]) -> dict[str, Any]:

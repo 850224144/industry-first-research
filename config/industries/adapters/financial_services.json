@@ -1,0 +1,44 @@
+{
+  "schema_version": "industry-adapter.v1",
+  "adapter_id": "financial_services",
+  "display_name": "金融服务",
+  "aliases": ["金融", "金融服务", "银行保险"],
+  "supported_industry_ids": ["bank", "insurance", "securities", "financial_services"],
+  "supported_industry_names": ["银行", "保险", "证券", "金融服务"],
+  "supported_industry_families": ["financial_services"],
+  "business_models": ["银行", "保险", "证券", "金融服务"],
+  "classification_attributes": {
+    "cyclicality": "MACRO_SENSITIVE_NON_PHYSICAL",
+    "asset_intensity": "BALANCE_SHEET_INTENSIVE",
+    "demand_rigidity": "MIXED",
+    "competition_type": "LICENSE_AND_BALANCE_SHEET",
+    "technology_risk": "MEDIUM",
+    "policy_sensitivity": "HIGH"
+  },
+  "required_metrics": [
+    "net_interest_margin_or_underwriting_margin",
+    "asset_quality",
+    "credit_cost",
+    "capital_adequacy",
+    "provision_coverage",
+    "fee_income_mix",
+    "liquidity_and_funding",
+    "roe_and_dividend_capacity"
+  ],
+  "valuation_methods": ["pb_roe", "dividend_discount", "three_scenario_cashflow"],
+  "survival_questions": [
+    "资产质量、资本充足率和流动性压力是否可控",
+    "拨备、信用成本和负债成本变化会怎样影响可分配利润",
+    "监管、融资和治理约束下能否保持经营连续性"
+  ],
+  "product_application_questions": [
+    "公司主要通过哪些金融产品、客户和渠道赚钱",
+    "客户选择来自牌照、风险定价、服务网络还是技术效率",
+    "产品收入是否受监管、资本占用和信用周期约束"
+  ],
+  "demand_transmission_stages": ["PRODUCT_LAUNCHED", "CUSTOMER_ADOPTED", "BALANCE_SHEET_VALIDATED", "REVENUE_VALIDATED", "PROFIT_VALIDATED"],
+  "lifecycle_status": "ACTIVE",
+  "acceptance_samples": [
+    {"sample_id": "financial-services-no-physical-cycle", "description": "金融服务不套用库存、现金成本和产能出清模型，改用资产质量、资本和监管指标"}
+  ]
+}

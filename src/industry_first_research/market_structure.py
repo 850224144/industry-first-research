@@ -8,6 +8,8 @@ from math import sqrt
 from statistics import mean
 from typing import Any
 
+from .market_data import MarketDataError, build_market_data_snapshot, extract_market_data_series
+
 
 class MarketStructureError(ValueError):
     """Raised when a market-structure input cannot be checked safely."""
@@ -27,6 +29,7 @@ _POSITION_STATES = {"UPPER_HALF", "MIDDLE", "LOWER_HALF", "UNKNOWN"}
 def build_market_structure_report(
     input_report: Mapping[str, Any],
     *,
+    market_data_snapshot: Mapping[str, Any] | None = None,
     rule_version: str = RULE_VERSION,
     snapshot_id: str = "",
 ) -> dict[str, Any]:
@@ -41,6 +44,24 @@ def build_market_structure_report(
     if not rule_version.strip():
         raise MarketStructureError("rule_version must not be empty")
 
+    if market_data_snapshot is not None:
+        try:
+            snapshot = build_market_data_snapshot(market_data_snapshot)
+            series = snapshot["series"]
+            input_report = {
+                **input_report,
+                "subject_type": snapshot["subject"]["subject_type"],
+                "subject_id": snapshot["subject"]["subject_id"],
+                "display_name": snapshot["subject"].get("display_name") or input_report.get("display_name"),
+                "as_of": snapshot["research_as_of"],
+                "price_series_id": snapshot["snapshot_id"],
+                "adjustment": snapshot["adjustment"],
+                "timeframes": series,
+                "continuous_series_rule": snapshot.get("continuous_series_rule"),
+                "market_data_snapshot_id": snapshot["snapshot_id"],
+            }
+        except MarketDataError as error:
+            raise MarketStructureError(str(error)) from error
     subject = _normalise_subject(input_report)
     as_of = _parse_datetime(input_report.get("as_of"), "as_of")
     raw_timeframes = input_report.get("timeframes")
@@ -80,6 +101,7 @@ def build_market_structure_report(
         "data_cutoff": input_report["as_of"],
         "adjustment": str(input_report.get("adjustment") or "NONE"),
         "continuous_series_rule": input_report.get("continuous_series_rule"),
+        "market_data_snapshot_id": str(input_report.get("market_data_snapshot_id") or ""),
         "timeframes": timeframes,
         "implementation": str(input_report.get("implementation") or IMPLEMENTATION),
         "implementation_version": str(

@@ -130,3 +130,105 @@ def test_revision_requires_reason_and_rejected_candidate_is_blocked():
             common_decision(),
             user_confirmed=True,
         )
+
+
+def test_snapshot_locks_evidence_and_execution_lineage():
+    evidence_bundle = {
+        "schema_version": "evidence-bundle.v1",
+        "bundle_id": "bundle-001",
+        "research_as_of": "2026-07-19",
+        "evidence_ids": ["ev-1", "ev-2"],
+    }
+    execution_plan = {
+        "schema_version": "research-execution-plan.v1",
+        "plan_id": "plan-001",
+        "research_id": "research-001",
+        "research_as_of": "2026-07-19",
+        "effective_depth": "STANDARD",
+        "effective_execution_mode": "LOCAL_ONLY",
+    }
+    decision = common_decision()
+    decision["research_version_id"] = "research-version-001"
+    snapshot = build_decision_snapshot(
+        research_report(),
+        decision,
+        evidence_bundle=evidence_bundle,
+        execution_plan=execution_plan,
+        user_confirmed=True,
+    )
+
+    assert snapshot["evidence_bundle_id"] == "bundle-001"
+    assert snapshot["execution_plan_id"] == "plan-001"
+    assert snapshot["research_version_id"] == "research-version-001"
+    assert snapshot["research_depth"] == "STANDARD"
+    assert snapshot["execution_mode"] == "LOCAL_ONLY"
+    assert len(snapshot["evidence_manifest_hash"]) == 64
+    assert snapshot["policy"]["lineage_locked"] is True
+
+
+def test_snapshot_rejects_lineage_newer_than_decision_cutoff():
+    evidence_bundle = {
+        "schema_version": "evidence-bundle.v1",
+        "bundle_id": "future-bundle",
+        "research_as_of": "2026-07-20",
+        "evidence_ids": [],
+    }
+    with pytest.raises(DecisionSnapshotError, match="after decision data_cutoff"):
+        build_decision_snapshot(
+            research_report(),
+            common_decision(),
+            evidence_bundle=evidence_bundle,
+            user_confirmed=True,
+        )
+
+
+def test_snapshot_locks_company_scope_and_rejects_scope_after_cutoff():
+    scope = {
+        "schema_version": "company-scope.v1",
+        "scope_id": "company-scope-300317",
+        "company_id": "300317",
+        "researchability_state": "PARTIAL",
+        "as_of": "2026-07-19",
+        "content_hash": "scope-hash-001",
+        "field_status": {},
+        "evidence_ids": ["scope-ev-1"],
+        "blockers": [],
+        "unknowns": ["debt_attribution"],
+    }
+    snapshot = build_decision_snapshot(
+        research_report(), common_decision(), company_scope_report=scope, user_confirmed=True
+    )
+    assert snapshot["company_scope_id"] == "company-scope-300317"
+    assert snapshot["company_scope_content_hash"] == "scope-hash-001"
+    scope["as_of"] = "2026-07-20"
+    with pytest.raises(DecisionSnapshotError, match="company_scope_report as_of"):
+        build_decision_snapshot(
+            research_report(), common_decision(), company_scope_report=scope, user_confirmed=True
+        )
+
+
+def test_snapshot_locks_market_data_lineage_and_rejects_future_snapshot():
+    market = {
+        "schema_version": "market-data-input.v1",
+        "subject_type": "listed_company",
+        "subject_id": "300317",
+        "market": "SZSE",
+        "source": "baostock",
+        "source_version": "0.8.8",
+        "research_as_of": "2026-07-19T15:00:00+08:00",
+        "last_market_at": "2026-07-19T15:00:00+08:00",
+        "raw_file_uri": "raw/300317.json",
+        "content_hash": "raw-hash",
+        "trading_calendar_version": "SZSE-2026-v1",
+        "series": {"daily": [{"timestamp": "2026-07-19T15:00:00+08:00", "close": 10}]},
+    }
+    snapshot = build_decision_snapshot(
+        research_report(), common_decision(), market_data_snapshots=[market], user_confirmed=True
+    )
+    assert len(snapshot["market_data_snapshot_ids"]) == 1
+    assert len(snapshot["market_data_snapshot_hashes"]) == 1
+    market["research_as_of"] = "2026-07-20T15:00:00+08:00"
+    with pytest.raises(DecisionSnapshotError, match="market data snapshot"):
+        build_decision_snapshot(
+            research_report(), common_decision(), market_data_snapshots=[market], user_confirmed=True
+        )

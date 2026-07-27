@@ -92,3 +92,52 @@ def test_pipeline_runs_all_stages_and_blocks_without_deep_evidence():
 def test_pipeline_rejects_wrong_input_schema():
     with pytest.raises(ValueError, match="supplemental-evidence.v1"):
         build_research_pipeline({"schema_version": "other", "items": []})
+
+
+def test_pipeline_records_unified_evidence_bundle_cutoff_and_manifest():
+    bundle = {
+        "schema_version": "evidence-bundle.v1",
+        "bundle_id": "bundle-001",
+        "research_as_of": "2026-07-21",
+        "evidence": [],
+        "evidence_ids": ["ev-1", "ev-2"],
+        "excluded_future_evidence_ids": [],
+        "unknown_temporal_evidence_ids": [],
+        "status": "READY",
+        "cutoff_validation": {},
+    }
+    report = build_research_pipeline(
+        supplemental_report(), evidence_bundle=bundle
+    )
+
+    assert report["evidence_bundle_id"] == "bundle-001"
+    assert report["evidence_bundle_review"] == "SUPPLIED"
+    assert report["evidence_cutoff_status"] == "SAFE"
+    assert len(report["evidence_manifest_hash"]) == 64
+
+
+def test_pipeline_accepts_product_profit_bridge_as_optional_reference_stage():
+    bridge = {
+        "schema_version": "product-profit-bridge.v1",
+        "report_id": "product-profit-bridge-001",
+        "as_of": "2026-07-21",
+        "items": [],
+        "investment_conclusion": False,
+    }
+    report = build_research_pipeline(
+        supplemental_report(),
+        product_profit_bridge_report=bridge,
+    )
+
+    assert report["product_profit_bridge_review"] == "SUPPLIED"
+    assert report["product_profit_bridge_id"] == "product-profit-bridge-001"
+    assert report["stages"]["product_profit_bridge"] is bridge
+    assert report["policy"]["product_profit_bridge_is_reference_only"] is True
+
+
+def test_pipeline_rejects_wrong_evidence_bundle_schema():
+    with pytest.raises(ValueError, match="evidence-bundle.v1"):
+        build_research_pipeline(
+            supplemental_report(),
+            evidence_bundle={"schema_version": "other"},
+        )

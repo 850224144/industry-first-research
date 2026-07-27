@@ -14,6 +14,7 @@ from .data_sources import (
     DataSourceRouter,
     RoutedDataResult,
 )
+from .company_scope import CompanyScopeError, scope_item_for_company
 
 
 @dataclass(frozen=True)
@@ -28,6 +29,7 @@ class CompanyResearchQuery:
     financial_query: dict[str, Any] = field(default_factory=dict)
     quote_query: dict[str, Any] = field(default_factory=dict)
     source_names: tuple[str, ...] = ()
+    company_scope: dict[str, Any] | None = None
 
 
 @dataclass
@@ -45,6 +47,7 @@ class CompanyResearchSnapshot:
     source_results: dict[str, dict[str, Any]] = field(default_factory=dict)
     missing_fields: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
+    company_scope: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -63,7 +66,22 @@ class CompanyResearchAssembler:
             products=query.products,
             as_of=query.as_of,
             research_status="INSUFFICIENT",
+            company_scope=None,
         )
+        if query.company_scope is not None:
+            try:
+                snapshot.company_scope = scope_item_for_company(
+                    query.company_scope, query.company_id
+                )
+                if snapshot.company_scope is None:
+                    snapshot.errors.append("company_scope: company_id does not match scope report")
+                elif snapshot.company_scope["researchability_state"] == "BLOCKED":
+                    snapshot.research_status = "BLOCKED"
+                elif snapshot.company_scope["researchability_state"] == "INSUFFICIENT":
+                    snapshot.research_status = "INSUFFICIENT"
+            except CompanyScopeError as error:
+                snapshot.errors.append(f"company_scope: {error}")
+                snapshot.research_status = "BLOCKED"
         self._collect_section(snapshot, "identity", query.identity_query, query)
         self._collect_section(snapshot, "financials", query.financial_query, query)
         self._collect_section(snapshot, "quote", query.quote_query, query)
@@ -71,9 +89,18 @@ class CompanyResearchAssembler:
             value is not None
             for value in (snapshot.identity, snapshot.financials, snapshot.quote)
         )
-        snapshot.research_status = (
+        section_status = (
             "READY" if section_count == 3 else "PARTIAL" if section_count else "INSUFFICIENT"
         )
+        scope_status = str((snapshot.company_scope or {}).get("researchability_state") or "").upper()
+        if scope_status == "BLOCKED" or snapshot.research_status == "BLOCKED":
+            snapshot.research_status = "BLOCKED"
+        elif scope_status == "INSUFFICIENT" or snapshot.research_status == "INSUFFICIENT" and not section_count:
+            snapshot.research_status = "INSUFFICIENT"
+        elif scope_status == "PARTIAL" or section_status != "READY":
+            snapshot.research_status = "PARTIAL"
+        else:
+            snapshot.research_status = section_status
         return snapshot
 
     def _collect_section(
@@ -120,4 +147,5 @@ def snapshot_from_config(config: dict[str, Any]) -> CompanyResearchQuery:
         financial_query=dict(config.get("financial_query", {})),
         quote_query=dict(config.get("quote_query", {})),
         source_names=tuple(config.get("source_names", [])),
+        company_scope=dict(config["company_scope"]) if isinstance(config.get("company_scope"), dict) else None,
     )

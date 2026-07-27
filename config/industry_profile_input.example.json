@@ -1,0 +1,17 @@
+{
+  "schema_version": "industry-profile-input.v1",
+  "profile_id": "baijiu-2026-07-22",
+  "subject_type": "industry",
+  "subject_id": "baijiu",
+  "industry_id": "baijiu",
+  "industry_name": "中国白酒",
+  "industry_family": "consumer",
+  "business_model": "消费",
+  "as_of": "2026-07-22",
+  "source": "config-or-authoritative-source",
+  "evidence_ids": ["industry-evidence-001"],
+  "attributes": {
+    "segment": "白酒",
+    "cyclicality": "WEAK_CYCLICAL"
+  }
+}

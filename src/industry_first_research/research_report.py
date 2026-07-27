@@ -143,6 +143,7 @@ def _build_item(item: Any, *, rule_version: str) -> dict[str, Any]:
     )
     return {
         "company_id": company_id,
+        "company_scope": item.get("company_scope"),
         "display_name": str(item.get("display_name") or ""),
         "industry_id": str(item.get("industry_id") or ""),
         "candidate_state": candidate_state,
@@ -153,6 +154,12 @@ def _build_item(item: Any, *, rule_version: str) -> dict[str, Any]:
         "rule_version": rule_version,
         "sections": sections,
         "tracking_checklist": tracking,
+        "simulation_recommendation": _simulation_recommendation(
+            report_state=report_state,
+            candidate_state=candidate_state,
+            tracking=tracking,
+            sections=sections,
+        ),
         "audit_findings": item.get("findings") or [],
         "reasons": _string_list(item.get("reasons")),
         "unknowns": _string_list(item.get("unknowns")),
@@ -295,6 +302,75 @@ def _tracking(
         "simulation_action": "USER_CONFIRMATION_REQUIRED",
         "failure_conditions": _values(fields.get("invalidators")),
         "normal_volatility_contract": _values(fields.get("normal_volatility")),
+    }
+
+
+def _simulation_recommendation(
+    *,
+    report_state: str,
+    candidate_state: str,
+    tracking: Mapping[str, Any],
+    sections: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Project evidence readiness into a user-facing simulation workflow.
+
+    This is deliberately a workflow recommendation, not a directional
+    investment conclusion. A user-confirmed decision snapshot remains a
+    separate step with its own required inputs and lock.
+    """
+
+    unknowns = [
+        f"{section_name}.{field}"
+        for section_name, section in sections.items()
+        for field in section.get("unknowns", [])
+    ]
+    if report_state == "BLOCKED":
+        state = "WAIT_FOR_DATA"
+        recommended_action = "CONTINUE_DATA_REVIEW"
+        actions = ["CONTINUE_DATA_REVIEW", "OBSERVE"]
+        reasons = ["报告处于 BLOCKED，不能建立确定性模拟决策"]
+    elif report_state == "REVIEW":
+        state = "REVIEW_REQUIRED"
+        recommended_action = "CONTINUE_DATA_REVIEW"
+        actions = ["CONTINUE_DATA_REVIEW", "OBSERVE"]
+        reasons = ["报告仍需补证、反证或对抗审查"]
+    else:
+        state = "USER_CONFIRMATION_REQUIRED"
+        recommended_action = "USER_CONFIRMATION_REQUIRED"
+        actions = ["OBSERVE", "ESTABLISH_SIMULATION", "PHASED_SIMULATION"]
+        reasons = [
+            "证据整理和对抗审查已完成",
+            "是否建立模拟记录必须由用户确认",
+        ]
+
+    return {
+        "state": state,
+        "recommended_action": recommended_action,
+        "available_actions": actions,
+        "direction": "NEUTRAL",
+        "candidate_state": candidate_state,
+        "reasons": reasons,
+        "data_gaps": list(dict.fromkeys(unknowns)),
+        "triggers": list(tracking.get("checks") or []),
+        "invalidators": list(tracking.get("failure_conditions") or []),
+        "next_check_at": tracking.get("next_check_at"),
+        "target_price_generated": False,
+        "decision_snapshot_created": False,
+        "user_confirmation_required": True,
+        "policy": {
+            "workflow_guidance_only": True,
+            "directional_conclusion": False,
+            "target_price_generated": False,
+            "automatic_candidate_promotion": False,
+            "decision_snapshot_created": False,
+            "execution_enabled": False,
+            "read_only": True,
+            "review_only": True,
+        },
+        "read_only": True,
+        "review_only": True,
+        "investment_conclusion": False,
+        "execution_enabled": False,
     }
 
 

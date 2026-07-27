@@ -1,0 +1,19 @@
+{
+  "records": [
+    {
+      "query_id": "company-600438-history",
+      "metric": "close",
+      "value": 10.0,
+      "unit": "CNY/share",
+      "period": "2026-07-25",
+      "published_at": "2026-07-25T08:00:00+08:00",
+      "captured_at": "2026-07-25T09:00:00+08:00",
+      "evidence_tier": "C",
+      "evidence_status": "market_signal",
+      "verification_status": "VERIFIED",
+      "manual_override_id": "review-20260725-001",
+      "source_field": "close",
+      "source_locator": "data[0].close"
+    }
+  ]
+}

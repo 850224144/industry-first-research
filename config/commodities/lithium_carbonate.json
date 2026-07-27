@@ -1,0 +1,31 @@
+{
+  "schema_version": "commodity-adapter.v1",
+  "adapter_id": "lithium_carbonate",
+  "display_name": "碳酸锂新能源材料产业链",
+  "aliases": ["碳酸锂", "锂盐", "LC", "lithium carbonate"],
+  "exchanges": ["GFEX"],
+  "variety_ids": ["LC"],
+  "commodity_category": "new_energy_material",
+  "quote_unit": "CNY/ton",
+  "trading_unit": "ton",
+  "spot_benchmarks": [{"benchmark_id": "china_battery_grade_lithium_carbonate", "name": "中国电池级碳酸锂现货", "unit": "CNY/ton", "region": "China", "comparability_rule": "same_grade_and_settlement_period"}],
+  "indicator_groups": {
+    "supply_demand": ["supply_demand_balance"],
+    "production": ["production_and_utilization"],
+    "trade": ["imports_exports"],
+    "inventory": ["inventory_by_location", "exchange_inventory_and_warrants"],
+    "pricing": ["spot_benchmark", "basis_and_calendar_spread", "term_structure"],
+    "cost_margin": ["production_and_import_cost", "industry_margin"],
+    "structure": ["open_interest_and_available_member_positions"],
+    "seasonality": ["seasonality"],
+    "position": ["open_interest_and_available_member_positions"],
+    "delivery": ["delivery_rules_and_warrant_expiry"]
+  },
+  "inventory_locations": ["brine", "hard_rock", "salt_lake", "converter", "cathode_factory", "exchange", "registered_warrant"],
+  "cost_components": ["ore_cost", "brine_cost", "conversion_cost", "energy", "freight", "cash_cost", "full_cost"],
+  "margin_components": ["spot_minus_cash_cost", "spot_minus_full_cost", "conversion_margin", "cathode_margin"],
+  "seasonality": {"required_drivers": ["new_energy_sales", "battery_inventory", "salt_lake_weather", "conversion_maintenance"]},
+  "delivery_rules": {"required_fields": ["delivery_grade", "delivery_region", "delivery_month_limit", "warrant_expiry"], "rule_source": "official_exchange_rule_version", "near_expiry_review_days": 30},
+  "scenario_method": {"method": "battery_demand_supply_cost_and_inventory_ranges", "required_drivers": ["ev_demand", "battery_output", "effective_supply", "inventory", "cost_curve"], "invalidators": ["demand_slowdown", "new_supply_release", "grade_incomparability"], "range_policy": "observation_range_not_intrinsic_value"},
+  "acceptance_samples": [{"sample_id": "lithium-effective-supply", "description": "碳酸锂必须区分名义产能、有效供给、库存、成本曲线和电池需求，不用单一价格判断反转"}]
+}

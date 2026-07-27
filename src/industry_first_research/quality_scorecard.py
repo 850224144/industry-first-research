@@ -119,6 +119,16 @@ def build_quality_scorecard(
         ),
         "rule_version": RULE_VERSION,
         "decision_snapshot_id": str(decision_snapshot["snapshot_id"]),
+        "research_id": str(
+            decision_snapshot.get("research_id")
+            or (research_report or {}).get("research_id")
+            or ""
+        ),
+        "research_version_id": str(
+            decision_snapshot.get("research_version_id")
+            or (research_report or {}).get("research_version_id")
+            or ""
+        ),
         "research_report_id": str(research_report.get("report_id") or "") if research_report else "",
         "attribution_id": str(attribution_report.get("attribution_id") or "") if attribution_report else "",
         "thesis_check_id": str(thesis_check.get("check_id") or "") if thesis_check else "",

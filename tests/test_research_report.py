@@ -89,6 +89,15 @@ def test_reviewable_report_assembles_sections_and_tracking():
     assert item["sections"]["valuation"]["directional_conclusion_included"] is False
     assert item["tracking_checklist"]["next_check_at"] == "2026-08-19"
     assert item["decision_snapshot_created"] is False
+    recommendation = item["simulation_recommendation"]
+    assert recommendation["state"] == "USER_CONFIRMATION_REQUIRED"
+    assert recommendation["available_actions"] == [
+        "OBSERVE",
+        "ESTABLISH_SIMULATION",
+        "PHASED_SIMULATION",
+    ]
+    assert recommendation["direction"] == "NEUTRAL"
+    assert recommendation["policy"]["directional_conclusion"] is False
 
 
 def test_review_or_insufficient_candidate_is_not_reviewable():
@@ -102,6 +111,9 @@ def test_review_or_insufficient_candidate_is_not_reviewable():
     assert review["report_state"] == "REVIEW"
     assert blocked["report_state"] == "BLOCKED"
     assert blocked["conclusion_state"] == "NO_CONCLUSION_DATA_GAP_OR_BLOCKER"
+    assert review["simulation_recommendation"]["state"] == "REVIEW_REQUIRED"
+    assert blocked["simulation_recommendation"]["state"] == "WAIT_FOR_DATA"
+    assert blocked["simulation_recommendation"]["recommended_action"] == "CONTINUE_DATA_REVIEW"
 
 
 def test_research_report_preserves_candidate_state_and_rejects_wrong_schema():

@@ -105,6 +105,8 @@ def build_announcement_asset(
     if expected_hash and content_hash and expected_hash != content_hash:
         raise AnnouncementAssetError("content_hash does not match raw content")
     if not content_hash:
+        content_hash = expected_hash
+    if not content_hash:
         raise AnnouncementAssetError("raw content or content_hash is required")
 
     version = _positive_int(payload.get("version", 1), "version")
@@ -144,9 +146,13 @@ def build_announcement_asset(
         "correction_status": correction_status,
         "supersedes_document_id": supersedes or None,
         "correction_reason": str(payload.get("correction_reason") or ""),
-        "raw_content_uri": raw_content_uri.strip(),
+        "raw_content_uri": str(raw_content_uri or payload.get("raw_content_uri") or "").strip(),
         "content_hash": content_hash or expected_hash,
-        "content_size_bytes": len(content_bytes) if content_bytes is not None else None,
+        "content_size_bytes": (
+            len(content_bytes)
+            if content_bytes is not None
+            else payload.get("content_size_bytes")
+        ),
         "content_encoding": str(payload.get("content_encoding") or "utf-8"),
         "affected_modules": modules,
         "evidence_type": "OBSERVED_FACT",

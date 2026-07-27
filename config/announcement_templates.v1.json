@@ -1,0 +1,182 @@
+{
+  "schema_version": "announcement-template-catalog.v1",
+  "catalog_version": "1.0.0",
+  "as_of": "2026-07-23",
+  "templates": [
+    {
+      "schema_version": "announcement-template.v1",
+      "template_id": "official_exchange",
+      "template_version": "1.0.0",
+      "source_name": "official_exchange",
+      "source_family": "exchange_public_disclosure",
+      "market_scope": ["A", "HK", "futures"],
+      "url_contract": {
+        "method": "GET",
+        "url_template": "{official_base_url}/{market}/disclosure?subject_id={subject_id}&page={page}",
+        "required_params": ["official_base_url", "market", "subject_id", "page"],
+        "parameter_encoding": "query"
+      },
+      "accepted_formats": ["json", "html", "text"],
+      "document_type_mapping_version": "1.0.0",
+      "subject_type_default": "",
+      "document_type_rules": [
+        {"document_type": "annual_report", "patterns": ["年度报告", "年报"]},
+        {"document_type": "quarterly_report", "patterns": ["季度报告", "季报", "半年度报告", "半年报"]},
+        {"document_type": "audit_report", "patterns": ["审计报告"]},
+        {"document_type": "earnings_preview", "patterns": ["业绩预告", "业绩快报"]},
+        {"document_type": "major_contract", "patterns": ["重大合同", "重大订单"]},
+        {"document_type": "merger_acquisition", "patterns": ["收购", "重大资产重组", "并购"]},
+        {"document_type": "buyback", "patterns": ["回购"]},
+        {"document_type": "rights_issue_or_placement", "patterns": ["定增", "配股", "增发"]},
+        {"document_type": "correction_notice", "patterns": ["更正公告", "修订公告"]},
+        {"document_type": "withdrawal_notice", "patterns": ["撤回公告", "撤销公告"]}
+      ],
+      "field_rules": {
+        "document_id": {"json_paths": ["document_id", "id", "announcement_id", "data.document_id", "data.id"], "meta_names": ["document-id", "announcement-id"], "labels": ["公告编号", "公告ID", "文号"], "regexes": ["公告编号\\s*[:：]\\s*(?P<value>[^\\s]+)"]},
+        "title": {"json_paths": ["title", "announcement_title", "name", "data.title", "data.announcement_title"], "meta_names": ["og:title", "title"], "labels": ["公告标题", "标题"]},
+        "published_at": {"json_paths": ["published_at", "publish_time", "publishDate", "notice_date", "date", "data.published_at", "data.publish_time"], "meta_names": ["publish-time", "published-at", "date"], "labels": ["发布日期", "公告日期", "发布时间"], "regexes": ["(?:发布日期|公告日期|发布时间)\\s*[:：]\\s*(?P<value>\\d{4}[-年/]\\d{1,2}[-月/]\\d{1,2}(?:日)?(?:[ T]\\d{1,2}:\\d{2}(?::\\d{2})?)?)"]},
+        "subject_id": {"json_paths": ["subject_id", "security_code", "stock_code", "code", "ticker", "data.subject_id", "data.security_code", "data.code"], "meta_names": ["security-code", "stock-code", "ticker"], "labels": ["证券代码", "股票代码", "标的代码", "品种代码"]},
+        "issuer": {"json_paths": ["issuer", "company_name", "security_name", "name", "data.issuer", "data.company_name"], "meta_names": ["issuer", "company-name"], "labels": ["公司名称", "发行人", "证券简称"]},
+        "document_type": {"json_paths": ["document_type", "notice_type", "category", "data.document_type", "data.notice_type"], "labels": ["公告类型", "类别"]},
+        "correction_status": {"json_paths": ["correction_status", "status", "data.correction_status"], "labels": ["公告状态", "修订状态"]},
+        "supersedes_document_id": {"json_paths": ["supersedes_document_id", "original_document_id", "previous_document_id", "data.supersedes_document_id"], "labels": ["原公告编号", "被更正公告编号", "原公告"]},
+        "correction_reason": {"json_paths": ["correction_reason", "reason", "data.correction_reason"], "labels": ["更正原因", "补充原因"]}
+      },
+      "required_fields": ["source_url", "subject_type", "subject_id", "title", "published_at"],
+      "failure_policy": {
+        "missing_required_field": "BLOCKED_AND_REQUIRE_MANUAL_INPUT",
+        "unmapped_document_type": "DEGRADE_TO_GENERIC_ANNOUNCEMENT",
+        "missing_correction_parent": "BLOCKED_AND_REQUIRE_MANUAL_INPUT",
+        "invalid_datetime": "BLOCKED_AND_REQUIRE_MANUAL_INPUT"
+      }
+    },
+    {
+      "schema_version": "announcement-template.v1",
+      "template_id": "company_disclosure",
+      "template_version": "1.0.0",
+      "source_name": "company_disclosure",
+      "source_family": "listed_company_public_disclosure",
+      "market_scope": ["A", "HK"],
+      "url_contract": {
+        "method": "GET",
+        "url_template": "{company_disclosure_base_url}/{subject_id}/{document_id}",
+        "required_params": ["company_disclosure_base_url", "subject_id", "document_id"],
+        "parameter_encoding": "path"
+      },
+      "accepted_formats": ["html", "text", "json"],
+      "document_type_mapping_version": "1.0.0",
+      "subject_type_default": "listed_company",
+      "document_type_rules": [
+        {"document_type": "annual_report", "patterns": ["年度报告", "年报"]},
+        {"document_type": "quarterly_report", "patterns": ["季度报告", "季报", "半年度报告", "半年报"]},
+        {"document_type": "earnings_preview", "patterns": ["业绩预告", "业绩快报"]},
+        {"document_type": "major_contract", "patterns": ["重大合同", "重大订单"]},
+        {"document_type": "customer_certification", "patterns": ["认证", "定点"]},
+        {"document_type": "merger_acquisition", "patterns": ["收购", "重组", "并购"]},
+        {"document_type": "buyback", "patterns": ["回购"]},
+        {"document_type": "correction_notice", "patterns": ["更正公告", "修订公告"]}
+      ],
+      "field_rules": {
+        "document_id": {"json_paths": ["document_id", "announcement_id", "id"], "meta_names": ["document-id", "announcement-id"], "labels": ["公告编号", "文号"]},
+        "title": {"json_paths": ["title", "announcement_title", "name"], "meta_names": ["og:title", "title"], "labels": ["公告标题", "标题"]},
+        "published_at": {"json_paths": ["published_at", "publish_time", "publishDate", "date"], "meta_names": ["publish-time", "published-at", "date"], "labels": ["发布日期", "公告日期", "发布时间"]},
+        "subject_id": {"json_paths": ["subject_id", "security_code", "stock_code", "code", "ticker"], "meta_names": ["security-code", "stock-code"], "labels": ["证券代码", "股票代码", "标的代码"]},
+        "issuer": {"json_paths": ["issuer", "company_name", "security_name", "name"], "meta_names": ["issuer", "company-name"], "labels": ["公司名称", "发行人", "证券简称"]},
+        "document_type": {"json_paths": ["document_type", "notice_type", "category"], "labels": ["公告类型", "类别"]},
+        "correction_status": {"json_paths": ["correction_status", "status"], "labels": ["公告状态", "修订状态"]},
+        "supersedes_document_id": {"json_paths": ["supersedes_document_id", "original_document_id", "previous_document_id"], "labels": ["原公告编号", "被更正公告编号", "原公告"]},
+        "correction_reason": {"json_paths": ["correction_reason", "reason"], "labels": ["更正原因", "补充原因"]}
+      },
+      "required_fields": ["source_url", "subject_type", "subject_id", "title", "published_at"],
+      "failure_policy": {
+        "missing_required_field": "BLOCKED_AND_REQUIRE_MANUAL_INPUT",
+        "unmapped_document_type": "DEGRADE_TO_GENERIC_ANNOUNCEMENT",
+        "missing_correction_parent": "BLOCKED_AND_REQUIRE_MANUAL_INPUT"
+      }
+    },
+    {
+      "schema_version": "announcement-template.v1",
+      "template_id": "eastmoney_announcement",
+      "template_version": "1.0.0",
+      "source_name": "eastmoney",
+      "source_family": "aggregated_public_announcement",
+      "market_scope": ["A", "HK"],
+      "url_contract": {
+        "method": "GET",
+        "url_template": "{eastmoney_base_url}/api/notice?code={subject_id}&art_code={document_id}",
+        "required_params": ["eastmoney_base_url", "subject_id", "document_id"],
+        "parameter_encoding": "query"
+      },
+      "accepted_formats": ["json", "html", "text"],
+      "document_type_mapping_version": "1.0.0",
+      "subject_type_default": "listed_company",
+      "document_type_rules": [
+        {"document_type": "annual_report", "patterns": ["年度报告", "年报"]},
+        {"document_type": "quarterly_report", "patterns": ["季度报告", "季报", "半年度报告", "半年报"]},
+        {"document_type": "earnings_preview", "patterns": ["业绩预告", "业绩快报"]},
+        {"document_type": "major_contract", "patterns": ["重大合同", "重大订单"]},
+        {"document_type": "correction_notice", "patterns": ["更正公告", "修订公告"]},
+        {"document_type": "withdrawal_notice", "patterns": ["撤回公告", "撤销公告"]}
+      ],
+      "field_rules": {
+        "document_id": {"json_paths": ["art_code", "document_id", "id", "data.art_code", "data.document_id"], "meta_names": ["document-id", "art-code"], "labels": ["公告编号", "文号"]},
+        "title": {"json_paths": ["notice_title", "title", "announcement_title", "data.notice_title", "data.title"], "meta_names": ["og:title", "title"], "labels": ["公告标题", "标题"]},
+        "published_at": {"json_paths": ["notice_date", "published_at", "publish_time", "date", "data.notice_date"], "meta_names": ["publish-time", "published-at", "date"], "labels": ["公告日期", "发布日期", "发布时间"]},
+        "subject_id": {"json_paths": ["codes", "security_code", "stock_code", "code", "data.codes", "data.security_code"], "meta_names": ["security-code", "stock-code"], "labels": ["证券代码", "股票代码", "标的代码"]},
+        "issuer": {"json_paths": ["notice_title", "issuer", "company_name", "security_name", "data.company_name"], "meta_names": ["issuer", "company-name"], "labels": ["公司名称", "证券简称"]},
+        "document_type": {"json_paths": ["notice_type", "document_type", "category", "data.notice_type"], "labels": ["公告类型", "类别"]},
+        "correction_status": {"json_paths": ["correction_status", "status", "data.correction_status"], "labels": ["公告状态", "修订状态"]},
+        "supersedes_document_id": {"json_paths": ["supersedes_document_id", "original_document_id", "previous_document_id", "data.original_document_id"], "labels": ["原公告编号", "被更正公告编号", "原公告"]},
+        "correction_reason": {"json_paths": ["correction_reason", "reason", "data.correction_reason"], "labels": ["更正原因", "补充原因"]}
+      },
+      "required_fields": ["source_url", "subject_type", "subject_id", "title", "published_at"],
+      "failure_policy": {
+        "missing_required_field": "BLOCKED_AND_REQUIRE_MANUAL_INPUT",
+        "unmapped_document_type": "DEGRADE_TO_GENERIC_ANNOUNCEMENT",
+        "aggregator_is_not_authoritative": "REQUIRE_OFFICIAL_SOURCE_FOR_KEY_FACTS"
+      }
+    },
+    {
+      "schema_version": "announcement-template.v1",
+      "template_id": "futures_exchange_disclosure",
+      "template_version": "1.0.0",
+      "source_name": "official_exchange",
+      "source_family": "futures_exchange_public_disclosure",
+      "market_scope": ["futures"],
+      "url_contract": {
+        "method": "GET",
+        "url_template": "{futures_exchange_base_url}/notice?variety={subject_id}&page={page}",
+        "required_params": ["futures_exchange_base_url", "subject_id", "page"],
+        "parameter_encoding": "query"
+      },
+      "accepted_formats": ["html", "json", "text"],
+      "document_type_mapping_version": "1.0.0",
+      "subject_type_default": "futures_variety",
+      "document_type_rules": [
+        {"document_type": "futures_rule", "patterns": ["合约规则", "交易规则", "交割细则", "保证金"]},
+        {"document_type": "industry_data_release", "patterns": ["库存", "仓单", "产销", "统计"]},
+        {"document_type": "policy_change", "patterns": ["调整", "通知", "办法"]},
+        {"document_type": "correction_notice", "patterns": ["更正公告", "修订公告"]},
+        {"document_type": "withdrawal_notice", "patterns": ["撤回公告", "撤销公告"]}
+      ],
+      "field_rules": {
+        "document_id": {"json_paths": ["document_id", "notice_id", "id", "data.document_id"], "meta_names": ["document-id", "notice-id"], "labels": ["公告编号", "文号"]},
+        "title": {"json_paths": ["title", "notice_title", "name", "data.title"], "meta_names": ["og:title", "title"], "labels": ["公告标题", "标题"]},
+        "published_at": {"json_paths": ["published_at", "publish_time", "notice_date", "date", "data.published_at"], "meta_names": ["publish-time", "published-at", "date"], "labels": ["发布日期", "公告日期", "发布时间"]},
+        "subject_id": {"json_paths": ["subject_id", "variety", "variety_code", "contract", "contract_code", "code", "data.variety"], "meta_names": ["variety", "contract"], "labels": ["品种代码", "品种", "合约代码"]},
+        "issuer": {"json_paths": ["issuer", "exchange_name", "publisher", "data.issuer"], "meta_names": ["issuer", "publisher"], "labels": ["发布单位", "交易所"]},
+        "document_type": {"json_paths": ["document_type", "notice_type", "category", "data.document_type"], "labels": ["公告类型", "类别"]},
+        "correction_status": {"json_paths": ["correction_status", "status", "data.correction_status"], "labels": ["公告状态", "修订状态"]},
+        "supersedes_document_id": {"json_paths": ["supersedes_document_id", "original_document_id", "previous_document_id", "data.original_document_id"], "labels": ["原公告编号", "被更正公告编号", "原公告"]},
+        "correction_reason": {"json_paths": ["correction_reason", "reason", "data.correction_reason"], "labels": ["更正原因", "补充原因"]}
+      },
+      "required_fields": ["source_url", "subject_type", "subject_id", "title", "published_at"],
+      "failure_policy": {
+        "missing_required_field": "BLOCKED_AND_REQUIRE_MANUAL_INPUT",
+        "unmapped_document_type": "DEGRADE_TO_GENERIC_ANNOUNCEMENT",
+        "missing_correction_parent": "BLOCKED_AND_REQUIRE_MANUAL_INPUT",
+        "contract_rule_requires_effective_at": "REQUIRE_MANUAL_FIELD_MAPPING"
+      }
+    }
+  ]
+}

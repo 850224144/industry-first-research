@@ -155,7 +155,18 @@ class DataSourceRouter:
                     )
                 )
             else:
-                results.append(adapter.health_check())
+                try:
+                    results.append(adapter.health_check())
+                except Exception as error:
+                    results.append(
+                        DataSourceHealth(
+                            name=name,
+                            source_type=str(getattr(adapter, "source_type", "unknown")),
+                            available=False,
+                            reason=f"health check failed: {type(error).__name__}: {error}",
+                            version="unknown",
+                        )
+                    )
         return results
 
     def fetch(

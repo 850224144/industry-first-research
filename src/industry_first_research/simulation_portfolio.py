@@ -15,6 +15,8 @@ from math import isfinite, sqrt
 from statistics import pstdev
 from typing import Any
 
+from .market_data import MarketDataError, build_market_data_snapshot, extract_market_data_series
+
 
 PORTFOLIO_INPUT_SCHEMA_VERSION = "simulation-portfolio-input.v1"
 PORTFOLIO_SCHEMA_VERSION = "simulation-portfolio.v1"
@@ -223,10 +225,39 @@ def replay_simulation_portfolio(
     *,
     closed_at: str = "",
     replay_id: str = "",
+    asset_market_data_snapshots: Mapping[str, Mapping[str, Any]] | None = None,
+    benchmark_market_data_snapshot: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Replay company operations against a bounded dated price package."""
 
     _validate_portfolio(portfolio)
+    if asset_market_data_snapshots is not None or benchmark_market_data_snapshot is not None:
+        try:
+            outcome_input = dict(outcome_input)
+            if benchmark_market_data_snapshot is not None:
+                benchmark = build_market_data_snapshot(benchmark_market_data_snapshot)
+                outcome_input["benchmark_series"] = [
+                    {"date": row["timestamp"], "value": row.get("value", row.get("close", row.get("settlement")))}
+                    for row in extract_market_data_series(benchmark)
+                ]
+                outcome_input["benchmark_market_data_snapshot_id"] = benchmark["snapshot_id"]
+            if asset_market_data_snapshots is not None:
+                converted: dict[str, list[dict[str, Any]]] = {}
+                for subject_id, raw_snapshot in asset_market_data_snapshots.items():
+                    asset = build_market_data_snapshot(raw_snapshot)
+                    converted[str(subject_id)] = [
+                        {"date": row["timestamp"], "price": row.get("close", row.get("value", row.get("settlement")))}
+                        for row in extract_market_data_series(asset)
+                    ]
+                outcome_input["asset_series"] = converted
+                outcome_input["asset_market_data_snapshot_ids"] = {
+                    str(subject_id): str(
+                        build_market_data_snapshot(raw_snapshot)["snapshot_id"]
+                    )
+                    for subject_id, raw_snapshot in asset_market_data_snapshots.items()
+                }
+        except MarketDataError as error:
+            raise SimulationPortfolioError(str(error)) from error
     _validate_outcome(outcome_input)
     close_value = str(closed_at or outcome_input.get("closed_at") or "").strip()
     if not close_value:
@@ -418,6 +449,10 @@ def replay_simulation_portfolio(
         "evaluation_state": state,
         "evaluation_reason": reason,
         "benchmark_locked": dict(portfolio["benchmark"]),
+        "market_data_snapshot_ids": {
+            "benchmark": str(outcome_input.get("benchmark_market_data_snapshot_id") or ""),
+            "assets": dict(outcome_input.get("asset_market_data_snapshot_ids") or {}),
+        },
         "initial_capital": initial_capital,
         "final_equity": equity_curve[-1],
         "portfolio_return": equity_curve[-1] / initial_capital - 1,

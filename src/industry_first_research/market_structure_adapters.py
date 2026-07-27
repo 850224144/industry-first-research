@@ -19,6 +19,7 @@ from .market_structure import (
     INPUT_SCHEMA_VERSION,
     build_market_structure_report,
 )
+from .market_data import MarketDataError, build_market_data_snapshot
 
 
 MARKET_STRUCTURE_COMPARISON_SCHEMA_VERSION = "market-structure-comparison.v1"
@@ -96,6 +97,7 @@ class ChanPyAdapter(OptionalMarketStructureAdapter):
 def build_market_structure_comparison(
     input_report: Mapping[str, Any],
     *,
+    market_data_snapshot: Mapping[str, Any] | None = None,
     adapters: Sequence[OptionalMarketStructureAdapter] | None = None,
     include_local: bool = True,
     comparison_id: str = "",
@@ -103,12 +105,32 @@ def build_market_structure_comparison(
     """Run local and optional structure implementations side by side."""
 
     _validate_input(input_report)
+    if market_data_snapshot is not None:
+        try:
+            snapshot = build_market_data_snapshot(market_data_snapshot)
+        except MarketDataError as error:
+            raise MarketStructureAdapterError(str(error)) from error
+        input_report = {
+            **input_report,
+            "subject_type": snapshot["subject"]["subject_type"],
+            "subject_id": snapshot["subject"]["subject_id"],
+            "display_name": snapshot["subject"].get("display_name") or input_report.get("display_name"),
+            "as_of": snapshot["research_as_of"],
+            "price_series_id": snapshot["snapshot_id"],
+            "adjustment": snapshot["adjustment"],
+            "timeframes": snapshot["series"],
+            "continuous_series_rule": snapshot.get("continuous_series_rule"),
+            "market_data_snapshot_id": snapshot["snapshot_id"],
+        }
     if adapters is None:
         adapters = (CzscAdapter(), ChanPyAdapter())
 
     implementations: dict[str, dict[str, Any]] = {}
     if include_local:
-        local_report = build_market_structure_report(input_report)
+        local_report = build_market_structure_report(
+            input_report,
+            market_data_snapshot=market_data_snapshot,
+        )
         implementations["local_deterministic"] = {
             "implementation": "local_deterministic",
             "status": "AVAILABLE",

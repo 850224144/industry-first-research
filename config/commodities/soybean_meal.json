@@ -1,0 +1,31 @@
+{
+  "schema_version": "commodity-adapter.v1",
+  "adapter_id": "soybean_meal",
+  "display_name": "豆粕农产品产业链",
+  "aliases": ["豆粕", "大豆粕", "soybean meal"],
+  "exchanges": ["DCE"],
+  "variety_ids": ["M"],
+  "commodity_category": "agriculture",
+  "quote_unit": "CNY/ton",
+  "trading_unit": "ton",
+  "spot_benchmarks": [{"benchmark_id": "north_china_soybean_meal_spot", "name": "华北豆粕现货", "unit": "CNY/ton", "region": "North China", "comparability_rule": "same_protein_region_and_delivery_period"}],
+  "indicator_groups": {
+    "supply_demand": ["supply_demand_balance"],
+    "production": ["production_and_utilization"],
+    "trade": ["imports_exports"],
+    "inventory": ["inventory_by_location", "exchange_inventory_and_warrants"],
+    "pricing": ["spot_benchmark", "basis_and_calendar_spread", "term_structure"],
+    "cost_margin": ["production_and_import_cost", "industry_margin"],
+    "structure": ["open_interest_and_available_member_positions"],
+    "seasonality": ["seasonality"],
+    "position": ["open_interest_and_available_member_positions"],
+    "delivery": ["delivery_rules_and_warrant_expiry"]
+  },
+  "inventory_locations": ["origin", "crushing_mill", "feed_factory", "port", "exchange", "registered_warrant"],
+  "cost_components": ["soybean_import_cost", "crushing_cost", "freight", "meal_yield", "cash_cost", "full_cost"],
+  "margin_components": ["crush_margin", "spot_minus_cash_cost", "spot_minus_full_cost", "feed_demand_margin"],
+  "seasonality": {"required_drivers": ["planting_weather", "harvest_arrival", "aquaculture_demand", "hog_cycle", "crushing_maintenance"]},
+  "delivery_rules": {"required_fields": ["delivery_grade", "delivery_region", "delivery_month_limit", "warrant_expiry"], "rule_source": "official_exchange_rule_version", "near_expiry_review_days": 30},
+  "scenario_method": {"method": "crop_supply_feed_demand_and_inventory_ranges", "required_drivers": ["crop_weather", "imports", "crush_rate", "feed_demand", "inventory"], "invalidators": ["crop_supply_surprise", "feed_demand_collapse", "benchmark_incomparability"], "range_policy": "observation_range_not_intrinsic_value"},
+  "acceptance_samples": [{"sample_id": "soybean-meal-feed-demand", "description": "豆粕进口、压榨、饲料需求、库存、基差和季节性字段齐全时进入研究验收"}]
+}

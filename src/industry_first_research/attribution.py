@@ -14,6 +14,8 @@ from math import isfinite, sqrt
 from statistics import mean, pstdev
 from typing import Any
 
+from .market_data import MarketDataError, build_market_data_snapshot, extract_market_data_series
+
 
 class AttributionError(ValueError):
     """Raised when an attribution input violates the locked-record contract."""
@@ -22,6 +24,7 @@ class AttributionError(ValueError):
 ATTRIBUTION_SCHEMA_VERSION = "attribution-result.v1"
 INPUT_SCHEMA_VERSION = "attribution-input.v1"
 DECISION_SNAPSHOT_SCHEMA_VERSION = "decision-snapshot.v1"
+FUTURES_SIMULATION_REPLAY_SCHEMA_VERSION = "futures-simulation-replay.v1"
 RULE_VERSION = "attribution-rules.v1"
 _EVALUATION_LABELS = {
     "THESIS_WRONG",
@@ -55,6 +58,8 @@ def build_attribution_report(
     closed_at: str = "",
     rule_version: str = RULE_VERSION,
     attribution_id: str = "",
+    asset_market_data_snapshot: Mapping[str, Any] | None = None,
+    benchmark_market_data_snapshot: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build a read-only result from a locked company or futures snapshot.
 
@@ -65,6 +70,26 @@ def build_attribution_report(
 
     _validate_snapshot(decision_snapshot)
     _validate_input(outcome_input)
+    if asset_market_data_snapshot is not None or benchmark_market_data_snapshot is not None:
+        try:
+            outcome_input = dict(outcome_input)
+            if asset_market_data_snapshot is not None:
+                asset_snapshot = build_market_data_snapshot(asset_market_data_snapshot)
+                outcome_input["asset_series"] = [
+                    {"date": row["timestamp"], "price": row.get("close", row.get("value", row.get("settlement")))}
+                    for row in extract_market_data_series(asset_snapshot)
+                ]
+                outcome_input["asset_market_data_snapshot_id"] = asset_snapshot["snapshot_id"]
+                outcome_input["subject_id"] = asset_snapshot["subject"]["subject_id"]
+            if benchmark_market_data_snapshot is not None:
+                benchmark_snapshot = build_market_data_snapshot(benchmark_market_data_snapshot)
+                outcome_input["benchmark_series"] = [
+                    {"date": row["timestamp"], "value": row.get("value", row.get("close", row.get("settlement")))}
+                    for row in extract_market_data_series(benchmark_snapshot)
+                ]
+                outcome_input["benchmark_market_data_snapshot_id"] = benchmark_snapshot["snapshot_id"]
+        except MarketDataError as error:
+            raise AttributionError(str(error)) from error
     if not rule_version.strip():
         raise AttributionError("rule_version must not be empty")
 
@@ -90,7 +115,13 @@ def build_attribution_report(
         )
 
     try:
-        if subject_type == "listed_company":
+        if (
+            subject_type == "futures_contract"
+            and outcome_input.get("schema_version")
+            == FUTURES_SIMULATION_REPLAY_SCHEMA_VERSION
+        ):
+            result = _futures_replay_result(decision_snapshot, outcome_input, base)
+        elif subject_type == "listed_company":
             result = _company_result(decision_snapshot, outcome_input, base)
         else:
             result = _futures_result(decision_snapshot, outcome_input, base)
@@ -137,7 +168,7 @@ def _validate_input(value: Any) -> None:
     if not isinstance(value, Mapping):
         raise AttributionError("attribution input must be a JSON object")
     schema = value.get("schema_version")
-    if schema != INPUT_SCHEMA_VERSION:
+    if schema not in {INPUT_SCHEMA_VERSION, FUTURES_SIMULATION_REPLAY_SCHEMA_VERSION}:
         raise AttributionError("input must be an attribution-input.v1 report")
 
 
@@ -156,6 +187,8 @@ def _base_report(
         "schema_version": ATTRIBUTION_SCHEMA_VERSION,
         "attribution_id": f"attribution-{result_id}",
         "decision_id": snapshot_id,
+        "research_id": str(snapshot.get("research_id") or ""),
+        "research_version_id": str(snapshot.get("research_version_id") or ""),
         "decision_snapshot_hash": _snapshot_hash(snapshot),
         "closed_at": closed_at,
         "review_date": str(snapshot["decision"].get("review_date") or ""),
@@ -182,6 +215,8 @@ def _base_report(
                 "inputs, not causal proof."
             ),
             "source_outcome_input_schema": outcome.get("schema_version") or "unversioned",
+            "asset_market_data_snapshot_id": str(outcome.get("asset_market_data_snapshot_id") or ""),
+            "benchmark_market_data_snapshot_id": str(outcome.get("benchmark_market_data_snapshot_id") or ""),
         },
         "data_quality": {
             "status": "PENDING",
@@ -532,6 +567,134 @@ def _futures_result(
     }
     contributions = _contributions(
         snapshot, outcome, None, benchmark, is_futures=True,
+        default_roll=total_roll_pnl / capital,
+    )
+    base["contributions"] = contributions["values"]
+    base["contributions"]["roll_contribution"] = total_roll_pnl / capital
+    base["contribution_sources"] = contributions["sources"]
+    base["confidence"] = contributions["confidence"]
+    base["evaluation_label"] = _evaluation_label(snapshot, outcome, base)
+    return base
+
+
+def _futures_replay_result(
+    snapshot: Mapping[str, Any],
+    outcome: Mapping[str, Any],
+    base: dict[str, Any],
+) -> dict[str, Any]:
+    """Consume a deterministic futures-simulation replay as an attribution result."""
+
+    _validate_benchmark_identity(snapshot, outcome)
+    _validate_subject_identity(snapshot, outcome, require_contract=True)
+    if str(outcome.get("evaluation_state") or "").upper() != "EVALUABLE":
+        return _not_evaluable(
+            base,
+            str(outcome.get("evaluation_reason") or "futures replay is not evaluable"),
+        )
+    ledger = outcome.get("daily_ledger")
+    if not isinstance(ledger, Sequence) or isinstance(ledger, (str, bytes, bytearray)) or len(ledger) < 2:
+        raise _EvidenceGap("futures replay daily_ledger needs at least two dated rows")
+    benchmark = _normalise_series(
+        outcome.get("benchmark_series"),
+        "benchmark_series",
+        value_keys=("value", "price", "close"),
+    )
+    ledger_days = [_calendar_day(row.get("date"), "futures replay daily_ledger.date") for row in ledger]
+    if ledger_days != [row["day"] for row in benchmark]:
+        raise _EvidenceGap("futures replay ledger and benchmark are not date-comparable")
+    _check_period(
+        [{"day": day} for day in ledger_days],
+        snapshot["decision"].get("decision_at"),
+        base["closed_at"],
+        "futures replay ledger",
+    )
+    capital = _futures_capital(snapshot["decision"], outcome)
+    if capital <= 0:
+        raise _EvidenceGap("futures simulation capital must be positive")
+    total_price_pnl = _required_number(outcome.get("total_price_pnl"), "total_price_pnl")
+    total_roll_pnl = _required_number(outcome.get("total_roll_pnl"), "total_roll_pnl")
+    total_fees = _required_number(outcome.get("total_fees"), "total_fees")
+    total_slippage = _required_number(outcome.get("total_slippage"), "total_slippage")
+    total_pnl = total_price_pnl - total_fees - total_slippage
+    holding_days = (ledger_days[-1] - ledger_days[0]).days
+    if holding_days <= 0:
+        raise _EvidenceGap("futures replay must span a positive holding period")
+    benchmark_return = float(benchmark[-1]["value"]) / float(benchmark[0]["value"]) - 1.0
+    margin_calls = outcome.get("margin_calls") or []
+    max_margin_call = max(
+        (
+            float(item.get("required_amount") or 0)
+            for item in margin_calls
+            if isinstance(item, Mapping)
+        ),
+        default=0.0,
+    )
+    max_margin = float(outcome.get("max_margin_occupied") or 0.0)
+    base.update(
+        {
+            "asset_return": total_pnl / capital,
+            "asset_annualized_return": _annualized(total_pnl / capital, holding_days),
+            "benchmark_return": benchmark_return,
+            "benchmark_annualized_return": _annualized(benchmark_return, holding_days),
+            "excess_return": None,
+            "max_drawdown": -abs(float(outcome.get("max_drawdown") or 0.0)),
+            "volatility": float(outcome.get("annualized_volatility") or 0.0),
+            "holding_period_days": holding_days,
+            "return_components": {
+                "price_return": total_price_pnl / capital,
+                "dividend_return": None,
+                "fx_return": None,
+                "cost_return": -(total_fees + total_slippage) / capital,
+                "fee_assumption": {"total_fees": total_fees},
+                "slippage_assumption": {"total_slippage": total_slippage},
+            },
+            "futures": {
+                "total_simulated_pnl": total_pnl,
+                "single_contract_price_contribution": total_price_pnl,
+                "roll_contribution": total_roll_pnl,
+                "fees": total_fees,
+                "slippage": total_slippage,
+                "initial_simulation_capital": capital,
+                "max_margin_occupied": max_margin,
+                "max_margin_ratio": max_margin / capital,
+                "max_margin_call_amount": max_margin_call,
+                "final_available_simulated_cash": float(
+                    ledger[-1].get("available_simulation_cash") or 0.0
+                ),
+                "forced_liquidation_state": str(outcome.get("simulation_state") or "NONE"),
+                "contract_code": str(
+                    outcome.get("contract_code")
+                    or snapshot["decision"].get("contract_code")
+                    or ""
+                ),
+                "contract_multiplier": _required_number(
+                    snapshot["decision"].get("contract_multiplier"),
+                    "contract_multiplier",
+                ),
+                "daily_settlement_ledger": list(ledger),
+            },
+        }
+    )
+    base["data_quality"].update(
+        {
+            "status": "OK",
+            "asset_series_comparable": True,
+            "benchmark_series_comparable": True,
+            "reasons": [],
+        }
+    )
+    base["comparison"] = {
+        "status": "SEPARATE_CAPITAL_AND_MARGIN_BASIS",
+        "excess_return_comparable": False,
+        "reason": "Futures replay uses its locked settlement/margin ledger and is not directly subtracted from a full-cash equity benchmark.",
+        "benchmark_id": _benchmark_identifier(snapshot["decision"]["benchmark"]),
+    }
+    contributions = _contributions(
+        snapshot,
+        outcome,
+        None,
+        benchmark,
+        is_futures=True,
         default_roll=total_roll_pnl / capital,
     )
     base["contributions"] = contributions["values"]
@@ -998,9 +1161,16 @@ def _validate_subject_identity(
         return
     locked_contract = str(snapshot["decision"].get("contract_code") or "").strip()
     supplied_contract = str(outcome.get("contract_code") or "").strip()
+    supplied_contracts = {
+        str(item).strip()
+        for item in (outcome.get("contract_codes") or [])
+        if str(item).strip()
+    }
+    supplied_contracts.add(supplied_contract)
     if not supplied_contract:
-        raise _EvidenceGap("futures outcome contract_code is required")
-    if supplied_contract != locked_contract:
+        if locked_contract not in supplied_contracts:
+            raise _EvidenceGap("futures outcome contract_code is required")
+    if supplied_contract and supplied_contract != locked_contract and locked_contract not in supplied_contracts:
         raise AttributionError(
             "outcome contract_code does not match the locked futures contract"
         )

@@ -21,6 +21,8 @@ def test_default_schedule_is_bounded_and_plans_recurring_jobs_once():
     assert {task["task_type"] for task in plan["tasks"]} == {
         "industry_radar_refresh",
         "daily_delta_scan",
+        "futures_fundamentals_delta_scan",
+        "data_source_refresh",
     }
     assert plan["resource_audit"]["full_market_deep_data"] is False
     assert plan["resource_audit"]["deep_research_limit"] == 3
@@ -53,6 +55,8 @@ def test_event_tasks_are_deduplicated_and_company_pool_is_event_scoped():
         "company_pool_refresh",
         "industry_radar_refresh",
         "daily_delta_scan",
+        "futures_fundamentals_delta_scan",
+        "data_source_refresh",
     }
     assert sum(task["event_id"] == "event-001" for task in plan["tasks"]) == 2
 

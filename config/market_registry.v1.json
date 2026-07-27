@@ -1,0 +1,103 @@
+{
+  "schema_version": "market-registry.v1",
+  "registry_id": "domestic-research-markets",
+  "version": "2026-07-22.v1",
+  "markets": [
+    {
+      "market_id": "SSE",
+      "display_name": "上海证券交易所",
+      "exchange_code": "SSE",
+      "asset_class": "EQUITY",
+      "currency": "CNY",
+      "timezone": "Asia/Shanghai",
+      "calendar_version": "SSE-2026-v1",
+      "price_conventions": {"default_adjustment": "NONE", "supports": ["NONE", "QFQ", "HFQ"]},
+      "corporate_action_conventions": {"dividend": "separate_or_adjusted_series"},
+      "source_evidence_ids": ["market-registry-official-calendar"]
+    },
+    {
+      "market_id": "SZSE",
+      "display_name": "深圳证券交易所",
+      "exchange_code": "SZSE",
+      "asset_class": "EQUITY",
+      "currency": "CNY",
+      "timezone": "Asia/Shanghai",
+      "calendar_version": "SZSE-2026-v1",
+      "price_conventions": {"default_adjustment": "NONE", "supports": ["NONE", "QFQ", "HFQ"]},
+      "corporate_action_conventions": {"dividend": "separate_or_adjusted_series"},
+      "source_evidence_ids": ["market-registry-official-calendar"]
+    },
+    {
+      "market_id": "SHFE",
+      "display_name": "上海期货交易所",
+      "exchange_code": "SHFE",
+      "asset_class": "FUTURES",
+      "currency": "CNY",
+      "timezone": "Asia/Shanghai",
+      "calendar_version": "SHFE-2026-v1",
+      "price_conventions": {"settlement": "exchange_daily_settlement", "continuous_series_tradeable": false},
+      "corporate_action_conventions": {"not_applicable": true},
+      "source_evidence_ids": ["market-registry-official-calendar"]
+    },
+    {
+      "market_id": "DCE",
+      "display_name": "大连商品交易所",
+      "exchange_code": "DCE",
+      "asset_class": "FUTURES",
+      "currency": "CNY",
+      "timezone": "Asia/Shanghai",
+      "calendar_version": "DCE-2026-v1",
+      "price_conventions": {"settlement": "exchange_daily_settlement", "continuous_series_tradeable": false},
+      "corporate_action_conventions": {"not_applicable": true},
+      "source_evidence_ids": ["market-registry-official-calendar"]
+    },
+    {
+      "market_id": "CZCE",
+      "display_name": "郑州商品交易所",
+      "exchange_code": "CZCE",
+      "asset_class": "FUTURES",
+      "currency": "CNY",
+      "timezone": "Asia/Shanghai",
+      "calendar_version": "CZCE-2026-v1",
+      "price_conventions": {"settlement": "exchange_daily_settlement", "continuous_series_tradeable": false},
+      "corporate_action_conventions": {"not_applicable": true},
+      "source_evidence_ids": ["market-registry-official-calendar"]
+    },
+    {
+      "market_id": "INE",
+      "display_name": "上海国际能源交易中心",
+      "exchange_code": "INE",
+      "asset_class": "FUTURES",
+      "currency": "CNY",
+      "timezone": "Asia/Shanghai",
+      "calendar_version": "INE-2026-v1",
+      "price_conventions": {"settlement": "exchange_daily_settlement", "continuous_series_tradeable": false},
+      "corporate_action_conventions": {"not_applicable": true},
+      "source_evidence_ids": ["market-registry-official-calendar"]
+    },
+    {
+      "market_id": "GFEX",
+      "display_name": "广州期货交易所",
+      "exchange_code": "GFEX",
+      "asset_class": "FUTURES",
+      "currency": "CNY",
+      "timezone": "Asia/Shanghai",
+      "calendar_version": "GFEX-2026-v1",
+      "price_conventions": {"settlement": "exchange_daily_settlement", "continuous_series_tradeable": false},
+      "corporate_action_conventions": {"not_applicable": true},
+      "source_evidence_ids": ["market-registry-official-calendar"]
+    },
+    {
+      "market_id": "HKEX",
+      "display_name": "香港交易所",
+      "exchange_code": "HKEX",
+      "asset_class": "EQUITY",
+      "currency": "HKD",
+      "timezone": "Asia/Hong_Kong",
+      "calendar_version": "HKEX-2026-v1",
+      "price_conventions": {"default_adjustment": "NONE", "supports": ["NONE", "QFQ", "HFQ"]},
+      "corporate_action_conventions": {"dividend": "separate_or_adjusted_series"},
+      "source_evidence_ids": ["market-registry-official-calendar"]
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "schema_version": "product-profit-bridge-input.v1",
+  "report_id": "bridge-example-600438",
+  "as_of": "2026-07-23",
+  "items": [
+    {
+      "bridge_id": "bridge-600438-product-001-base",
+      "company_id": "600438",
+      "scope_id": "company-scope-600438",
+      "product_id": "product-001",
+      "product_name": "待核验产品",
+      "scenario": "BASE_CASE",
+      "base_case_treatment": "INCLUDED",
+      "allocation_method": "DIRECT_DISCLOSURE",
+      "assumptions": {
+        "volume": {
+          "value": {"low": 0, "high": 0},
+          "unit": "unit",
+          "status": "UNKNOWN",
+          "evidence_ids": []
+        },
+        "unit_price": {
+          "value": {"low": 0, "high": 0},
+          "unit": "CNY/unit",
+          "status": "UNKNOWN",
+          "evidence_ids": []
+        },
+        "unit_cost": {
+          "value": {"low": 0, "high": 0},
+          "unit": "CNY/unit",
+          "status": "UNKNOWN",
+          "evidence_ids": []
+        }
+      }
+    }
+  ]
+}

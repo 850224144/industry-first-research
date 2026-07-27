@@ -1,3 +1,5 @@
+import json
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -11,6 +13,25 @@ from industry_first_research.data_sources import (
     FreeDataSourcePolicy,
     PublicHttpDataSourceAdapter,
 )
+
+
+FIXTURE_DIR = Path(__file__).parent / "fixtures" / "data_sources"
+
+
+def fixture_json(name):
+    return json.loads((FIXTURE_DIR / name).read_text(encoding="utf-8"))
+
+
+class FixtureResponse:
+    def __init__(self, payload):
+        self._payload = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        self.headers = {"Content-Type": "application/json"}
+
+    def read(self):
+        return self._payload
+
+    def close(self):
+        pass
 
 
 def test_free_data_policy_has_no_broker_terminal_dependency():
@@ -48,6 +69,65 @@ def test_akshare_adapter_preserves_endpoint_and_time_lineage():
     assert payload["endpoint"] == "stock_test"
     assert payload["as_of"] == "2026-07-18"
     assert payload["data"] == [{"code": "600438", "close": 10}]
+
+
+def test_fixed_public_source_fixtures_match_exchange_and_eastmoney_shapes():
+    official = PublicHttpDataSourceAdapter(
+        "official_exchange",
+        ("exchange_disclosure",),
+        lambda _request, timeout: FixtureResponse(
+            fixture_json("official_exchange_disclosure.json")
+        ),
+    )
+    eastmoney = EastmoneyDataSourceAdapter(
+        lambda _request, timeout: FixtureResponse(fixture_json("eastmoney_quote.json"))
+    )
+
+    official_payload = official.fetch(
+        {"url": "https://fixture.test/official"}, "2026-07-25"
+    )
+    eastmoney_payload = eastmoney.fetch(
+        {"url": "https://fixture.test/eastmoney"}, "2026-07-25"
+    )
+
+    assert official_payload["data"]["data"]["symbol"] == "600438.SH"
+    assert eastmoney_payload["data"]["data"]["diff"][0]["f12"] == "600438"
+
+
+def test_fixed_optional_source_fixtures_match_akshare_and_baostock_shapes():
+    akshare_module = SimpleNamespace(
+        __version__="fixture-akshare",
+        stock_zh_a_hist=lambda **_kwargs: fixture_json("akshare_history.json"),
+    )
+    akshare = AkshareDataSourceAdapter(akshare_module)
+    akshare_payload = akshare.fetch(
+        {"endpoint": "stock_zh_a_hist", "params": {"symbol": "600438"}},
+        "2026-07-25",
+    )
+
+    class Session:
+        error_code = "0"
+        error_msg = ""
+
+    class BaoStockFixture:
+        __version__ = "fixture-baostock"
+
+        def login(self):
+            return Session()
+
+        def query_history_k_data_plus(self, *_args, **_kwargs):
+            return fixture_json("baostock_history.json")
+
+        def logout(self):
+            pass
+
+    baostock = BaoStockDataSourceAdapter(BaoStockFixture())
+    baostock_payload = baostock.fetch(
+        {"query_type": "history", "code": "sh.600438"}, "2026-07-25"
+    )
+
+    assert akshare_payload["data"][0]["股票代码"] == "600438"
+    assert baostock_payload["data"][1]["close"] == "21.55"
 
 
 def test_baostock_adapter_health_check_is_lazy():
@@ -226,3 +306,17 @@ def test_router_captures_noisy_adapter_output_without_leaking_to_caller(capsys):
     captured = capsys.readouterr()
     assert captured.out == ""
     assert captured.err == ""
+
+
+def test_router_health_check_exception_is_recorded_as_unavailable():
+    class BrokenHealthAdapter:
+        name = "broken-health"
+        source_type = "test"
+
+        def health_check(self):
+            raise RuntimeError("health endpoint crashed")
+
+    router = DataSourceRouter([BrokenHealthAdapter()])
+    health = router.health()
+    assert health[0].available is False
+    assert "health check failed" in health[0].reason

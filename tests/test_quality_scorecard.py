@@ -18,6 +18,8 @@ def snapshot():
         "immutable": True,
         "simulation_only": True,
         "execution_enabled": False,
+        "research_id": "research-report-001",
+        "research_version_id": "research-version-001",
         "decision": {
             "fundamental_assumptions": ["cash flow remains observable"],
             "risks": ["industry remains weak"],
@@ -48,6 +50,7 @@ def test_scorecard_keeps_quality_dimensions_separate_from_outcome():
     )
 
     assert scorecard["outcome_label"] == "THESIS_RIGHT_TIMING_EARLY"
+    assert scorecard["research_version_id"] == "research-version-001"
     assert scorecard["dimensions"]["fact_accuracy"]["status"] == "PASS"
     assert scorecard["dimensions"]["state_judgment"]["status"] == "PARTIAL"
     assert scorecard["dimensions"]["outcome_performance"]["status"] == "PARTIAL"

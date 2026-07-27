@@ -1,0 +1,44 @@
+{
+  "schema_version": "industry-adapter.v1",
+  "adapter_id": "consumer_brand",
+  "display_name": "消费品牌",
+  "aliases": ["消费", "消费品", "品牌消费"],
+  "supported_industry_ids": ["baijiu", "consumer_brand"],
+  "supported_industry_names": ["中国白酒", "白酒", "消费品牌"],
+  "supported_industry_families": ["consumer", "consumer_staples"],
+  "business_models": ["消费", "品牌"],
+  "classification_attributes": {
+    "cyclicality": "WEAK_CYCLICAL",
+    "asset_intensity": "MIXED",
+    "demand_rigidity": "MIXED",
+    "competition_type": "BRAND_AND_CHANNEL",
+    "technology_risk": "LOW_TO_MEDIUM",
+    "policy_sensitivity": "MEDIUM"
+  },
+  "required_metrics": [
+    "brand_strength",
+    "price_and_mix",
+    "channel_inventory",
+    "sell_through",
+    "repurchase_or_scene_demand",
+    "gross_margin",
+    "operating_cashflow",
+    "receivables_and_inventory"
+  ],
+  "valuation_methods": ["normalized_earnings", "three_scenario_cashflow", "brand_and_cashflow_comparison"],
+  "survival_questions": [
+    "核心品牌、根据地和渠道能否穿越需求收缩",
+    "渠道库存与终端动销是否改善",
+    "经营现金流是否被应收、存货或费用投放吞噬"
+  ],
+  "product_application_questions": [
+    "公司主要靠哪些品牌、产品和价格带赚钱",
+    "客户购买理由是品牌、功能、场景还是渠道补贴",
+    "产品和品牌在目标场景中是否容易被替代"
+  ],
+  "demand_transmission_stages": ["CONCEPT", "CHANNEL_VALIDATED", "SELL_THROUGH_VALIDATED", "REVENUE_VALIDATED", "PROFIT_VALIDATED"],
+  "lifecycle_status": "ACTIVE",
+  "acceptance_samples": [
+    {"sample_id": "baijiu-channel-split", "description": "高端强品牌、次高端和区域品牌分开评估，不用单一行业价格代表全部公司"}
+  ]
+}

@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Mapping
+import hashlib
 import json
 from pathlib import Path
+from typing import Any
 
 from .company_research import CompanyResearchAssembler, snapshot_from_config
 from .cross_validation import CrossSourceIndustryRadar
@@ -19,6 +21,21 @@ from .supplemental_evidence import (
 from .researchability import ResearchabilityError, build_researchability_report
 from .quick_research import QuickResearchError, build_quick_research_report
 from .product_profile import ProductProfileError, build_product_profile_report
+from .product_profit_bridge import (
+    ProductProfitBridgeError,
+    build_product_profit_bridge_report,
+    validate_product_profit_bridge_report,
+)
+from .product_lifecycle import (
+    ProductLifecycleError,
+    build_product_lifecycle_report,
+    validate_product_lifecycle_report,
+)
+from .financial_model import (
+    FinancialModelError,
+    build_financial_model_report,
+    validate_financial_model_report,
+)
 from .application_mapping import (
     ApplicationMappingError,
     build_application_mapping_report,
@@ -53,6 +70,11 @@ from .adversarial_review import (
     build_adversarial_review_report,
 )
 from .research_report import ResearchReportError, build_research_report
+from .report_rendering import (
+    ReportRenderingError,
+    write_rendered_reports,
+)
+from .public_draft import PublicDraftError, build_public_draft, validate_public_draft
 from .research_pipeline import build_research_pipeline
 from .incremental_update import IncrementalUpdateError, build_incremental_update
 from .scheduler import (
@@ -77,6 +99,11 @@ from .simulation_portfolio import (
     build_simulation_portfolio,
     replay_simulation_portfolio,
 )
+from .futures_simulation import (
+    FuturesSimulationError,
+    build_futures_simulation,
+    replay_futures_simulation,
+)
 from .opportunity_candidate import (
     OpportunityCandidateError,
     build_opportunity_candidate,
@@ -87,10 +114,153 @@ from .announcement_asset import (
     build_announcement_asset,
     build_announcement_impact,
 )
+from .announcement_templates import (
+    AnnouncementTemplateError,
+    get_template,
+    load_template_catalog,
+    parse_announcement_input,
+)
+from .research_impact import (
+    ResearchImpactError,
+    build_research_impact_queue,
+    validate_research_impact_queue,
+)
+from .source_health import (
+    SourceHealthError,
+    build_source_health_snapshot,
+    validate_source_health_snapshot,
+)
+from .data_refresh import (
+    DataRefreshError,
+    build_data_source_refresh,
+    validate_data_source_refresh,
+)
+from .refresh_evidence import (
+    RefreshEvidenceError,
+    build_refresh_evidence_gate,
+    validate_refresh_evidence_gate,
+)
+from .data_refresh_tracking import (
+    DataRefreshTrackingError,
+    build_data_refresh_tracking_report,
+    validate_data_refresh_tracking_report,
+)
+from .task_resolution import (
+    TaskResolutionError,
+    resolve_research_task,
+    validate_research_task,
+)
+from .third_party_components import (
+    ThirdPartyComponentError,
+    ThirdPartyComponentRegistry,
+    build_component_health_snapshot,
+    build_component_registry,
+    build_performance_metrics_report,
+    parse_local_document,
+    validate_component_health_snapshot,
+    validate_component_registry_links,
+    validate_component_registry,
+    validate_performance_metrics_report,
+)
+from .third_party_candidate_review import (
+    ThirdPartyCandidateReviewError,
+    build_candidate_review,
+    build_candidate_review_event,
+    build_candidate_review_projection,
+    validate_candidate_review,
+    validate_candidate_review_event,
+    validate_candidate_review_projection,
+)
 from .futures_identity import FuturesIdentityError, identify_futures_object
 from .futures_fundamentals import (
     FuturesFundamentalsError,
     build_futures_fundamentals_report,
+)
+from .futures_tracking import FuturesTrackingError, build_futures_tracking_report
+from .futures_company_exposure import (
+    FuturesCompanyExposureError,
+    build_futures_company_exposure_report,
+)
+from .commodity_adapters import (
+    CommodityAdapterError,
+    CommodityAdapterRegistry,
+    build_commodity_adapter_registry_report,
+    build_commodity_adapter_validation_report,
+)
+from .research_assets import (
+    ResearchAssetAdapter,
+    ResearchAssetCompanyPool,
+    ResearchAssetError,
+)
+from .security_master import (
+    SecurityMasterError,
+    build_security_master_snapshot,
+    validate_security_master_snapshot,
+)
+from .company_scope import (
+    CompanyScopeError,
+    build_company_scope_report,
+    normalize_scope_reports,
+    validate_company_scope_report,
+)
+from .market_data import (
+    MarketDataError,
+    build_market_data_snapshot,
+    validate_market_data_snapshot,
+)
+from .market_registry import (
+    MarketRegistry,
+    MarketRegistryError,
+    build_market_registry_report,
+    validate_market_reference,
+)
+from .industry_adapters import (
+    IndustryAdapterError,
+    IndustryAdapterRegistry,
+    build_industry_adapter_registry_report,
+    build_industry_profile_report,
+)
+from .evidence import (
+    EvidenceError,
+    build_evidence,
+    build_evidence_bundle,
+    build_evidence_input_bundle,
+    build_model_assumption,
+    build_research_artifact,
+    build_research_candidate_set,
+    build_scorecard_artifact,
+    build_source_document,
+    reconcile_evidence,
+    validate_evidence_cutoff,
+)
+from .research_execution import (
+    ResearchExecutionError,
+    build_execution_audit,
+    build_llm_run,
+    build_research_execution_plan,
+    build_research_request,
+)
+from .research_version import (
+    ResearchVersionError,
+    build_research_version,
+    build_research_version_comparison,
+    build_research_version_from_pipeline,
+    build_research_version_replay,
+    validate_research_version,
+)
+from .capability_matrix import (
+    CapabilityMatrixError,
+    build_capability_gap,
+    build_capability_matrix,
+)
+from .opportunity_quality import (
+    OpportunityQualityError,
+    build_opportunity_quality_report,
+)
+from .decision_lifecycle import (
+    DecisionLifecycleError,
+    build_decision_lifecycle,
+    build_decision_lifecycle_event,
 )
 from .manual_evidence import (
     ManualEvidenceTemplateError,
@@ -128,8 +298,20 @@ from .config import (
 )
 from .local_assets import ConfigCompanyPool, LocalAssetDataProvider, LocalResearchAssetCatalog
 from .report import render_scan_html, render_scan_markdown
-from .storage import JsonSnapshotStore
+from .storage import JsonSnapshotStore, SnapshotExistsError
 from .trend import RadarTrendError, build_trend_report, write_trend_report
+
+
+def _payload_hash_without_version_id(payload: Mapping[str, Any]) -> str:
+    value = {key: item for key, item in payload.items() if key != "research_version_id"}
+    encoded = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+
+def _research_version_content_hash(version: Mapping[str, Any]) -> str:
+    value = {key: item for key, item in version.items() if key != "content_hash"}
+    encoded = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 from .tonghuashun import TonghuashunAPIError, TonghuashunIndustryRadar
 from .tonghuashun_company_pool import TonghuashunCompanyPool, TonghuashunCompanyPoolError
 from .tonghuashun_light_data import TonghuashunLightCompanyData
@@ -316,6 +498,7 @@ def main() -> None:
         help="build an evidence-only product and profit-source profile",
     )
     product_profile.add_argument("--input", required=True, dest="input_path")
+    product_profile.add_argument("--company-scopes", default="", dest="company_scopes_path")
     product_profile.add_argument(
         "--required-field", action="append", default=None, dest="required_fields"
     )
@@ -323,6 +506,66 @@ def main() -> None:
         "--output-dir", default="data/company_product_profiles", dest="output_dir"
     )
     product_profile.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    product_profit_bridge = subparsers.add_parser(
+        "product-profit-bridge",
+        help="build deterministic product revenue, profit, and cash-flow bridge scenarios",
+    )
+    product_profit_bridge.add_argument("--input", required=True, dest="input_path")
+    product_profit_bridge.add_argument(
+        "--company-scopes", default="", dest="company_scopes_path"
+    )
+    product_profit_bridge.add_argument(
+        "--output-dir", default="data/product_profit_bridges", dest="output_dir"
+    )
+    product_profit_bridge.add_argument("--bridge-id", default="", dest="bridge_id")
+    product_profit_bridge.add_argument(
+        "--rule-version", default="product-profit-bridge-rules.v1", dest="rule_version"
+    )
+    product_profit_bridge_validate = subparsers.add_parser(
+        "product-profit-bridge-validate",
+        help="validate one immutable product profit bridge report",
+    )
+    product_profit_bridge_validate.add_argument("--input", required=True, dest="input_path")
+    product_lifecycle = subparsers.add_parser(
+        "product-lifecycle",
+        help="build an evidence-only product lifecycle and market-state snapshot",
+    )
+    product_lifecycle.add_argument("--input", required=True, dest="input_path")
+    product_lifecycle.add_argument(
+        "--company-scopes", default="", dest="company_scopes_path"
+    )
+    product_lifecycle.add_argument(
+        "--output-dir", default="data/product_lifecycles", dest="output_dir"
+    )
+    product_lifecycle.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    product_lifecycle.add_argument(
+        "--rule-version", default="product-lifecycle-rules.v1", dest="rule_version"
+    )
+    product_lifecycle_validate = subparsers.add_parser(
+        "product-lifecycle-validate",
+        help="validate one immutable product lifecycle snapshot",
+    )
+    product_lifecycle_validate.add_argument("--input", required=True, dest="input_path")
+    financial_model = subparsers.add_parser(
+        "financial-model",
+        help="build deterministic financial, cash-flow, stress, and scenario observations",
+    )
+    financial_model.add_argument("--input", required=True, dest="input_path")
+    financial_model.add_argument(
+        "--company-scopes", default="", dest="company_scopes_path"
+    )
+    financial_model.add_argument(
+        "--output-dir", default="data/financial_models", dest="output_dir"
+    )
+    financial_model.add_argument("--model-id", default="", dest="model_id")
+    financial_model.add_argument(
+        "--rule-version", default="financial-model-rules.v1", dest="rule_version"
+    )
+    financial_model_validate = subparsers.add_parser(
+        "financial-model-validate",
+        help="validate one immutable financial model report",
+    )
+    financial_model_validate.add_argument("--input", required=True, dest="input_path")
     application_mapping = subparsers.add_parser(
         "application-mapping",
         help="build an evidence-only product-to-application mapping",
@@ -412,6 +655,7 @@ def main() -> None:
         help="build a read-only market structure snapshot from OHLCV input",
     )
     market_structure.add_argument("--input", required=True, dest="input_path")
+    market_structure.add_argument("--market-data", default="", dest="market_data_path")
     market_structure.add_argument(
         "--output-dir", default="data/market_structure", dest="output_dir"
     )
@@ -421,6 +665,7 @@ def main() -> None:
         help="compare local, czsc, and chan.py structure results without trading signals",
     )
     market_structure_compare.add_argument("--input", required=True, dest="input_path")
+    market_structure_compare.add_argument("--market-data", default="", dest="market_data_path")
     market_structure_compare.add_argument(
         "--output-dir", default="data/market_structure_comparisons", dest="output_dir"
     )
@@ -448,6 +693,41 @@ def main() -> None:
         "--output-dir", default="data/company_research_reports", dest="output_dir"
     )
     research_report.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    render_report = subparsers.add_parser(
+        "render-report",
+        help="render an immutable company/futures report as Markdown and/or HTML",
+    )
+    render_report.add_argument("--input", required=True, dest="input_path")
+    render_report.add_argument(
+        "--format",
+        action="append",
+        choices=("markdown", "html"),
+        dest="formats",
+        help="repeat to select formats; defaults to both",
+    )
+    render_report.add_argument("--title", default="", dest="title")
+    render_report.add_argument("--basename", default="", dest="basename")
+    render_report.add_argument(
+        "--output-dir", default="data/rendered_reports", dest="output_dir"
+    )
+    public_draft = subparsers.add_parser(
+        "public-draft",
+        help="create a redacted public draft from an explicitly locked research report",
+    )
+    public_draft.add_argument("--input", required=True, dest="input_path")
+    public_draft.add_argument("--source-lock", required=True, dest="source_lock_path")
+    public_draft.add_argument("--channel", default="wechat_public_draft", dest="channel")
+    public_draft.add_argument("--title", default="", dest="title")
+    public_draft.add_argument("--draft-version", type=int, default=1, dest="draft_version")
+    public_draft.add_argument("--draft-id", default="", dest="draft_id")
+    public_draft.add_argument(
+        "--output-dir", default="data/public_drafts", dest="output_dir"
+    )
+    public_draft_validate = subparsers.add_parser(
+        "validate-public-draft",
+        help="validate a generated public draft without publishing it",
+    )
+    public_draft_validate.add_argument("--input", required=True, dest="input_path")
     research_pipeline = subparsers.add_parser(
         "research-pipeline",
         help="run the bounded company deep-research stages as one pipeline",
@@ -460,6 +740,24 @@ def main() -> None:
         "--output-dir", default="data/company_research_pipelines", dest="output_dir"
     )
     research_pipeline.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    research_pipeline.add_argument(
+        "--evidence-bundle", default="", dest="evidence_bundle_path"
+    )
+    research_pipeline.add_argument(
+        "--company-scopes", default="", dest="company_scopes_path"
+    )
+    research_pipeline.add_argument(
+        "--product-profit-bridge", default="", dest="product_profit_bridge_path"
+    )
+    research_pipeline.add_argument(
+        "--product-lifecycle", default="", dest="product_lifecycle_path"
+    )
+    research_pipeline.add_argument(
+        "--financial-model", default="", dest="financial_model_path"
+    )
+    research_pipeline.add_argument(
+        "--version-output-dir", default="data/research_versions", dest="version_output_dir"
+    )
     incremental_update = subparsers.add_parser(
         "incremental-update",
         help="compare new evidence with a prior pipeline and create a new version",
@@ -475,7 +773,19 @@ def main() -> None:
     )
     incremental_update.add_argument("--as-of", default="", dest="as_of")
     incremental_update.add_argument(
+        "--execution-mode",
+        choices=("LOCAL_ONLY", "LLM_ASSISTED", "MANUAL_WEB_AI"),
+        default="LOCAL_ONLY",
+        dest="execution_mode",
+    )
+    incremental_update.add_argument("--company-scopes", default="", dest="company_scopes_path")
+    incremental_update.add_argument("--market-structure", default="", dest="market_structure_path")
+    incremental_update.add_argument("--evidence-bundle", default="", dest="evidence_bundle_path")
+    incremental_update.add_argument(
         "--output-dir", default="data/company_incremental_updates", dest="output_dir"
+    )
+    incremental_update.add_argument(
+        "--version-output-dir", default="data/research_versions", dest="version_output_dir"
     )
     incremental_update.add_argument("--snapshot-id", default="", dest="snapshot_id")
     schedule_init = subparsers.add_parser(
@@ -566,12 +876,26 @@ def main() -> None:
         "--output-dir", default="data/decision_snapshots", dest="output_dir"
     )
     decision_snapshot.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    decision_snapshot.add_argument(
+        "--evidence-bundle", default="", dest="evidence_bundle_path"
+    )
+    decision_snapshot.add_argument(
+        "--execution-plan", default="", dest="execution_plan_path"
+    )
+    decision_snapshot.add_argument(
+        "--company-scope", default="", dest="company_scope_path"
+    )
+    decision_snapshot.add_argument(
+        "--market-data", action="append", default=None, dest="market_data_paths"
+    )
     attribution = subparsers.add_parser(
         "attribution",
         help="compare a locked simulation snapshot with its fixed benchmark",
     )
     attribution.add_argument("--input", required=True, dest="input_path")
     attribution.add_argument("--outcome", required=True, dest="outcome_path")
+    attribution.add_argument("--asset-market-data", default="", dest="asset_market_data_path")
+    attribution.add_argument("--benchmark-market-data", default="", dest="benchmark_market_data_path")
     attribution.add_argument("--closed-at", default="", dest="closed_at")
     attribution.add_argument(
         "--output-dir", default="data/attribution_results", dest="output_dir"
@@ -622,11 +946,36 @@ def main() -> None:
     )
     portfolio_replay.add_argument("--input", required=True, dest="input_path")
     portfolio_replay.add_argument("--outcome", required=True, dest="outcome_path")
+    portfolio_replay.add_argument("--asset-market-data-dir", default="", dest="asset_market_data_dir")
+    portfolio_replay.add_argument("--benchmark-market-data", default="", dest="benchmark_market_data_path")
     portfolio_replay.add_argument("--closed-at", default="", dest="closed_at")
     portfolio_replay.add_argument(
         "--output-dir", default="data/simulation_portfolio_replays", dest="output_dir"
     )
     portfolio_replay.add_argument("--replay-id", default="", dest="replay_id")
+    futures_simulation_create = subparsers.add_parser(
+        "futures-simulation-create",
+        help="create an immutable specific-contract futures settlement simulation",
+    )
+    futures_simulation_create.add_argument("--input", required=True, dest="input_path")
+    futures_simulation_create.add_argument(
+        "--decision", action="append", required=True, dest="decision_paths"
+    )
+    futures_simulation_create.add_argument(
+        "--output-dir", default="data/futures_simulations", dest="output_dir"
+    )
+    futures_simulation_create.add_argument("--simulation-id", default="", dest="simulation_id")
+    futures_simulation_replay = subparsers.add_parser(
+        "futures-simulation-replay",
+        help="replay a futures simulation with daily settlement, margin and rule rows",
+    )
+    futures_simulation_replay.add_argument("--input", required=True, dest="input_path")
+    futures_simulation_replay.add_argument("--outcome", required=True, dest="outcome_path")
+    futures_simulation_replay.add_argument("--closed-at", default="", dest="closed_at")
+    futures_simulation_replay.add_argument(
+        "--output-dir", default="data/futures_simulation_replays", dest="output_dir"
+    )
+    futures_simulation_replay.add_argument("--replay-id", default="", dest="replay_id")
     opportunity_candidate = subparsers.add_parser(
         "opportunity-candidate",
         help="evaluate one industry-first opportunity candidate without a total score",
@@ -664,11 +1013,66 @@ def main() -> None:
         "--output-dir", default="data/announcement_impacts", dest="output_dir"
     )
     announcement_impact.add_argument("--impact-id", default="", dest="impact_id")
+    announcement_templates = subparsers.add_parser(
+        "announcement-templates",
+        help="validate and normalize versioned local announcement templates",
+    )
+    announcement_templates.add_argument(
+        "--config",
+        default="config/announcement_templates.v1.json",
+        dest="config_path",
+    )
+    announcement_templates.add_argument(
+        "--output-dir", default="data/announcement_templates", dest="output_dir"
+    )
+    announcement_parse = subparsers.add_parser(
+        "announcement-parse",
+        help="parse a user-provided JSON, HTML, or text disclosure snapshot locally",
+    )
+    announcement_parse.add_argument("--input", required=True, dest="input_path")
+    announcement_parse.add_argument("--template", required=True, dest="template_id")
+    announcement_parse.add_argument(
+        "--config",
+        default="config/announcement_templates.v1.json",
+        dest="config_path",
+    )
+    announcement_parse.add_argument("--metadata", default="", dest="metadata_path")
+    announcement_parse.add_argument("--source-url", default="", dest="source_url")
+    announcement_parse.add_argument("--captured-at", default="", dest="captured_at")
+    announcement_parse.add_argument("--research-as-of", default="", dest="research_as_of")
+    announcement_parse.add_argument("--as-of", default="", dest="as_of")
+    announcement_parse.add_argument("--subject-type", default="", dest="subject_type")
+    announcement_parse.add_argument("--subject-id", default="", dest="subject_id")
+    announcement_parse.add_argument("--issuer", default="", dest="issuer")
+    announcement_parse.add_argument("--document-id", default="", dest="document_id")
+    announcement_parse.add_argument("--output-dir", default="data/announcement_inputs", dest="output_dir")
+    research_impact = subparsers.add_parser(
+        "research-impact-queue",
+        help="map an event or announcement impact to saved research versions",
+    )
+    research_impact.add_argument("--event", required=True, dest="event_path")
+    research_impact.add_argument(
+        "--version", action="append", default=None, dest="version_paths",
+        help="research-version manifest path; may be repeated",
+    )
+    research_impact.add_argument(
+        "--versions-dir", default="data/research_versions", dest="versions_dir",
+    )
+    research_impact.add_argument("--queue-id", default="", dest="queue_id")
+    research_impact.add_argument(
+        "--output-dir", default="data/research_impact_queues", dest="output_dir"
+    )
+    research_impact_validate = subparsers.add_parser(
+        "validate-research-impact-queue",
+        help="validate an immutable research-impact queue",
+    )
+    research_impact_validate.add_argument("--input", required=True, dest="input_path")
     futures_identify = subparsers.add_parser(
         "futures-identify",
         help="identify a domestic futures variety, contract, continuous series, or spot benchmark",
     )
     futures_identify.add_argument("--input", required=True, dest="input_path")
+    futures_identify.add_argument("--market-registry", default="", dest="market_registry_path")
     futures_identify.add_argument(
         "--output-dir", default="data/futures_identities", dest="output_dir"
     )
@@ -688,6 +1092,170 @@ def main() -> None:
     futures_fundamentals.add_argument(
         "--snapshot-id", default="", dest="snapshot_id"
     )
+    futures_tracking = subparsers.add_parser(
+        "futures-tracking",
+        help="compare two saved futures fundamentals reports without changing either report",
+    )
+    futures_tracking.add_argument("--current", required=True, dest="current_path")
+    futures_tracking.add_argument("--previous", default="", dest="previous_path")
+    futures_tracking.add_argument("--as-of", default="", dest="as_of")
+    futures_tracking.add_argument("--tracking-id", default="", dest="tracking_id")
+    futures_tracking.add_argument(
+        "--output-dir", default="data/futures_tracking", dest="output_dir"
+    )
+    futures_company_exposure = subparsers.add_parser(
+        "futures-company-exposure",
+        help="map a futures variety to explicit listed-company product exposures",
+    )
+    futures_company_exposure.add_argument(
+        "--futures-report", required=True, dest="futures_report_path"
+    )
+    futures_company_exposure.add_argument("--input", required=True, dest="input_path")
+    futures_company_exposure.add_argument(
+        "--product-profile", default="", dest="product_profile_path"
+    )
+    futures_company_exposure.add_argument(
+        "--output-dir", default="data/futures_company_exposures", dest="output_dir"
+    )
+    futures_company_exposure.add_argument(
+        "--snapshot-id", default="", dest="snapshot_id"
+    )
+    commodity_adapters = subparsers.add_parser(
+        "commodity-adapters",
+        help="list and validate the configuration-driven commodity adapter registry",
+    )
+    commodity_adapters.add_argument(
+        "--directory", default="config/commodities", dest="directory"
+    )
+    commodity_adapters.add_argument(
+        "--output-dir", default="data/commodity_adapters", dest="output_dir"
+    )
+    commodity_adapters.add_argument(
+        "--registry-id", default="default", dest="registry_id"
+    )
+    commodity_adapter_validate = subparsers.add_parser(
+        "commodity-adapter-validate",
+        help="validate one commodity adapter against futures fundamentals evidence",
+    )
+    commodity_adapter_validate.add_argument(
+        "--directory", default="config/commodities", dest="directory"
+    )
+    commodity_adapter_validate.add_argument("--adapter", required=True)
+    commodity_adapter_validate.add_argument(
+        "--futures-report", default="", dest="futures_report_path"
+    )
+    commodity_adapter_validate.add_argument(
+        "--fundamentals", default="", dest="fundamentals_path"
+    )
+    commodity_adapter_validate.add_argument(
+        "--output-dir", default="data/commodity_adapter_validations", dest="output_dir"
+    )
+    commodity_adapter_validate.add_argument(
+        "--validation-id", default="", dest="validation_id"
+    )
+    research_assets = subparsers.add_parser(
+        "research-assets",
+        help="discover or safely import existing luopan/ai-berkshire research assets",
+    )
+    research_assets.add_argument(
+        "--mode",
+        choices=("discover", "profile", "artifact", "candidate-set", "scorecard", "validate-identity"),
+        default="discover",
+    )
+    research_assets.add_argument("--root", default=".", help="repository root or vendor directory")
+    research_assets.add_argument("--identifier", default="")
+    research_assets.add_argument("--as-of", default=None, dest="as_of")
+    research_assets.add_argument("--input", default="", dest="input_path")
+    research_assets.add_argument("--authoritative", default="", dest="authoritative_path")
+    research_assets.add_argument("--limit", type=int, default=500)
+    research_assets.add_argument(
+        "--output-dir", default="data/research_assets", dest="output_dir"
+    )
+    research_assets.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    security_master = subparsers.add_parser(
+        "security-master",
+        help="build a lightweight security master and effective-dated industry memberships",
+    )
+    security_master.add_argument("--input", required=True, dest="input_path")
+    security_master.add_argument("--previous", default="", dest="previous_path")
+    security_master.add_argument(
+        "--output-dir", default="data/security_master", dest="output_dir"
+    )
+    security_master.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    security_master_validate = subparsers.add_parser(
+        "security-master-validate",
+        help="validate a lightweight security master snapshot",
+    )
+    security_master_validate.add_argument("--input", required=True, dest="input_path")
+    security_master_validate.add_argument(
+        "--output-dir", default="data/security_master_validations", dest="output_dir"
+    )
+    company_scope = subparsers.add_parser(
+        "company-scope",
+        help="build an immutable company boundary and researchability report",
+    )
+    company_scope.add_argument("--input", required=True, dest="input_path")
+    company_scope.add_argument("--output-dir", default="data/company_scopes", dest="output_dir")
+    company_scope.add_argument("--scope-id", default="", dest="scope_id")
+    company_scope_validate = subparsers.add_parser(
+        "company-scope-validate", help="validate a saved company boundary report"
+    )
+    company_scope_validate.add_argument("--input", required=True, dest="input_path")
+    company_scope_validate.add_argument(
+        "--output-dir", default="data/company_scope_validations", dest="output_dir"
+    )
+    market_data = subparsers.add_parser(
+        "market-data", help="build an immutable source-aware market-data snapshot"
+    )
+    market_data.add_argument("--input", required=True, dest="input_path")
+    market_data.add_argument("--market-registry", default="", dest="market_registry_path")
+    market_data.add_argument("--output-dir", default="data/market_data", dest="output_dir")
+    market_data.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    market_data_validate = subparsers.add_parser(
+        "market-data-validate", help="validate a saved market-data snapshot"
+    )
+    market_data_validate.add_argument("--input", required=True, dest="input_path")
+    market_data_validate.add_argument(
+        "--output-dir", default="data/market_data_validations", dest="output_dir"
+    )
+    market_data_validate.add_argument(
+        "--market-registry", default="", dest="market_registry_path"
+    )
+    market_registry = subparsers.add_parser(
+        "market-registry", help="build a versioned market and calendar registry"
+    )
+    market_registry.add_argument("--input", required=True, dest="input_path")
+    market_registry.add_argument("--output-dir", default="data/market_registries", dest="output_dir")
+    market_registry_validate = subparsers.add_parser(
+        "market-reference-validate", help="validate a market reference against a registry"
+    )
+    market_registry_validate.add_argument("--input", required=True, dest="input_path")
+    market_registry_validate.add_argument("--registry", required=True, dest="registry_path")
+    market_registry_validate.add_argument("--output-dir", default="data/market_registry_validations", dest="output_dir")
+    industry_adapters = subparsers.add_parser(
+        "industry-adapters",
+        help="list the configuration-driven industry adapter registry",
+    )
+    industry_adapters.add_argument(
+        "--directory", default="config/industries/adapters", dest="directory"
+    )
+    industry_adapters.add_argument(
+        "--output-dir", default="data/industry_adapters", dest="output_dir"
+    )
+    industry_adapters.add_argument("--registry-id", default="default", dest="registry_id")
+    industry_profile = subparsers.add_parser(
+        "industry-profile",
+        help="classify an industry profile and emit its adapter research contract",
+    )
+    industry_profile.add_argument("--input", required=True, dest="input_path")
+    industry_profile.add_argument(
+        "--directory", default="config/industries/adapters", dest="directory"
+    )
+    industry_profile.add_argument("--adapter", default="", dest="adapter_id")
+    industry_profile.add_argument(
+        "--output-dir", default="data/industry_profiles", dest="output_dir"
+    )
+    industry_profile.add_argument("--profile-id", default="", dest="profile_id")
     evidence_template = subparsers.add_parser(
         "evidence-template",
         help="create blank records for manually verified company evidence",
@@ -743,6 +1311,16 @@ def main() -> None:
     discover.add_argument("--company-pool-size", type=int, default=10)
     discover.add_argument("--output-dir", default="data/discovery", dest="output_dir")
     discover.add_argument(
+        "--version-output-dir", default="data/research_versions", dest="version_output_dir"
+    )
+    discover.add_argument(
+        "--research-candidate-set",
+        action="append",
+        default=None,
+        dest="research_candidate_set_paths",
+        help="explicit research-asset-candidate-set.v1 JSON; may be repeated",
+    )
+    discover.add_argument(
         "--alias-file",
         default="docs/industry_aliases.v1.json",
         dest="alias_file",
@@ -752,6 +1330,359 @@ def main() -> None:
     external.add_argument("--question", required=True)
     external.add_argument("--answer", required=True)
     external.add_argument("--model", default="unknown", dest="model_label")
+    source_document = subparsers.add_parser(
+        "source-document",
+        help="create an immutable source document manifest with a content hash",
+    )
+    source_document.add_argument("--input", required=True, dest="input_path")
+    source_document.add_argument("--raw-content", default="", dest="raw_content_path")
+    source_document.add_argument(
+        "--output-dir", default="data/source_documents", dest="output_dir"
+    )
+    source_document.add_argument("--document-id", default="", dest="document_id")
+    evidence_command = subparsers.add_parser(
+        "evidence",
+        help="build the unified evidence bundle and optionally reconcile conflicts",
+    )
+    evidence_command.add_argument("--input", required=True, dest="input_path")
+    evidence_command.add_argument(
+        "--output-dir", default="data/evidence", dest="output_dir"
+    )
+    evidence_command.add_argument("--bundle-id", default="", dest="bundle_id")
+    evidence_command.add_argument(
+        "--reconcile", action="store_true", dest="reconcile"
+    )
+    evidence_command.add_argument(
+        "--group-by", action="append", default=None, dest="group_by"
+    )
+    evidence_command.add_argument(
+        "--source-priority", action="append", default=None, dest="source_priorities"
+    )
+    refresh_evidence = subparsers.add_parser(
+        "evidence-from-refresh",
+        help="create a manual evidence-promotion gate from a saved data refresh",
+    )
+    refresh_evidence.add_argument("--refresh", required=True, dest="refresh_path")
+    refresh_evidence.add_argument("--records", required=True, dest="records_path")
+    refresh_evidence.add_argument("--refresh-uri", default="", dest="refresh_uri")
+    refresh_evidence.add_argument("--research-as-of", default="", dest="research_as_of")
+    refresh_evidence.add_argument("--reviewer-id", default="", dest="reviewer_id")
+    refresh_evidence.add_argument("--reviewed-at", default="", dest="reviewed_at")
+    refresh_evidence.add_argument("--review-reason", default="", dest="review_reason")
+    refresh_evidence.add_argument("--bundle-id", default="", dest="bundle_id")
+    refresh_evidence.add_argument("--gate-id", default="", dest="gate_id")
+    refresh_evidence.add_argument("--user-confirmed", action="store_true", dest="user_confirmed")
+    refresh_evidence.add_argument(
+        "--output-dir", default="data/refresh_evidence_gates", dest="output_dir"
+    )
+    refresh_evidence_validate = subparsers.add_parser(
+        "validate-evidence-from-refresh",
+        help="validate a refresh evidence gate without promoting facts",
+    )
+    refresh_evidence_validate.add_argument("--input", required=True, dest="input_path")
+    research_request = subparsers.add_parser(
+        "research-request",
+        help="normalize a research request with depth, mode, and budget",
+    )
+    research_request.add_argument("--input", required=True, dest="input_path")
+    research_request.add_argument(
+        "--output-dir", default="data/research_execution", dest="output_dir"
+    )
+    research_request.add_argument("--request-id", default="", dest="request_id")
+    research_plan = subparsers.add_parser(
+        "research-plan",
+        help="build a bounded LOCAL_ONLY or LLM_ASSISTED execution plan",
+    )
+    research_plan.add_argument("--input", required=True, dest="input_path")
+    research_plan.add_argument("--output-dir", default="data/research_execution", dest="output_dir")
+    research_plan.add_argument("--available-model", action="store_true", dest="available_model")
+    research_plan.add_argument("--used-input-tokens", type=int, default=0, dest="used_input_tokens")
+    research_plan.add_argument("--used-output-tokens", type=int, default=0, dest="used_output_tokens")
+    research_plan.add_argument("--differences", default="", dest="differences_path")
+    research_plan.add_argument("--plan-id", default="", dest="plan_id")
+    llm_run = subparsers.add_parser(
+        "llm-run",
+        help="record an authorized model call without making the call",
+    )
+    llm_run.add_argument("--input", required=True, dest="input_path")
+    llm_run.add_argument("--output-dir", default="data/research_execution", dest="output_dir")
+    llm_run.add_argument("--llm-run-id", default="", dest="llm_run_id")
+    execution_audit = subparsers.add_parser(
+        "execution-audit",
+        help="audit model runs against one execution plan",
+    )
+    execution_audit.add_argument("--plan", required=True, dest="plan_path")
+    execution_audit.add_argument("--runs", default="", dest="runs_path")
+    execution_audit.add_argument("--output-dir", default="data/research_execution", dest="output_dir")
+    execution_audit.add_argument("--audit-id", default="", dest="audit_id")
+    capability_matrix = subparsers.add_parser(
+        "capability-matrix",
+        help="validate the component reuse and capability-gap matrix",
+    )
+    capability_matrix.add_argument("--input", required=True, dest="input_path")
+    capability_matrix.add_argument("--output-dir", default="data/capabilities", dest="output_dir")
+    capability_matrix.add_argument("--matrix-id", default="", dest="matrix_id")
+    capability_gap = subparsers.add_parser(
+        "capability-gap",
+        help="record a bounded new-development capability gap",
+    )
+    capability_gap.add_argument("--input", required=True, dest="input_path")
+    capability_gap.add_argument("--output-dir", default="data/capabilities", dest="output_dir")
+    capability_gap.add_argument("--gap-id", default="", dest="gap_id")
+    opportunity_quality = subparsers.add_parser(
+        "opportunity-quality",
+        help="evaluate preserved opportunity scans and explicit review samples",
+    )
+    opportunity_quality.add_argument("--input", required=True, dest="input_path")
+    opportunity_quality.add_argument("--output-dir", default="data/opportunity_quality", dest="output_dir")
+    opportunity_quality.add_argument("--quality-id", default="", dest="quality_id")
+    lifecycle_event = subparsers.add_parser(
+        "decision-lifecycle-event",
+        help="append one immutable status event to a decision snapshot",
+    )
+    lifecycle_event.add_argument("--snapshot", required=True, dest="snapshot_path")
+    lifecycle_event.add_argument("--input", required=True, dest="input_path")
+    lifecycle_event.add_argument("--events", default="", dest="events_path")
+    lifecycle_event.add_argument("--output-dir", default="data/decision_lifecycles", dest="output_dir")
+    lifecycle_event.add_argument("--event-id", default="", dest="event_id")
+    lifecycle = subparsers.add_parser(
+        "decision-lifecycle",
+        help="validate and project append-only decision lifecycle events",
+    )
+    lifecycle.add_argument("--snapshot", required=True, dest="snapshot_path")
+    lifecycle.add_argument("--events", default="", dest="events_path")
+    lifecycle.add_argument("--as-of", default="", dest="as_of")
+    lifecycle.add_argument("--output-dir", default="data/decision_lifecycles", dest="output_dir")
+    lifecycle.add_argument("--lifecycle-id", default="", dest="lifecycle_id")
+    research_version = subparsers.add_parser(
+        "research-version",
+        help="create an immutable research-version manifest from a pipeline or manifest input",
+    )
+    research_version.add_argument("--input", required=True, dest="input_path")
+    research_version.add_argument("--supplemental", default="", dest="supplemental_path")
+    research_version.add_argument("--evidence-bundle", default="", dest="evidence_bundle_path")
+    research_version.add_argument("--previous-version-id", default="", dest="previous_version_id")
+    research_version.add_argument(
+        "--execution-mode",
+        choices=("LOCAL_ONLY", "LLM_ASSISTED", "MANUAL_WEB_AI"),
+        default="LOCAL_ONLY",
+        dest="execution_mode",
+    )
+    research_version.add_argument("--affected-module", action="append", default=None, dest="affected_modules")
+    research_version.add_argument("--version-id", default="", dest="version_id")
+    research_version.add_argument(
+        "--source-health",
+        default="",
+        dest="source_health_path",
+        help="optional validated data-source-health.v1 snapshot",
+    )
+    research_version.add_argument("--output-dir", default="data/research_versions", dest="output_dir")
+    research_version_compare = subparsers.add_parser(
+        "compare-research-versions",
+        help="compare two immutable research-version manifests",
+    )
+    research_version_compare.add_argument("--previous", required=True, dest="previous_path")
+    research_version_compare.add_argument("--current", required=True, dest="current_path")
+    research_version_compare.add_argument("--output-dir", default="data/research_version_comparisons", dest="output_dir")
+    research_version_validate = subparsers.add_parser(
+        "validate-research-version",
+        help="validate one immutable research-version manifest and its content hash",
+    )
+    research_version_validate.add_argument("--input", required=True, dest="input_path")
+    research_version_replay = subparsers.add_parser(
+        "replay-research-version",
+        help="validate a research-version manifest and prepare a local replay",
+    )
+    research_version_replay.add_argument("--version", required=True, dest="version_path")
+    research_version_replay.add_argument("--artifacts", default="", dest="artifacts_path")
+    research_version_replay.add_argument("--output-dir", default="data/research_version_replays", dest="output_dir")
+    source_health = subparsers.add_parser(
+        "source-health",
+        help="check configured data-source readiness and write an immutable snapshot",
+    )
+    source_health.add_argument(
+        "--source",
+        action="append",
+        default=None,
+        dest="source_names",
+        help="limit the check to one source; may be repeated",
+    )
+    source_health.add_argument(
+        "--subject-type",
+        action="append",
+        default=None,
+        dest="subject_types",
+        help="route subject type; may be repeated",
+    )
+    source_health.add_argument(
+        "--required-capability",
+        action="append",
+        default=None,
+        dest="required_capabilities",
+        help="required capability as subject_type=capability; may be repeated",
+    )
+    source_health.add_argument("--checked-at", default="", dest="checked_at")
+    source_health.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    source_health.add_argument("--output-dir", default="data/source_health", dest="output_dir")
+    source_health_validate = subparsers.add_parser(
+        "validate-source-health",
+        help="validate an immutable data-source-health.v1 snapshot",
+    )
+    source_health_validate.add_argument("--input", required=True, dest="input_path")
+    data_refresh = subparsers.add_parser(
+        "data-refresh",
+        help="fetch an explicit bounded query manifest through primary/fallback sources",
+    )
+    data_refresh.add_argument("--input", required=True, dest="input_path")
+    data_refresh.add_argument("--output-dir", default="data/data_source_refreshes", dest="output_dir")
+    data_refresh.add_argument("--refresh-id", default="", dest="refresh_id")
+    data_refresh.add_argument("--as-of", default="", dest="as_of")
+    data_refresh.add_argument("--max-queries", type=int, default=20, dest="max_queries")
+    data_refresh.add_argument("--max-rows-per-query", type=int, default=500, dest="max_rows_per_query")
+    data_refresh_validate = subparsers.add_parser(
+        "validate-data-refresh",
+        help="validate an immutable data-source-refresh.v1 snapshot without fetching",
+    )
+    data_refresh_validate.add_argument("--input", required=True, dest="input_path")
+    data_refresh_tracking = subparsers.add_parser(
+        "data-refresh-track",
+        help="compare two saved data-source-refresh.v1 snapshots without fetching",
+    )
+    data_refresh_tracking.add_argument("--current", required=True, dest="current_path")
+    data_refresh_tracking.add_argument("--previous", default="", dest="previous_path")
+    data_refresh_tracking.add_argument("--as-of", default="", dest="as_of")
+    data_refresh_tracking.add_argument("--tracking-id", default="", dest="tracking_id")
+    data_refresh_tracking.add_argument(
+        "--output-dir", default="data/data_source_refresh_tracking", dest="output_dir"
+    )
+    data_refresh_tracking_validate = subparsers.add_parser(
+        "validate-data-refresh-track",
+        help="validate a data-source-refresh-tracking.v1 snapshot",
+    )
+    data_refresh_tracking_validate.add_argument("--input", required=True, dest="input_path")
+    resolve_task = subparsers.add_parser(
+        "resolve-task",
+        help="resolve user input into a safe research-task envelope",
+    )
+    resolve_task_input = resolve_task.add_mutually_exclusive_group(required=True)
+    resolve_task_input.add_argument("--input", default="", dest="input_path")
+    resolve_task_input.add_argument("--input-text", default="", dest="input_text")
+    resolve_task.add_argument("--task-type", default="", dest="task_type")
+    resolve_task.add_argument("--subject-type", default="", dest="subject_type")
+    resolve_task.add_argument("--as-of", default="", dest="research_as_of")
+    resolve_task.add_argument(
+        "--depth", choices=("QUICK", "STANDARD", "DEEP"), default="STANDARD", dest="requested_depth"
+    )
+    resolve_task.add_argument("--no-simulation", action="store_false", dest="simulation_mode")
+    resolve_task.set_defaults(simulation_mode=True)
+    resolve_task.add_argument("--risk-preference", default="", dest="risk_preference")
+    resolve_task.add_argument("--confirmed", action="store_true", dest="confirmed")
+    resolve_task.add_argument(
+        "--security-master",
+        default="",
+        dest="security_master_path",
+        help="optional local security-master-snapshot.v1 for exact identity matching",
+    )
+    resolve_task.add_argument(
+        "--commodity-config",
+        action="append",
+        default=None,
+        dest="commodity_config_paths",
+        help="local commodity-adapter.v1 JSON; may be repeated for futures aliases",
+    )
+    resolve_task.add_argument("--task-id", default="", dest="task_id")
+    resolve_task.add_argument("--output-dir", default="data/research_tasks", dest="output_dir")
+    validate_task = subparsers.add_parser(
+        "validate-research-task",
+        help="validate an immutable research-task-resolution.v1 envelope",
+    )
+    validate_task.add_argument("--input", required=True, dest="input_path")
+    third_party_registry = subparsers.add_parser(
+        "third-party-components",
+        help="validate and list the optional third-party component registry",
+    )
+    third_party_registry.add_argument("--input", required=True, dest="input_path")
+    third_party_registry.add_argument(
+        "--output-dir", default="data/third_party_components", dest="output_dir"
+    )
+    third_party_registry.add_argument("--registry-id", default="", dest="registry_id")
+    third_party_registry.add_argument(
+        "--candidate-review",
+        action="append",
+        default=None,
+        dest="candidate_review_paths",
+        help="optional immutable candidate review/projection JSON; may be repeated",
+    )
+    third_party_health = subparsers.add_parser(
+        "third-party-health",
+        help="check local readiness of optional third-party components",
+    )
+    third_party_health.add_argument("--registry", required=True, dest="registry_path")
+    third_party_health.add_argument("--checked-at", default="", dest="checked_at")
+    third_party_health.add_argument("--snapshot-id", default="", dest="snapshot_id")
+    third_party_health.add_argument(
+        "--output-dir", default="data/third_party_components", dest="output_dir"
+    )
+    third_party_health_validate = subparsers.add_parser(
+        "validate-third-party-health",
+        help="validate an immutable third-party component health snapshot",
+    )
+    third_party_health_validate.add_argument("--input", required=True, dest="input_path")
+    candidate_review = subparsers.add_parser(
+        "third-party-candidate-review",
+        help="create or validate one external project capability-slice review",
+    )
+    candidate_review.add_argument("--input", required=True, dest="input_path")
+    candidate_review.add_argument(
+        "--output-dir", default="data/third_party_candidate_reviews", dest="output_dir"
+    )
+    candidate_review.add_argument("--review-id", default="", dest="review_id")
+    candidate_review_event = subparsers.add_parser(
+        "third-party-candidate-review-event",
+        help="append one immutable state event to a candidate review",
+    )
+    candidate_review_event.add_argument("--review", required=True, dest="review_path")
+    candidate_review_event.add_argument("--input", required=True, dest="input_path")
+    candidate_review_event.add_argument("--events", default="", dest="events_path")
+    candidate_review_event.add_argument(
+        "--output-dir", default="data/third_party_candidate_reviews", dest="output_dir"
+    )
+    candidate_review_event.add_argument("--event-id", default="", dest="event_id")
+    candidate_review_event.add_argument("--projection-id", default="", dest="projection_id")
+    candidate_review_validate = subparsers.add_parser(
+        "validate-third-party-candidate-review",
+        help="validate an immutable candidate review, event, or projection",
+    )
+    candidate_review_validate.add_argument("--input", required=True, dest="input_path")
+    third_party_parse = subparsers.add_parser(
+        "third-party-parse",
+        help="parse a local PDF with an explicitly selected optional adapter",
+    )
+    third_party_parse.add_argument(
+        "--component", choices=("pypdf", "pdfplumber", "camelot"), required=True
+    )
+    third_party_parse.add_argument("--input", required=True, dest="input_path")
+    third_party_parse.add_argument("--document-id", required=True, dest="document_id")
+    third_party_parse.add_argument("--research-as-of", required=True, dest="research_as_of")
+    third_party_parse.add_argument("--source-uri", default="", dest="source_uri")
+    third_party_parse.add_argument(
+        "--output-dir", default="data/third_party_document_parses", dest="output_dir"
+    )
+    third_party_parse.add_argument("--result-id", default="", dest="result_id")
+    performance_metrics = subparsers.add_parser(
+        "performance-metrics",
+        help="calculate read-only return and risk statistics with local fallback",
+    )
+    performance_metrics.add_argument("--input", required=True, dest="input_path")
+    performance_metrics.add_argument(
+        "--output-dir", default="data/third_party_performance", dest="output_dir"
+    )
+    performance_metrics.add_argument("--result-id", default="", dest="result_id")
+    performance_validate = subparsers.add_parser(
+        "validate-performance-metrics",
+        help="validate an immutable third-party performance result",
+    )
+    performance_validate.add_argument("--input", required=True, dest="input_path")
     args = parser.parse_args()
 
     if args.command == "demo":
@@ -863,7 +1794,7 @@ def main() -> None:
             "items": [item.to_dict() for item in items],
         }
         store = JsonSnapshotStore(Path(args.output_dir))
-        store.write(f"{snapshot_prefix}-{as_of}", payload)
+        store.write_immutable(f"{snapshot_prefix}-{as_of}", payload)
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     elif args.command == "trend":
         try:
@@ -914,7 +1845,7 @@ def main() -> None:
             "full_industry_membership_loaded": False,
             "light_data": light_data_summary,
         }
-        JsonSnapshotStore(Path(args.output_dir)).write(
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(
             f"tonghuashun-company-pool-{args.industry_id}-{as_of}", payload
         )
         print(json.dumps(payload, ensure_ascii=False, indent=2))
@@ -931,9 +1862,34 @@ def main() -> None:
             secondary_name="tonghuashun",
             alias_registry=alias_registry,
         )
+        research_candidate_sets: list[Mapping[str, Any]] = []
+        if args.research_candidate_set:
+            try:
+                for candidate_set_path in args.research_candidate_set_paths:
+                    candidate_set = json.loads(
+                        Path(candidate_set_path).read_text(encoding="utf-8")
+                    )
+                    if not isinstance(candidate_set, Mapping):
+                        raise ResearchAssetError(
+                            "research candidate set must be a JSON object"
+                        )
+                    research_candidate_sets.append(candidate_set)
+            except (
+                OSError,
+                UnicodeDecodeError,
+                json.JSONDecodeError,
+                TypeError,
+                ValueError,
+                ResearchAssetError,
+            ) as error:
+                parser.error(str(error))
+        company_pool_provider = ResearchAssetCompanyPool(
+            research_candidate_sets,
+            fallback=TonghuashunCompanyPool(page_size=args.company_pool_size),
+        )
         discovery = IndustryFirstDiscovery(
             radar_provider,
-            TonghuashunCompanyPool(page_size=args.company_pool_size),
+            company_pool_provider,
             ChainedCompanyData(
                 (TonghuashunLightCompanyData(), EastmoneyCompanySurveyData())
             ),
@@ -957,11 +1913,13 @@ def main() -> None:
             "radar_source": radar_provider.metadata(as_of),
             "alias_registry": alias_registry.metadata(),
             "company_data": {
-                "provider": "tonghuashun_light",
+                "provider": company_pool_provider.metadata().get("provider")
+                or "tonghuashun_light",
                 "tier": "LIGHT",
                 "read_only": True,
                 "execution_enabled": False,
                 "status_counts": _light_profile_status_counts(scan),
+                "research_asset_reuse": company_pool_provider.metadata(),
             },
         }
         opportunity_candidates = []
@@ -1046,8 +2004,39 @@ def main() -> None:
                 "execution_enabled": False,
             },
         }
-        JsonSnapshotStore(Path(args.output_dir)).write(
-            f"cross-discovery-{as_of}", payload
+        discovery_id = f"cross-discovery-{as_of}"
+        version = build_research_version(
+            {
+                "subject_type": "opportunity_scan",
+                "subject_ids": [
+                    str(item.industry_id)
+                    for item in scan.selected_industries
+                    if str(item.industry_id)
+                ] or ["opportunity-discovery"],
+                "research_as_of": as_of,
+                "execution_mode": "LOCAL_ONLY",
+                "affected_modules": [
+                    "industry_radar",
+                    "company_pool",
+                    "opportunity_discovery",
+                    "opportunity_tracking",
+                ],
+                "artifact_refs": [{
+                    "artifact_id": discovery_id,
+                    "artifact_type": "industry_discovery",
+                    "as_of": as_of,
+                    "content_hash": _payload_hash_without_version_id(payload),
+                }],
+                "source_ids": ["eastmoney", "tonghuashun"],
+                "rule_versions": {"opportunity": "opportunity-candidate-rules.v1"},
+                "version_status": "VALID",
+            },
+            version_id=f"research-version-{discovery_id}",
+        )
+        payload["research_version_id"] = version["version_id"]
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(discovery_id, payload)
+        JsonSnapshotStore(Path(args.version_output_dir)).write_immutable(
+            version["version_id"], version
         )
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     elif args.command == "screen":
@@ -1135,6 +2124,10 @@ def main() -> None:
                 Path(args.input_path).read_text(encoding="utf-8")
             )
             product_profile_kwargs = {"snapshot_id": args.snapshot_id}
+            if args.company_scopes_path:
+                product_profile_kwargs["company_scope_reports"] = normalize_scope_reports(
+                    json.loads(Path(args.company_scopes_path).read_text(encoding="utf-8"))
+                )
             if args.required_fields:
                 product_profile_kwargs["required_fields"] = args.required_fields
             report = build_product_profile_report(
@@ -1150,6 +2143,132 @@ def main() -> None:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "product-profit-bridge":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            company_scope_reports = None
+            if args.company_scopes_path:
+                company_scope_reports = normalize_scope_reports(
+                    json.loads(Path(args.company_scopes_path).read_text(encoding="utf-8"))
+                )
+            report = build_product_profit_bridge_report(
+                payload,
+                company_scope_reports=company_scope_reports,
+                bridge_id=args.bridge_id,
+                rule_version=args.rule_version,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ProductProfitBridgeError,
+        ) as error:
+            parser.error(str(error))
+        try:
+            JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+                report["report_id"], report
+            )
+        except SnapshotExistsError as error:
+            parser.error(str(error))
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "product-profit-bridge-validate":
+        try:
+            report_input = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            validation = validate_product_profit_bridge_report(report_input)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ProductProfitBridgeError,
+        ) as error:
+            parser.error(str(error))
+        print(json.dumps(validation, ensure_ascii=False, indent=2))
+    elif args.command == "product-lifecycle":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            company_scope_reports = None
+            if args.company_scopes_path:
+                company_scope_reports = normalize_scope_reports(
+                    json.loads(Path(args.company_scopes_path).read_text(encoding="utf-8"))
+                )
+            report = build_product_lifecycle_report(
+                payload,
+                company_scope_reports=company_scope_reports,
+                snapshot_id=args.snapshot_id,
+                rule_version=args.rule_version,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ProductLifecycleError,
+        ) as error:
+            parser.error(str(error))
+        try:
+            JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+                report["report_id"], report
+            )
+        except SnapshotExistsError as error:
+            parser.error(str(error))
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "product-lifecycle-validate":
+        try:
+            report_input = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            validation = validate_product_lifecycle_report(report_input)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ProductLifecycleError,
+        ) as error:
+            parser.error(str(error))
+        print(json.dumps(validation, ensure_ascii=False, indent=2))
+    elif args.command == "financial-model":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            company_scope_reports = None
+            if args.company_scopes_path:
+                company_scope_reports = normalize_scope_reports(
+                    json.loads(Path(args.company_scopes_path).read_text(encoding="utf-8"))
+                )
+            report = build_financial_model_report(
+                payload,
+                company_scope_reports=company_scope_reports,
+                model_id=args.model_id,
+                rule_version=args.rule_version,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            FinancialModelError,
+        ) as error:
+            parser.error(str(error))
+        try:
+            JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+                report["report_id"], report
+            )
+        except SnapshotExistsError as error:
+            parser.error(str(error))
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "financial-model-validate":
+        try:
+            report_input = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            validation = validate_financial_model_report(report_input)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            FinancialModelError,
+        ) as error:
+            parser.error(str(error))
+        print(json.dumps(validation, ensure_ascii=False, indent=2))
     elif args.command == "application-mapping":
         try:
             product_profile_report = json.loads(
@@ -1302,8 +2421,14 @@ def main() -> None:
             market_structure_input = json.loads(
                 Path(args.input_path).read_text(encoding="utf-8")
             )
+            market_data_snapshot = None
+            if args.market_data_path:
+                market_data_snapshot = json.loads(
+                    Path(args.market_data_path).read_text(encoding="utf-8")
+                )
             report = build_market_structure_report(
                 market_structure_input,
+                market_data_snapshot=market_data_snapshot,
                 snapshot_id=args.snapshot_id,
             )
         except (
@@ -1321,8 +2446,14 @@ def main() -> None:
             market_structure_input = json.loads(
                 Path(args.input_path).read_text(encoding="utf-8")
             )
+            market_data_snapshot = None
+            if args.market_data_path:
+                market_data_snapshot = json.loads(
+                    Path(args.market_data_path).read_text(encoding="utf-8")
+                )
             report = build_market_structure_comparison(
                 market_structure_input,
+                market_data_snapshot=market_data_snapshot,
                 adapters=(CzscAdapter(), ChanPyAdapter()),
                 comparison_id=args.comparison_id,
             )
@@ -1384,6 +2515,69 @@ def main() -> None:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "render-report":
+        try:
+            report = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            paths = write_rendered_reports(
+                report,
+                args.output_dir,
+                formats=args.formats or ("markdown", "html"),
+                title=args.title,
+                basename=args.basename,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ReportRenderingError,
+        ) as error:
+            parser.error(str(error))
+        print(json.dumps({"schema_version": "research-report-render.v1", "paths": paths}, ensure_ascii=False, indent=2))
+    elif args.command == "public-draft":
+        try:
+            source_report = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            source_lock = json.loads(Path(args.source_lock_path).read_text(encoding="utf-8"))
+            draft = build_public_draft(
+                source_report,
+                source_lock,
+                channel=args.channel,
+                title=args.title,
+                draft_version=args.draft_version,
+                public_draft_id=args.draft_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            PublicDraftError,
+        ) as error:
+            parser.error(str(error))
+        output_root = Path(args.output_dir)
+        output_root.mkdir(parents=True, exist_ok=True)
+        content_path = output_root / f"{draft['public_draft_id']}.md"
+        content_path.write_text(draft["content"], encoding="utf-8")
+        draft["content_uri"] = str(content_path)
+        JsonSnapshotStore(output_root).write_immutable(draft["public_draft_id"], draft)
+        print(json.dumps({"draft": draft, "content_path": str(content_path)}, ensure_ascii=False, indent=2))
+    elif args.command == "validate-public-draft":
+        try:
+            draft = validate_public_draft(
+                json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            PublicDraftError,
+        ) as error:
+            parser.error(str(error))
+        print(json.dumps({"valid": True, "draft": draft}, ensure_ascii=False, indent=2))
     elif args.command == "research-pipeline":
         try:
             supplemental_report = json.loads(
@@ -1394,9 +2588,39 @@ def main() -> None:
                 market_structure_report = json.loads(
                     Path(args.market_structure_path).read_text(encoding="utf-8")
                 )
+            evidence_bundle = None
+            if args.evidence_bundle_path:
+                evidence_bundle = json.loads(
+                    Path(args.evidence_bundle_path).read_text(encoding="utf-8")
+                )
+            company_scope_reports = None
+            if args.company_scopes_path:
+                company_scope_reports = normalize_scope_reports(
+                    json.loads(Path(args.company_scopes_path).read_text(encoding="utf-8"))
+                )
+            product_profit_bridge_report = None
+            if args.product_profit_bridge_path:
+                product_profit_bridge_report = json.loads(
+                    Path(args.product_profit_bridge_path).read_text(encoding="utf-8")
+                )
+            product_lifecycle_report = None
+            if args.product_lifecycle_path:
+                product_lifecycle_report = json.loads(
+                    Path(args.product_lifecycle_path).read_text(encoding="utf-8")
+                )
+            financial_model_report = None
+            if args.financial_model_path:
+                financial_model_report = json.loads(
+                    Path(args.financial_model_path).read_text(encoding="utf-8")
+                )
             report = build_research_pipeline(
                 supplemental_report,
                 market_structure_report=market_structure_report,
+                evidence_bundle=evidence_bundle,
+                company_scope_reports=company_scope_reports,
+                product_profit_bridge_report=product_profit_bridge_report,
+                product_lifecycle_report=product_lifecycle_report,
+                financial_model_report=financial_model_report,
                 snapshot_id=args.snapshot_id,
             )
         except (
@@ -1407,7 +2631,32 @@ def main() -> None:
             ValueError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["pipeline_id"], report)
+        version = build_research_version_from_pipeline(
+            report,
+            supplemental=supplemental_report,
+            evidence_bundle=evidence_bundle,
+            product_profit_bridge_report=product_profit_bridge_report,
+            product_lifecycle_report=product_lifecycle_report,
+            financial_model_report=financial_model_report,
+            execution_mode="LOCAL_ONLY",
+        )
+        version["artifact_refs"] = [
+            {
+                **reference,
+                "content_hash": _payload_hash_without_version_id(report),
+            }
+            if reference.get("artifact_type") == "pipeline"
+            else reference
+            for reference in version["artifact_refs"]
+        ]
+        version["content_hash"] = _research_version_content_hash(version)
+        report["research_version_id"] = version["version_id"]
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            report["pipeline_id"], report
+        )
+        JsonSnapshotStore(Path(args.version_output_dir)).write_immutable(
+            version["version_id"], version
+        )
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "incremental-update":
         try:
@@ -1426,12 +2675,31 @@ def main() -> None:
                 evidence_records = evidence_payload
             if not isinstance(evidence_records, list):
                 raise IncrementalUpdateError("evidence input must be a records list")
+            company_scope_reports = None
+            if args.company_scopes_path:
+                company_scope_reports = normalize_scope_reports(
+                    json.loads(Path(args.company_scopes_path).read_text(encoding="utf-8"))
+                )
+            market_structure_report = None
+            if args.market_structure_path:
+                market_structure_report = json.loads(
+                    Path(args.market_structure_path).read_text(encoding="utf-8")
+                )
+            evidence_bundle = None
+            if args.evidence_bundle_path:
+                evidence_bundle = json.loads(
+                    Path(args.evidence_bundle_path).read_text(encoding="utf-8")
+                )
             report = build_incremental_update(
                 previous_pipeline,
                 previous_supplemental,
                 evidence_records,
                 as_of=args.as_of,
                 snapshot_id=args.snapshot_id,
+                execution_mode=args.execution_mode,
+                company_scope_reports=company_scope_reports,
+                market_structure_report=market_structure_report,
+                evidence_bundle=evidence_bundle,
             )
         except (
             OSError,
@@ -1442,7 +2710,32 @@ def main() -> None:
             IncrementalUpdateError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["update_id"], report)
+        previous_version_id = str(previous_pipeline.get("research_version_id") or "")
+        version = build_research_version_from_pipeline(
+            report["updated_pipeline"],
+            supplemental=report["updated_supplemental"],
+            evidence_bundle=evidence_bundle,
+            previous_version_id=previous_version_id,
+            execution_mode=report["execution_mode"],
+            affected_modules=report["deferred_review_modules"],
+        )
+        version["artifact_refs"] = [
+            {
+                **reference,
+                "content_hash": _payload_hash_without_version_id(report["updated_pipeline"]),
+            }
+            if reference.get("artifact_type") == "pipeline"
+            else reference
+            for reference in version["artifact_refs"]
+        ]
+        version["content_hash"] = _research_version_content_hash(version)
+        report["research_version_id"] = version["version_id"]
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            report["update_id"], report
+        )
+        JsonSnapshotStore(Path(args.version_output_dir)).write_immutable(
+            version["version_id"], version
+        )
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "schedule-init":
         try:
@@ -1534,7 +2827,7 @@ def main() -> None:
             parser.error(str(error))
         execution_id = f"scheduler-execution-{execution['plan_id']}"
         execution["execution_id"] = execution_id
-        JsonSnapshotStore(Path(args.output_root) / "scheduler" / "executions").write(
+        JsonSnapshotStore(Path(args.output_root) / "scheduler" / "executions").write_immutable(
             execution_id, execution
         )
         JsonSnapshotStore(Path(args.output_root) / "scheduler").write(
@@ -1657,9 +2950,34 @@ def main() -> None:
             decision = json.loads(
                 Path(args.decision_path).read_text(encoding="utf-8")
             )
+            evidence_bundle = None
+            if args.evidence_bundle_path:
+                evidence_bundle = json.loads(
+                    Path(args.evidence_bundle_path).read_text(encoding="utf-8")
+                )
+            execution_plan = None
+            if args.execution_plan_path:
+                execution_plan = json.loads(
+                    Path(args.execution_plan_path).read_text(encoding="utf-8")
+                )
+            company_scope_report = None
+            if args.company_scope_path:
+                company_scope_report = json.loads(
+                    Path(args.company_scope_path).read_text(encoding="utf-8")
+                )
+            market_data_snapshots = None
+            if args.market_data_paths:
+                market_data_snapshots = [
+                    json.loads(Path(path).read_text(encoding="utf-8"))
+                    for path in args.market_data_paths
+                ]
             report = build_decision_snapshot(
                 research_report,
                 decision,
+                evidence_bundle=evidence_bundle,
+                execution_plan=execution_plan,
+                company_scope_report=company_scope_report,
+                market_data_snapshots=market_data_snapshots,
                 user_confirmed=args.user_confirmed,
                 snapshot_id=args.snapshot_id,
             )
@@ -1681,11 +2999,23 @@ def main() -> None:
             outcome_input = json.loads(
                 Path(args.outcome_path).read_text(encoding="utf-8")
             )
+            asset_market_data_snapshot = None
+            if args.asset_market_data_path:
+                asset_market_data_snapshot = json.loads(
+                    Path(args.asset_market_data_path).read_text(encoding="utf-8")
+                )
+            benchmark_market_data_snapshot = None
+            if args.benchmark_market_data_path:
+                benchmark_market_data_snapshot = json.loads(
+                    Path(args.benchmark_market_data_path).read_text(encoding="utf-8")
+                )
             report = build_attribution_report(
                 decision_snapshot,
                 outcome_input,
                 closed_at=args.closed_at,
                 attribution_id=args.attribution_id,
+                asset_market_data_snapshot=asset_market_data_snapshot,
+                benchmark_market_data_snapshot=benchmark_market_data_snapshot,
             )
         except (
             OSError,
@@ -1770,11 +3100,27 @@ def main() -> None:
             outcome_input = json.loads(
                 Path(args.outcome_path).read_text(encoding="utf-8")
             )
+            asset_market_data_snapshots = None
+            if args.asset_market_data_dir:
+                asset_market_data_snapshots = {}
+                for subject_id in outcome_input.get("asset_series", {}):
+                    asset_path = Path(args.asset_market_data_dir) / f"{subject_id}.json"
+                    if asset_path.exists():
+                        asset_market_data_snapshots[str(subject_id)] = json.loads(
+                            asset_path.read_text(encoding="utf-8")
+                        )
+            benchmark_market_data_snapshot = None
+            if args.benchmark_market_data_path:
+                benchmark_market_data_snapshot = json.loads(
+                    Path(args.benchmark_market_data_path).read_text(encoding="utf-8")
+                )
             report = replay_simulation_portfolio(
                 portfolio,
                 outcome_input,
                 closed_at=args.closed_at,
                 replay_id=args.replay_id,
+                asset_market_data_snapshots=asset_market_data_snapshots,
+                benchmark_market_data_snapshot=benchmark_market_data_snapshot,
             )
         except (
             OSError,
@@ -1786,6 +3132,60 @@ def main() -> None:
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(
+            report["replay_id"], report
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "futures-simulation-create":
+        try:
+            simulation_input = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            decision_snapshots = [
+                json.loads(Path(path).read_text(encoding="utf-8"))
+                for path in args.decision_paths
+            ]
+            report = build_futures_simulation(
+                simulation_input,
+                decision_snapshots,
+                simulation_id=args.simulation_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            FuturesSimulationError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            report["simulation_id"], report
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "futures-simulation-replay":
+        try:
+            simulation = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            outcome_input = json.loads(
+                Path(args.outcome_path).read_text(encoding="utf-8")
+            )
+            report = replay_futures_simulation(
+                simulation,
+                outcome_input,
+                closed_at=args.closed_at,
+                replay_id=args.replay_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            FuturesSimulationError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(
             report["replay_id"], report
         )
         print(json.dumps(report, ensure_ascii=False, indent=2))
@@ -1819,7 +3219,84 @@ def main() -> None:
             OpportunityCandidateError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["scan_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(report["scan_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "announcement-templates":
+        try:
+            catalog = load_template_catalog(args.config_path)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            AnnouncementTemplateError,
+        ) as error:
+            parser.error(str(error))
+        catalog_hash = hashlib.sha256(
+            json.dumps(catalog, ensure_ascii=False, sort_keys=True).encode("utf-8")
+        ).hexdigest()[:20]
+        JsonSnapshotStore(Path(args.output_dir)).write(
+            f"announcement-template-catalog-{catalog_hash}", catalog
+        )
+        print(json.dumps(catalog, ensure_ascii=False, indent=2))
+    elif args.command == "announcement-parse":
+        try:
+            catalog = load_template_catalog(args.config_path)
+            template = get_template(catalog, args.template_id)
+            metadata: dict[str, Any] = {}
+            if args.metadata_path:
+                metadata = json.loads(Path(args.metadata_path).read_text(encoding="utf-8"))
+                if not isinstance(metadata, Mapping):
+                    raise AnnouncementTemplateError("--metadata must contain a JSON object")
+            raw_path = Path(args.input_path)
+            raw_content = raw_path.read_bytes()
+            metadata.update(
+                {
+                    key: value
+                    for key, value in {
+                        "source_url": args.source_url,
+                        "captured_at": args.captured_at,
+                        "research_as_of": args.research_as_of,
+                        "as_of": args.as_of,
+                        "subject_type": args.subject_type,
+                        "subject_id": args.subject_id,
+                        "issuer": args.issuer,
+                        "document_id": args.document_id,
+                    }.items()
+                    if value
+                }
+            )
+            report = parse_announcement_input(metadata, raw_content, template)
+            version = report.get("version") or 1
+            raw_target = (
+                Path(args.output_dir)
+                / "raw"
+                / f"{report['document_id']}-v{version}{raw_path.suffix or '.bin'}"
+            )
+            raw_target.parent.mkdir(parents=True, exist_ok=True)
+            if raw_target.exists():
+                if raw_target.read_bytes() != raw_content:
+                    raise AnnouncementTemplateError(
+                        f"immutable raw snapshot already exists with different content: {raw_target}"
+                    )
+            else:
+                raw_target.write_bytes(raw_content)
+            report = parse_announcement_input(
+                metadata,
+                raw_content,
+                template,
+                raw_content_uri=str(raw_target),
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            AnnouncementTemplateError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            f"{report['document_id']}-v{report.get('version') or 1}", report
+        )
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "announcement-asset":
         try:
@@ -1854,7 +3331,7 @@ def main() -> None:
             AnnouncementAssetError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(
             report["document_id"] + "-v" + str(report["version"]), report
         )
         print(json.dumps(report, ensure_ascii=False, indent=2))
@@ -1875,12 +3352,58 @@ def main() -> None:
             AnnouncementAssetError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["impact_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(report["impact_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "research-impact-queue":
+        try:
+            event = json.loads(Path(args.event_path).read_text(encoding="utf-8"))
+            version_paths = [Path(path) for path in args.version_paths or ()]
+            if not version_paths:
+                version_paths = sorted(Path(args.versions_dir).glob("*.json"))
+            versions = [
+                json.loads(path.read_text(encoding="utf-8")) for path in version_paths
+            ]
+            report = build_research_impact_queue(
+                event, versions, queue_id=args.queue_id
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ResearchImpactError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            report["queue_id"], report
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "validate-research-impact-queue":
+        try:
+            queue = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = validate_research_impact_queue(queue)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ResearchImpactError,
+        ) as error:
+            parser.error(str(error))
+        print(json.dumps({"valid": True, "queue": report}, ensure_ascii=False, indent=2))
     elif args.command == "futures-identify":
         try:
             payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
-            report = identify_futures_object(payload, identity_id=args.identity_id)
+            market_registry = None
+            if args.market_registry_path:
+                market_registry = MarketRegistry.from_payload(
+                    json.loads(Path(args.market_registry_path).read_text(encoding="utf-8"))
+                )
+            report = identify_futures_object(
+                payload, identity_id=args.identity_id, market_registry=market_registry
+            )
         except (
             OSError,
             UnicodeDecodeError,
@@ -1921,6 +3444,311 @@ def main() -> None:
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "futures-tracking":
+        try:
+            current_report = json.loads(
+                Path(args.current_path).read_text(encoding="utf-8")
+            )
+            previous_report = None
+            if args.previous_path:
+                previous_report = json.loads(
+                    Path(args.previous_path).read_text(encoding="utf-8")
+                )
+            report = build_futures_tracking_report(
+                current_report,
+                previous_report,
+                as_of=args.as_of,
+                tracking_id=args.tracking_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            FuturesTrackingError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            report["tracking_id"], report
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "futures-company-exposure":
+        try:
+            futures_report = json.loads(
+                Path(args.futures_report_path).read_text(encoding="utf-8")
+            )
+            exposure_input = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            product_profile_report = None
+            if args.product_profile_path:
+                product_profile_report = json.loads(
+                    Path(args.product_profile_path).read_text(encoding="utf-8")
+                )
+            report = build_futures_company_exposure_report(
+                futures_report,
+                exposure_input,
+                product_profile_report=product_profile_report,
+                snapshot_id=args.snapshot_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            FuturesCompanyExposureError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "commodity-adapters":
+        try:
+            registry = CommodityAdapterRegistry.from_directory(args.directory)
+            report = build_commodity_adapter_registry_report(
+                registry, registry_id=args.registry_id
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            CommodityAdapterError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(
+            report["registry_id"], report
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "commodity-adapter-validate":
+        try:
+            registry = CommodityAdapterRegistry.from_directory(args.directory)
+            adapter = registry.resolve(args.adapter)
+            futures_report = None
+            fundamentals_input = None
+            if args.futures_report_path:
+                futures_report = json.loads(
+                    Path(args.futures_report_path).read_text(encoding="utf-8")
+                )
+            if args.fundamentals_path:
+                fundamentals_input = json.loads(
+                    Path(args.fundamentals_path).read_text(encoding="utf-8")
+                )
+            report = build_commodity_adapter_validation_report(
+                adapter,
+                futures_report=futures_report,
+                fundamentals_input=fundamentals_input,
+                validation_id=args.validation_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            CommodityAdapterError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(
+            report["validation_id"], report
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "research-assets":
+        try:
+            adapter = ResearchAssetAdapter(args.root)
+            if args.mode == "discover":
+                report = adapter.discover(
+                    args.identifier, args.as_of, limit=args.limit
+                )
+                snapshot_id = args.snapshot_id or report["catalog_id"]
+            else:
+                if not args.input_path:
+                    parser.error("research-assets modes other than discover require --input")
+                if args.mode == "profile":
+                    report = adapter.map_company_profile(args.input_path)
+                elif args.mode == "artifact":
+                    report = adapter.import_artifact(args.input_path)
+                elif args.mode == "candidate-set":
+                    report = adapter.import_candidate_set(args.input_path)
+                elif args.mode == "scorecard":
+                    report = adapter.import_scorecard(args.input_path)
+                else:
+                    if not args.authoritative:
+                        parser.error("validate-identity requires --authoritative")
+                    profile = adapter.map_company_profile(args.input_path)
+                    authoritative = json.loads(
+                        Path(args.authoritative_path).read_text(encoding="utf-8")
+                    )
+                    report = adapter.validate_identity(profile, authoritative)
+                snapshot_id = args.snapshot_id or (
+                    f"{args.mode}-{Path(args.input_path).stem}"
+                )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ResearchAssetError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(snapshot_id, report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "security-master":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            previous = None
+            if args.previous_path:
+                previous = json.loads(
+                    Path(args.previous_path).read_text(encoding="utf-8")
+                )
+            report = build_security_master_snapshot(
+                payload,
+                previous_snapshot=previous,
+                snapshot_id=args.snapshot_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            SecurityMasterError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["snapshot_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "security-master-validate":
+        try:
+            snapshot = json.loads(
+                Path(args.input_path).read_text(encoding="utf-8")
+            )
+            report = validate_security_master_snapshot(snapshot)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            SecurityMasterError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(
+            "security-master-validation-" + Path(args.input_path).stem,
+            report,
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "company-scope":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = build_company_scope_report(payload, scope_id=args.scope_id)
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError, ValueError, CompanyScopeError) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["scope_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "company-scope-validate":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = validate_company_scope_report(payload)
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError, ValueError, CompanyScopeError) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(
+            "company-scope-validation-" + Path(args.input_path).stem, report
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "market-data":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            market_registry = None
+            if args.market_registry_path:
+                market_registry = MarketRegistry.from_payload(
+                    json.loads(Path(args.market_registry_path).read_text(encoding="utf-8"))
+                )
+            report = build_market_data_snapshot(
+                payload, snapshot_id=args.snapshot_id, market_registry=market_registry
+            )
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError, ValueError, MarketDataError) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["snapshot_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "market-data-validate":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            market_registry = None
+            if args.market_registry_path:
+                market_registry = MarketRegistry.from_payload(
+                    json.loads(Path(args.market_registry_path).read_text(encoding="utf-8"))
+                )
+            report = validate_market_data_snapshot(payload, market_registry=market_registry)
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError, ValueError, MarketDataError) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(
+            "market-data-validation-" + Path(args.input_path).stem, report
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "market-registry":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = build_market_registry_report(payload)
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError, ValueError, MarketRegistryError) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(
+            report["registry_id"] + "-" + report["version"], report
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "market-reference-validate":
+        try:
+            reference = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            registry = MarketRegistry.from_payload(
+                json.loads(Path(args.registry_path).read_text(encoding="utf-8"))
+            )
+            report = validate_market_reference(reference, registry)
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError, ValueError, MarketRegistryError) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(
+            "market-reference-validation-" + Path(args.input_path).stem, report
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "industry-adapters":
+        try:
+            registry = IndustryAdapterRegistry.from_directory(args.directory)
+            report = build_industry_adapter_registry_report(
+                registry, registry_id=args.registry_id
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            IndustryAdapterError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["registry_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "industry-profile":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            registry = IndustryAdapterRegistry.from_directory(args.directory)
+            report = build_industry_profile_report(
+                payload,
+                registry,
+                adapter_id=args.adapter_id,
+                profile_id=args.profile_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            IndustryAdapterError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write(report["profile_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "evidence-template":
         try:
@@ -1994,3 +3822,859 @@ def main() -> None:
             model_label=args.model_label,
         )
         print(json.dumps(record.to_dict(), ensure_ascii=False, indent=2))
+    elif args.command == "source-document":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            raw_content = None
+            raw_uri = str(payload.get("raw_content_uri") or "")
+            if args.raw_content_path:
+                raw_path = Path(args.raw_content_path)
+                raw_content = raw_path.read_bytes()
+                raw_uri = str(raw_path)
+            report = build_source_document(
+                payload,
+                raw_content=raw_content,
+                raw_content_uri=raw_uri,
+                document_id=args.document_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            EvidenceError,
+            SnapshotExistsError,
+        ) as error:
+            parser.error(str(error))
+        try:
+            JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+                report["document_id"], report
+            )
+        except SnapshotExistsError as error:
+            parser.error(str(error))
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "evidence":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            bundle = build_evidence_input_bundle(payload, bundle_id=args.bundle_id)
+            if args.reconcile:
+                priorities: dict[str, int] = {}
+                for raw in args.source_priorities or []:
+                    if "=" not in raw:
+                        raise EvidenceError("--source-priority must use source=integer")
+                    source_name, rank = raw.split("=", 1)
+                    priorities[source_name.strip()] = int(rank)
+                reconciliation = reconcile_evidence(
+                    bundle,
+                    group_by=tuple(args.group_by or ("subject_id", "metric", "period", "unit")),
+                    source_priority=priorities,
+                )
+            else:
+                reconciliation = None
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            EvidenceError,
+            SnapshotExistsError,
+        ) as error:
+            parser.error(str(error))
+        input_stem = Path(args.input_path).stem
+        store = JsonSnapshotStore(Path(args.output_dir))
+        try:
+            store.write_immutable(f"evidence-bundle-{input_stem}", bundle)
+            if reconciliation is not None:
+                store.write_immutable(
+                    f"evidence-reconciliation-{input_stem}", reconciliation
+                )
+        except SnapshotExistsError as error:
+            parser.error(str(error))
+        print(json.dumps(bundle, ensure_ascii=False, indent=2))
+    elif args.command == "evidence-from-refresh":
+        try:
+            refresh_report = json.loads(Path(args.refresh_path).read_text(encoding="utf-8"))
+            records_payload = json.loads(Path(args.records_path).read_text(encoding="utf-8"))
+            records = (
+                records_payload.get("records")
+                if isinstance(records_payload, Mapping)
+                else records_payload
+            )
+            if not isinstance(records, list):
+                raise RefreshEvidenceError("records input must be a list or an object with records")
+            gate = build_refresh_evidence_gate(
+                refresh_report,
+                records,
+                refresh_uri=args.refresh_uri or args.refresh_path,
+                research_as_of=args.research_as_of,
+                user_confirmed=args.user_confirmed,
+                reviewer_id=args.reviewer_id,
+                reviewed_at=args.reviewed_at,
+                review_reason=args.review_reason,
+                bundle_id=args.bundle_id,
+                gate_id=args.gate_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            RefreshEvidenceError,
+        ) as error:
+            parser.error(str(error))
+        gate_path = JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            gate["gate_id"], gate
+        )
+        bundle_path = ""
+        if isinstance(gate.get("evidence_bundle"), Mapping):
+            bundle = gate["evidence_bundle"]
+            bundle_path = str(
+                JsonSnapshotStore(Path(args.output_dir).parent / "evidence").write_immutable(
+                    str(bundle["bundle_id"]), dict(bundle)
+                )
+            )
+        print(
+            json.dumps(
+                {
+                    "gate": str(gate_path),
+                    "evidence_bundle": bundle_path,
+                    "report": gate,
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+    elif args.command == "validate-evidence-from-refresh":
+        try:
+            gate = validate_refresh_evidence_gate(
+                json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            RefreshEvidenceError,
+        ) as error:
+            parser.error(str(error))
+        print(json.dumps({"valid": True, "gate": gate}, ensure_ascii=False, indent=2))
+    elif args.command == "research-request":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = build_research_request(payload, request_id=args.request_id)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ResearchExecutionError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(report["request_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "research-plan":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            differences: list[Mapping[str, Any]] = []
+            if args.differences_path:
+                differences_payload = json.loads(
+                    Path(args.differences_path).read_text(encoding="utf-8")
+                )
+                differences = differences_payload.get("differences", []) if isinstance(differences_payload, Mapping) else differences_payload
+                if not isinstance(differences, list):
+                    raise ResearchExecutionError("differences input must be a list")
+            report = build_research_execution_plan(
+                payload,
+                available_model=args.available_model,
+                used_input_tokens=args.used_input_tokens,
+                used_output_tokens=args.used_output_tokens,
+                prior_differences=differences,
+                plan_id=args.plan_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ResearchExecutionError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(report["plan_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "llm-run":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = build_llm_run(payload, llm_run_id=args.llm_run_id)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ResearchExecutionError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(report["llm_run_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "execution-audit":
+        try:
+            plan = json.loads(Path(args.plan_path).read_text(encoding="utf-8"))
+            runs: list[Mapping[str, Any]] = []
+            if args.runs_path:
+                runs_payload = json.loads(Path(args.runs_path).read_text(encoding="utf-8"))
+                runs = runs_payload.get("runs", []) if isinstance(runs_payload, Mapping) else runs_payload
+                if not isinstance(runs, list):
+                    raise ResearchExecutionError("runs input must be a list")
+            report = build_execution_audit(plan, runs, audit_id=args.audit_id)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ResearchExecutionError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(report["audit_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "capability-matrix":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = build_capability_matrix(payload, matrix_id=args.matrix_id)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            CapabilityMatrixError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(report["matrix_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "capability-gap":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = build_capability_gap(payload, gap_id=args.gap_id)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            CapabilityMatrixError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(report["gap_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "opportunity-quality":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = build_opportunity_quality_report(payload, quality_id=args.quality_id)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            OpportunityQualityError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(report["quality_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "decision-lifecycle-event":
+        try:
+            snapshot = json.loads(Path(args.snapshot_path).read_text(encoding="utf-8"))
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            previous_events: list[Mapping[str, Any]] = []
+            if args.events_path:
+                existing = json.loads(Path(args.events_path).read_text(encoding="utf-8"))
+                previous_events = existing.get("events", []) if isinstance(existing, Mapping) else existing
+                if not isinstance(previous_events, list):
+                    raise DecisionLifecycleError("events input must be a list")
+            report = build_decision_lifecycle_event(
+                snapshot,
+                to_status=str(payload.get("to_status") or ""),
+                changed_at=str(payload.get("changed_at") or ""),
+                reason=str(payload.get("reason") or ""),
+                evidence_ids=payload.get("evidence_ids") or [],
+                attribution_id=str(payload.get("attribution_id") or ""),
+                user_confirmed=payload.get("user_confirmed") is True,
+                previous_events=previous_events,
+                event_id=args.event_id,
+            )
+            all_events = [*previous_events, report]
+            lifecycle_report = build_decision_lifecycle(snapshot, all_events)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            DecisionLifecycleError,
+        ) as error:
+            parser.error(str(error))
+        store = JsonSnapshotStore(Path(args.output_dir))
+        store.write_immutable(report["event_id"], report)
+        store.write_immutable(lifecycle_report["lifecycle_id"], lifecycle_report)
+        print(json.dumps(lifecycle_report, ensure_ascii=False, indent=2))
+    elif args.command == "decision-lifecycle":
+        try:
+            snapshot = json.loads(Path(args.snapshot_path).read_text(encoding="utf-8"))
+            events: list[Mapping[str, Any]] = []
+            if args.events_path:
+                existing = json.loads(Path(args.events_path).read_text(encoding="utf-8"))
+                events = existing.get("events", []) if isinstance(existing, Mapping) else existing
+                if not isinstance(events, list):
+                    raise DecisionLifecycleError("events input must be a list")
+            report = build_decision_lifecycle(
+                snapshot, events, as_of=args.as_of, lifecycle_id=args.lifecycle_id
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            DecisionLifecycleError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(report["lifecycle_id"], report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "research-version":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            supplemental = None
+            if args.supplemental_path:
+                supplemental = json.loads(
+                    Path(args.supplemental_path).read_text(encoding="utf-8")
+                )
+            evidence_bundle = None
+            if args.evidence_bundle_path:
+                evidence_bundle = json.loads(
+                    Path(args.evidence_bundle_path).read_text(encoding="utf-8")
+                )
+            source_health_snapshot = None
+            if args.source_health_path:
+                source_health_snapshot = json.loads(
+                    Path(args.source_health_path).read_text(encoding="utf-8")
+                )
+                validate_source_health_snapshot(source_health_snapshot)
+            if source_health_snapshot is not None:
+                payload = dict(payload)
+                payload["source_health_snapshot_id"] = str(
+                    source_health_snapshot["snapshot_id"]
+                )
+            if payload.get("schema_version") == "company-research-pipeline.v1":
+                report = build_research_version_from_pipeline(
+                    payload,
+                    supplemental=supplemental,
+                    evidence_bundle=evidence_bundle,
+                    previous_version_id=args.previous_version_id,
+                    execution_mode=args.execution_mode,
+                    affected_modules=args.affected_modules or (),
+                    version_id=args.version_id,
+                )
+            else:
+                report = build_research_version(payload, version_id=args.version_id)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ResearchVersionError,
+            SourceHealthError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            report["version_id"], report
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "source-health":
+        try:
+            required: dict[str, list[str]] = {}
+            for item in args.required_capabilities or ():
+                subject_type, separator, capability = str(item).partition("=")
+                if not separator or not subject_type.strip() or not capability.strip():
+                    raise SourceHealthError(
+                        "--required-capability must use subject_type=capability"
+                    )
+                required.setdefault(subject_type.strip(), []).append(capability.strip())
+            report = build_source_health_snapshot(
+                default_data_source_router(),
+                subject_types=args.subject_types or (
+                    "listed_company",
+                    "industry",
+                    "futures_contract",
+                    "announcement",
+                ),
+                source_names=args.source_names or (),
+                required_capabilities=required,
+                checked_at=args.checked_at,
+                snapshot_id=args.snapshot_id,
+            )
+        except (TypeError, ValueError, SourceHealthError) as error:
+            parser.error(str(error))
+        path = JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            report["snapshot_id"], report
+        )
+        print(
+            json.dumps(
+                {"snapshot": str(path), "health": report},
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+    elif args.command == "validate-source-health":
+        try:
+            snapshot = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = validate_source_health_snapshot(snapshot)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            SourceHealthError,
+        ) as error:
+            parser.error(str(error))
+        print(
+            json.dumps(
+                {"valid": True, "health": report},
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+    elif args.command == "data-refresh":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            router = default_data_source_router()
+            health = build_source_health_snapshot(
+                router,
+                checked_at=args.as_of,
+                snapshot_id=f"source-health-refresh-{args.refresh_id or Path(args.input_path).stem}",
+            )
+            health_path = JsonSnapshotStore(Path(args.output_dir).parent / "source_health").write_immutable(
+                health["snapshot_id"], health
+            )
+            report = build_data_source_refresh(
+                payload,
+                router,
+                as_of=args.as_of,
+                refresh_id=args.refresh_id,
+                max_queries=args.max_queries,
+                max_rows_per_query=args.max_rows_per_query,
+                source_health_snapshot_id=health["snapshot_id"],
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            DataRefreshError,
+            SourceHealthError,
+        ) as error:
+            parser.error(str(error))
+        path = JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            report["refresh_id"], report
+        )
+        print(
+            json.dumps(
+                {
+                    "refresh": str(path),
+                    "source_health": str(health_path),
+                    "report": report,
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+    elif args.command == "validate-data-refresh":
+        try:
+            report = validate_data_source_refresh(
+                json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            DataRefreshError,
+        ) as error:
+            parser.error(str(error))
+        print(json.dumps({"valid": True, "refresh": report}, ensure_ascii=False, indent=2))
+    elif args.command == "data-refresh-track":
+        try:
+            current = json.loads(Path(args.current_path).read_text(encoding="utf-8"))
+            previous = (
+                json.loads(Path(args.previous_path).read_text(encoding="utf-8"))
+                if args.previous_path
+                else None
+            )
+            report = build_data_refresh_tracking_report(
+                current,
+                previous,
+                as_of=args.as_of,
+                tracking_id=args.tracking_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            DataRefreshTrackingError,
+        ) as error:
+            parser.error(str(error))
+        path = JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            report["tracking_id"], report
+        )
+        print(json.dumps({"tracking": str(path), "report": report}, ensure_ascii=False, indent=2))
+    elif args.command == "validate-data-refresh-track":
+        try:
+            report = validate_data_refresh_tracking_report(
+                json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            DataRefreshTrackingError,
+        ) as error:
+            parser.error(str(error))
+        print(json.dumps({"valid": True, "tracking": report}, ensure_ascii=False, indent=2))
+    elif args.command == "resolve-task":
+        try:
+            payload = (
+                json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+                if args.input_path
+                else args.input_text
+            )
+            security_master = (
+                json.loads(Path(args.security_master_path).read_text(encoding="utf-8"))
+                if args.security_master_path
+                else None
+            )
+            commodity_definitions = []
+            for commodity_path in args.commodity_config_paths or ():
+                commodity_definition = json.loads(
+                    Path(commodity_path).read_text(encoding="utf-8")
+                )
+                if not isinstance(commodity_definition, Mapping):
+                    raise TaskResolutionError(
+                        "commodity config must be a JSON object"
+                    )
+                commodity_definitions.append(commodity_definition)
+            report = resolve_research_task(
+                payload,
+                task_type=args.task_type,
+                subject_type=args.subject_type,
+                research_as_of=args.research_as_of,
+                requested_depth=args.requested_depth,
+                simulation_mode=args.simulation_mode,
+                risk_preference=args.risk_preference,
+                confirmed=args.confirmed,
+                task_id=args.task_id,
+                security_master=security_master,
+                commodity_definitions=commodity_definitions,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            TaskResolutionError,
+        ) as error:
+            parser.error(str(error))
+        path = JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            report["task_id"], report
+        )
+        print(
+            json.dumps(
+                {"task": report, "task_path": str(path)},
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+    elif args.command == "validate-research-task":
+        try:
+            task = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = validate_research_task(task)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            TaskResolutionError,
+        ) as error:
+            parser.error(str(error))
+        print(
+            json.dumps(
+                {"valid": True, "task": report},
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+    elif args.command == "third-party-components":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = build_component_registry(payload, registry_id=args.registry_id)
+            if args.candidate_review_paths:
+                candidate_reviews = [
+                    json.loads(Path(path).read_text(encoding="utf-8"))
+                    for path in args.candidate_review_paths
+                ]
+                report = validate_component_registry_links(report, candidate_reviews)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ThirdPartyComponentError,
+        ) as error:
+            parser.error(str(error))
+        path = JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            report["registry_id"], report
+        )
+        print(json.dumps({"registry": report, "registry_path": str(path)}, ensure_ascii=False, indent=2))
+    elif args.command == "third-party-health":
+        try:
+            registry = json.loads(Path(args.registry_path).read_text(encoding="utf-8"))
+            validate_component_registry(registry)
+            report = build_component_health_snapshot(
+                registry,
+                checked_at=args.checked_at,
+                snapshot_id=args.snapshot_id,
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ThirdPartyComponentError,
+        ) as error:
+            parser.error(str(error))
+        path = JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            report["snapshot_id"], report
+        )
+        print(json.dumps({"health": report, "snapshot_path": str(path)}, ensure_ascii=False, indent=2))
+    elif args.command == "validate-third-party-health":
+        try:
+            snapshot = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = validate_component_health_snapshot(snapshot)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ThirdPartyComponentError,
+        ) as error:
+            parser.error(str(error))
+        print(json.dumps({"valid": True, "health": report}, ensure_ascii=False, indent=2))
+    elif args.command == "third-party-candidate-review":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = build_candidate_review(payload, review_id=args.review_id)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ThirdPartyCandidateReviewError,
+        ) as error:
+            parser.error(str(error))
+        path = JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            report["review_id"], report
+        )
+        print(json.dumps({"review": report, "review_path": str(path)}, ensure_ascii=False, indent=2))
+    elif args.command == "third-party-candidate-review-event":
+        try:
+            review = json.loads(Path(args.review_path).read_text(encoding="utf-8"))
+            event_input = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            previous_events = []
+            if args.events_path:
+                previous_events = json.loads(Path(args.events_path).read_text(encoding="utf-8"))
+            if not isinstance(previous_events, list):
+                raise ThirdPartyCandidateReviewError("events input must be a list")
+            event = build_candidate_review_event(
+                review,
+                to_state=str(event_input.get("to_state") or ""),
+                changed_at=str(event_input.get("changed_at") or ""),
+                trigger=str(event_input.get("trigger") or ""),
+                actor=str(event_input.get("actor") or ""),
+                evidence_refs=event_input.get("evidence_refs") or (),
+                field_updates=event_input.get("field_updates") or {},
+                previous_events=previous_events,
+                event_id=args.event_id,
+            )
+            projection = build_candidate_review_projection(
+                review, [*previous_events, event], projection_id=args.projection_id
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ThirdPartyCandidateReviewError,
+        ) as error:
+            parser.error(str(error))
+        store = JsonSnapshotStore(Path(args.output_dir))
+        event_path = store.write_immutable(event["event_id"], event)
+        projection_path = store.write_immutable(projection["projection_id"], projection)
+        print(json.dumps({"event": event, "event_path": str(event_path), "projection": projection, "projection_path": str(projection_path)}, ensure_ascii=False, indent=2))
+    elif args.command == "validate-third-party-candidate-review":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            schema = payload.get("schema_version") if isinstance(payload, Mapping) else ""
+            if schema == "third-party-candidate-review.v1":
+                report = validate_candidate_review(payload)
+            elif schema == "third-party-candidate-review-event.v1":
+                report = validate_candidate_review_event(payload)
+            elif schema == "third-party-candidate-review-projection.v1":
+                report = validate_candidate_review_projection(payload)
+            else:
+                raise ThirdPartyCandidateReviewError("unsupported candidate review schema")
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ThirdPartyCandidateReviewError,
+        ) as error:
+            parser.error(str(error))
+        print(json.dumps({"valid": True, "candidate_review": report}, ensure_ascii=False, indent=2))
+    elif args.command == "third-party-parse":
+        try:
+            raw_content = Path(args.input_path).read_bytes()
+            report = parse_local_document(
+                args.component,
+                raw_content,
+                document_id=args.document_id,
+                research_as_of=args.research_as_of,
+                source_uri=args.source_uri,
+            )
+            if args.result_id:
+                report["result_id"] = args.result_id
+        except (
+            OSError,
+            TypeError,
+            ValueError,
+            ThirdPartyComponentError,
+        ) as error:
+            parser.error(str(error))
+        path = JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            report["result_id"], report
+        )
+        print(json.dumps({"parse": report, "result_path": str(path)}, ensure_ascii=False, indent=2))
+    elif args.command == "performance-metrics":
+        try:
+            payload = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = build_performance_metrics_report(payload, result_id=args.result_id)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ThirdPartyComponentError,
+        ) as error:
+            parser.error(str(error))
+        path = JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            report["result_id"], report
+        )
+        print(json.dumps({"performance": report, "result_path": str(path)}, ensure_ascii=False, indent=2))
+    elif args.command == "validate-performance-metrics":
+        try:
+            report = validate_performance_metrics_report(
+                json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            )
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ThirdPartyComponentError,
+        ) as error:
+            parser.error(str(error))
+        print(json.dumps({"valid": True, "performance": report}, ensure_ascii=False, indent=2))
+    elif args.command == "compare-research-versions":
+        try:
+            previous = json.loads(Path(args.previous_path).read_text(encoding="utf-8"))
+            current = json.loads(Path(args.current_path).read_text(encoding="utf-8"))
+            report = build_research_version_comparison(previous, current)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ResearchVersionError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            report["comparison_id"], report
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "validate-research-version":
+        try:
+            version = json.loads(Path(args.input_path).read_text(encoding="utf-8"))
+            report = validate_research_version(version)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ResearchVersionError,
+        ) as error:
+            parser.error(str(error))
+        print(json.dumps({"valid": True, "version": report}, ensure_ascii=False, indent=2))
+    elif args.command == "replay-research-version":
+        try:
+            version = json.loads(Path(args.version_path).read_text(encoding="utf-8"))
+            artifacts: list[Mapping[str, Any]] = []
+            if args.artifacts_path:
+                artifacts_payload = json.loads(
+                    Path(args.artifacts_path).read_text(encoding="utf-8")
+                )
+                artifacts = (
+                    artifacts_payload.get("artifacts", [])
+                    if isinstance(artifacts_payload, Mapping)
+                    else artifacts_payload
+                )
+                if not isinstance(artifacts, list):
+                    raise ResearchVersionError("artifacts input must be a list")
+            report = build_research_version_replay(version, artifacts)
+        except (
+            OSError,
+            UnicodeDecodeError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError,
+            ResearchVersionError,
+        ) as error:
+            parser.error(str(error))
+        JsonSnapshotStore(Path(args.output_dir)).write_immutable(
+            report["replay_id"], report
+        )
+        print(json.dumps(report, ensure_ascii=False, indent=2))
