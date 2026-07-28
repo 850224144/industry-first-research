@@ -156,6 +156,11 @@ from .futures_tracking import (
     FuturesTrackingError,
     build_futures_tracking_report,
 )
+from .web import (
+    ResearchWebApplication,
+    WebApplicationError,
+    run_web_server,
+)
 from .public_draft import (
     PublicDraftError,
     build_public_draft,
@@ -334,6 +339,9 @@ __all__ = [
     "FuturesRefreshMappingError",
     "build_futures_fundamentals_input_from_refresh",
     "validate_futures_refresh_mapping",
+    "ResearchWebApplication",
+    "WebApplicationError",
+    "run_web_server",
     "SourceHealthError",
     "build_source_health_snapshot",
     "validate_source_health_snapshot",

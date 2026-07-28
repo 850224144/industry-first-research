@@ -50,6 +50,7 @@
 - 期货持续跟踪已接入：按交易所/品种/对象类型/具体合约比较已保存的基本面报告，生成不可变变化清单、受影响模块和 `decision_review` 人工复核投影，并关联研究版本；没有历史快照时只输出 `INITIALIZED`/待复核，不产生方向结论。
 - 公开稿最小链路已接入：`public-draft` 从显式哈希锁定的公司/期货报告生成脱敏 Markdown 与 `public-draft.v1` JSON，`validate-public-draft` 校验正文哈希和未发布边界；不联网、不登录、不调用微信公众号接口。
 - 有界数据源刷新已接入：`data-refresh` 只执行显式 `data-source-refresh-input.v1` 查询清单，按交易所/公司披露、东方财富、AKShare、BaoStock 主备路由保存实际返回、失败尝试、截断状态、来源健康、受影响模块、`decision_review` 和研究版本；不配置清单时不发网络请求。
+- 本地 Web 研究控制台已接入：`web` 提供快照索引、状态概览和任务解析入口，默认绑定 `127.0.0.1`；只读读取已保存元数据，任务解析可保存不可变任务，不抓取行情、不调用模型、不创建决策快照或发布内容。
 - 增量更新已支持安全的下游局部重算：新增原始证据从 `product_profile` 开始，独立市场结构更新可复用上游阶段从 `adversarial_review` 开始；每次结果保存 `recompute_plan`，不会复用含有新证据的旧阶段。
 - 公司研究报告已增加 `simulation_recommendation` 工作流投影：资料不足时等待/观察，证据齐备时进入用户确认；不生成买卖指令、目标价或决策快照。
 
@@ -107,6 +108,18 @@ python -m industry_first_research demo
 # 可选免费数据依赖（Mac/Linux/Windows 均可）
 python -m pip install -e '.[data]'
 ```
+
+启动本地 Web 研究控制台：
+
+```bash
+PYTHONPATH=src python -m industry_first_research web \
+  --host 127.0.0.1 \
+  --port 8765 \
+  --data-root data
+```
+
+浏览器打开 `http://127.0.0.1:8765/`。控制台只展示已保存快照的元数据，并将输入统一交给本地
+`resolve_research_task`；它不会替代研究管线，也不会改变交易、证据和人工发布边界。
 
 统一解析用户输入（只分类，不联网、不调用模型、不启用执行）：
 

@@ -166,9 +166,7 @@ def resolve_research_task(
     normalized["task_id"] = normalized["task_id"] or (
         "research-task-" + _hash_payload(_hashable_payload(normalized))[:20]
     )
-    normalized["content_hash"] = _hash_payload(
-        {key: value for key, value in normalized.items() if key != "content_hash"}
-    )
+    normalized["content_hash"] = _hash_payload(_hashable_payload(normalized))
     return normalized
 
 
@@ -189,9 +187,7 @@ def validate_research_task(task: Mapping[str, Any]) -> dict[str, Any]:
     if task.get("subject_type") not in _SUBJECT_TYPES:
         raise TaskResolutionError("research task has unsupported subject_type")
     _parse_date(str(task["research_as_of"]), "research_as_of")
-    expected = _hash_payload(
-        {key: value for key, value in task.items() if key != "content_hash"}
-    )
+    expected = _hash_payload(_hashable_payload(task))
     if str(task["content_hash"]) != expected:
         raise TaskResolutionError("content_hash does not match research task")
     return dict(task)

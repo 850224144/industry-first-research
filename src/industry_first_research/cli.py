@@ -180,6 +180,7 @@ from .futures_refresh import (
     FuturesRefreshMappingError,
     build_futures_fundamentals_input_from_refresh,
 )
+from .web import WebApplicationError, run_web_server
 from .futures_tracking import FuturesTrackingError, build_futures_tracking_report
 from .futures_company_exposure import (
     FuturesCompanyExposureError,
@@ -392,6 +393,18 @@ def main() -> None:
     parser = argparse.ArgumentParser(prog="industry-first-research")
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("demo", help="run the local-only industry-first demo")
+    web = subparsers.add_parser(
+        "web", help="start the local-only research web console"
+    )
+    web.add_argument("--host", default="127.0.0.1")
+    web.add_argument("--port", type=int, default=8765)
+    web.add_argument("--data-root", default="data", dest="data_root")
+    web.add_argument(
+        "--commodity-directory",
+        default="config/commodities",
+        dest="commodity_directory",
+    )
+    web.add_argument("--web-root", default="web", dest="web_root")
     company = subparsers.add_parser(
         "company", help="collect a bounded company research snapshot"
     )
@@ -4724,3 +4737,14 @@ def main() -> None:
             report["replay_id"], report
         )
         print(json.dumps(report, ensure_ascii=False, indent=2))
+    elif args.command == "web":
+        try:
+            run_web_server(
+                host=args.host,
+                port=args.port,
+                data_root=args.data_root,
+                commodity_directory=args.commodity_directory,
+                web_root=args.web_root,
+            )
+        except (OSError, ValueError, WebApplicationError) as error:
+            parser.error(str(error))

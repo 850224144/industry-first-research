@@ -453,6 +453,36 @@
       "validated_at": "2026-07-27"
     },
     {
+      "capability_id": "web.local-research-console",
+      "capability_name": "本地 Web 研究控制台",
+      "component": "industry-first-research + web",
+      "component_version": "research-web-api.v1",
+      "interfaces": [
+        "ResearchWebApplication.health",
+        "ResearchWebApplication.summary",
+        "ResearchWebApplication.snapshots",
+        "ResearchWebApplication.resolve_task",
+        "web CLI"
+      ],
+      "output_quality": "展示白名单快照元数据、状态概览并复用统一任务解析器保存幂等研究任务",
+      "license_status": "PROJECT_LICENSE_AND_PYTHON_STDLIB",
+      "temporal_cutoff_support": "task_resolution_as_of_and_snapshot_metadata_only",
+      "safety_boundary": "localhost_only; metadata_bounded; no_market_fetch; no_model_call; no_decision_snapshot; no_publication_api; no_execution",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "复用 task_resolution、JsonSnapshotStore、既有研究对象 schema 和本地数据目录；新增仅为浏览器控制面、白名单索引和 HTTP 边界",
+      "capability_gap": "缺少供个人使用的本地研究任务入口、快照概览和统一安全状态展示",
+      "evidence_refs": [
+        "web.py",
+        "web/index.html",
+        "web/app.js",
+        "web/styles.css",
+        "tests/test_web.py",
+        "outputs/投研分析系统-需求文档.md",
+        "outputs/投研分析系统-设计文档.md"
+      ],
+      "validated_at": "2026-07-28"
+    },
+    {
       "capability_id": "evidence.refresh-promotion-gate",
       "capability_name": "刷新快照到统一证据层的人工字段映射闸门",
       "component": "industry-first-research + evidence",
