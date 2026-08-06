@@ -252,6 +252,57 @@ def test_repository_commodity_directory_covers_initial_categories():
     }
 
 
+def test_repository_adapters_accept_complete_local_field_packages():
+    directory = Path(__file__).parents[1] / "config" / "commodities"
+    registry = CommodityAdapterRegistry.from_directory(directory)
+
+    for adapter in registry.list():
+        benchmark = adapter.spot_benchmarks[0]
+        complete_fields = {
+            field: {
+                "status": "VERIFIED",
+                "value": (
+                    {"benchmark_id": benchmark["benchmark_id"]}
+                    if field == "spot_benchmark"
+                    else {"field": field, "as_of": "2026-07-20"}
+                ),
+                "evidence_ids": [f"fixture-{adapter.adapter_id}-{field}"],
+            }
+            for field in adapter.required_fields
+        }
+        report = build_commodity_adapter_validation_report(
+            adapter,
+            futures_report={
+                "schema_version": "futures-fundamentals-report.v1",
+                "report_id": f"fixture-{adapter.adapter_id}",
+                "as_of": "2026-07-20",
+                "status": "READY",
+                "variety_id": adapter.variety_ids[0],
+                "exchange": adapter.exchanges[0],
+                "contract": {"quote_unit": adapter.quote_unit},
+            },
+            fundamentals_input={
+                "schema_version": "futures-fundamentals-input.v1",
+                "report_id": f"fixture-input-{adapter.adapter_id}",
+                "as_of": "2026-07-20",
+                "fields": complete_fields,
+            },
+        )
+
+        assert report["status"] == "READY", adapter.adapter_id
+        assert report["compatibility"] == {
+            "variety_match": True,
+            "exchange_match": True,
+            "quote_unit_match": True,
+            "spot_benchmark_match": True,
+        }
+        assert set(report["field_coverage"]) == set(adapter.required_fields)
+        assert all(
+            item["status"] == "VERIFIED"
+            for item in report["field_coverage"].values()
+        )
+
+
 def test_definition_rejects_missing_indicator_group_and_bad_schema():
     payload = definition()
     del payload["indicator_groups"]["delivery"]
