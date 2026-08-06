@@ -1,0 +1,12 @@
+{
+  "data": {
+    "id": "hkex-demo-20260618-001",
+    "title": "某上市公司关于签订重大合同的公告",
+    "publishDate": "2026-06-18T18:30:00+08:00",
+    "security_code": "00700",
+    "company_name": "某港股上市公司",
+    "notice_type": "重大合同"
+  },
+  "market": "HK",
+  "language": "zh-CN"
+}

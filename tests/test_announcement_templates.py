@@ -43,6 +43,15 @@ def test_checked_in_source_fixtures_cover_all_template_families():
             "annual_report",
         ),
         (
+            "official_exchange",
+            "official_exchange_hkex.json",
+            "https://hkex.example/disclosure/hkex-demo-20260618-001",
+            "listed_company",
+            "00700",
+            "hkex-demo-20260618-001",
+            "major_contract",
+        ),
+        (
             "company_disclosure",
             "company_disclosure_html.html",
             "https://company.example/notice/company-demo-20260506-001",
@@ -50,6 +59,15 @@ def test_checked_in_source_fixtures_cover_all_template_families():
             "000001",
             "company-demo-20260506-001",
             "annual_report",
+        ),
+        (
+            "company_disclosure",
+            "company_disclosure_szse.html",
+            "https://szse.example/disclosure/000001/szse-demo-20260620-001",
+            "listed_company",
+            "000001",
+            "szse-demo-20260620-001",
+            "buyback",
         ),
         (
             "eastmoney_announcement",
@@ -97,6 +115,34 @@ def test_checked_in_source_fixtures_cover_all_template_families():
         assert report["content_hash"]
         assert report["field_locators"]
         assert report["source_attempts"][0]["content_hash"] == report["content_hash"]
+
+
+def test_exchange_and_company_html_variants_preserve_locator_lineage():
+    catalog = load_template_catalog(CATALOG)
+
+    hkex = parse_announcement_input(
+        {"source_url": "https://hkex.example/disclosure/hkex-demo-20260618-001", "research_as_of": "2026-07-23"},
+        (Path(__file__).parent / "fixtures" / "announcements" / "official_exchange_hkex.json").read_bytes(),
+        get_template(catalog, "official_exchange"),
+        subject_type="listed_company",
+    )
+    assert hkex["status"] == "READY"
+    assert hkex["subject_id"] == "00700"
+    assert hkex["document_type"] == "major_contract"
+    assert hkex["field_locators"]["document_id"] == {"method": "json_path", "path": "data.id"}
+    assert hkex["field_locators"]["published_at"]["path"] == "data.publishDate"
+
+    szse = parse_announcement_input(
+        {"source_url": "https://szse.example/disclosure/000001/szse-demo-20260620-001", "research_as_of": "2026-07-23"},
+        (Path(__file__).parent / "fixtures" / "announcements" / "company_disclosure_szse.html").read_bytes(),
+        get_template(catalog, "company_disclosure"),
+        subject_type="listed_company",
+    )
+    assert szse["status"] == "READY"
+    assert szse["subject_id"] == "000001"
+    assert szse["document_type"] == "buyback"
+    assert szse["field_locators"]["title"]["method"] == "html_meta"
+    assert szse["field_locators"]["published_at"]["method"] == "html_meta"
 
 
 def test_json_snapshot_is_parsed_with_field_lineage_and_cutoff_metadata():
