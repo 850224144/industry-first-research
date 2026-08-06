@@ -291,7 +291,7 @@ def test_evidence_cli_builds_bundle_and_reconciliation(tmp_path, monkeypatch, ca
     assert json.loads(reconciliation_path.read_text(encoding="utf-8"))["group_count"] == 1
 
 
-def test_evidence_cli_does_not_overwrite_an_existing_historical_bundle(
+def test_evidence_cli_replays_an_identical_historical_bundle_idempotently(
     tmp_path, monkeypatch, capsys
 ):
     document = source()
@@ -312,11 +312,14 @@ def test_evidence_cli_does_not_overwrite_an_existing_historical_bundle(
     ]
     monkeypatch.setattr(sys, "argv", argv)
     main()
-    capsys.readouterr()
+    first = json.loads(capsys.readouterr().out)
 
     monkeypatch.setattr(sys, "argv", argv)
-    with pytest.raises(SystemExit):
-        main()
+    main()
+    second = json.loads(capsys.readouterr().out)
+
+    assert first == second
+    assert len(list((tmp_path / "evidence").glob("*.json"))) == 1
     assert "evidence-bundle-evidence-input.json" in {
         path.name for path in (tmp_path / "evidence").glob("*.json")
     }

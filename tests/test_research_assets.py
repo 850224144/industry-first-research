@@ -14,7 +14,8 @@ from industry_first_research.research_assets import (
 from industry_first_research.models import IndustryRadarSnapshot, IndustryState
 
 
-ROOT = Path(__file__).parents[1]
+PROJECT_ROOT = Path(__file__).parents[1]
+ROOT = PROJECT_ROOT / "tests/fixtures/research_assets"
 
 
 def test_discover_keeps_hash_version_and_cutoff_exclusions():

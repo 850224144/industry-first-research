@@ -1,0 +1,10 @@
+{
+  "research_date": "2026-07-12",
+  "company": {
+    "ticker": "NVDA",
+    "name": "NVIDIA",
+    "market": "NASDAQ"
+  },
+  "target_price": 200,
+  "conclusion": "Synthetic fixture claim; reference only."
+}

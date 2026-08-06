@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
+from .storage import JsonSnapshotStore, SnapshotExistsError
 from .task_resolution import TaskResolutionError, resolve_research_task
 
 
@@ -117,31 +118,23 @@ class ResearchWebApplication:
             confirmed=bool(payload.get("confirmed", False)),
             commodity_definitions=self._commodity_definitions(),
         )
-        task_path = self.data_root / "research_tasks" / f"{task['task_id']}.json"
-        task_path.parent.mkdir(parents=True, exist_ok=True)
-        if task_path.exists():
+        store = JsonSnapshotStore(self.data_root / "research_tasks")
+        task_path = store.root / f"{task['task_id']}.json"
+        try:
+            task_path = store.write_artifact(task["task_id"], task)
+        except SnapshotExistsError:
             try:
-                existing = json.loads(task_path.read_text(encoding="utf-8"))
+                existing = store.read(task["task_id"])
             except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
                 raise WebApplicationError(f"existing task cannot be read: {error}") from error
             if existing.get("content_hash") != task.get("content_hash"):
                 raise WebApplicationError("existing task has a different content hash")
             task = existing
-            persisted = True
-        else:
-            try:
-                task_path.write_text(
-                    json.dumps(task, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-                    encoding="utf-8",
-                )
-            except OSError as error:
-                raise WebApplicationError(f"task cannot be persisted: {error}") from error
-            persisted = True
         return {
             "schema_version": WEB_API_SCHEMA_VERSION,
             "task": task,
             "task_path": str(task_path),
-            "persisted": persisted,
+            "persisted": True,
             "execution_enabled": False,
         }
 

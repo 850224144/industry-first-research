@@ -1,10 +1,14 @@
 import json
 import sys
 
+import pytest
+
 from industry_first_research.cli import main
 from industry_first_research.report_rendering import (
+    ReportRenderingError,
     render_research_html,
     render_research_markdown,
+    write_rendered_reports,
 )
 
 
@@ -107,3 +111,16 @@ def test_render_report_cli_writes_markdown_and_html(tmp_path, monkeypatch, capsy
     assert result["schema_version"] == "research-report-render.v1"
     assert (output_dir / "futures-report-001.md").exists()
     assert (output_dir / "futures-report-001.html").exists()
+
+
+def test_rendered_reports_are_an_atomic_immutable_bundle(tmp_path):
+    output_dir = tmp_path / "rendered"
+    output_dir.mkdir()
+    existing = output_dir / "futures-report-001.html"
+    existing.write_text("existing", encoding="utf-8")
+
+    with pytest.raises(ReportRenderingError, match="already exists"):
+        write_rendered_reports(futures_report(), output_dir)
+
+    assert not (output_dir / "futures-report-001.md").exists()
+    assert existing.read_text(encoding="utf-8") == "existing"

@@ -97,7 +97,7 @@ def build_trend_report(
 
 
 def write_trend_report(report: dict[str, Any], output_dir: str | Path) -> Path:
-    return JsonSnapshotStore(output_dir).write(str(report["report_id"]), report)
+    return JsonSnapshotStore(output_dir).write_artifact(str(report["report_id"]), report)
 
 
 def _load_payloads(input_dir: Path, source: str) -> tuple[dict[str, Any], ...]:

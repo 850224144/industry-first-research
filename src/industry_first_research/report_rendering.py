@@ -9,6 +9,8 @@ from pathlib import Path
 import re
 from typing import Any
 
+from .storage import ImmutableFileExistsError, write_files_immutable
+
 
 RESEARCH_RENDER_SCHEMA_VERSION = "research-report-render.v1"
 _SUPPORTED_SCHEMAS = {
@@ -91,15 +93,22 @@ def write_rendered_reports(
     root = Path(output_dir)
     root.mkdir(parents=True, exist_ok=True)
     name = _safe_name(basename.strip() or _report_id(report))
+    files: list[tuple[Path, bytes]] = []
     result: dict[str, str] = {}
     if "markdown" in selected:
         path = root / f"{name}.md"
-        path.write_text(render_research_markdown(report, title=title), encoding="utf-8")
+        files.append(
+            (path, render_research_markdown(report, title=title).encode("utf-8"))
+        )
         result["markdown"] = str(path)
     if "html" in selected:
         path = root / f"{name}.html"
-        path.write_text(render_research_html(report, title=title), encoding="utf-8")
+        files.append((path, render_research_html(report, title=title).encode("utf-8")))
         result["html"] = str(path)
+    try:
+        write_files_immutable(files)
+    except ImmutableFileExistsError as error:
+        raise ReportRenderingError(str(error)) from error
     return result
 
 

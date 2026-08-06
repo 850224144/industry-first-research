@@ -991,6 +991,13 @@ PYTHONPATH=src python -m industry_first_research industry \
   --output /tmp/baijiu-report.md \
   --html-output /tmp/baijiu-report.html
 
+# 可离线复跑的白酒黄金链路（合成夹具，不是投资证据）
+PYTHONPATH=src python -m industry_first_research industry \
+  --config tests/fixtures/baijiu/config.json \
+  --snapshot-dir /tmp/baijiu-golden-snapshots \
+  --output /tmp/baijiu-golden-report.md \
+  --html-output /tmp/baijiu-golden-report.html
+
 # 通威股份公司快照（按交易所/公司披露、东方财富、AKShare、BaoStock 主备切换）
 PYTHONPATH=src python -m industry_first_research company \
   --config config/companies/600438.json
@@ -999,6 +1006,11 @@ PYTHONPATH=src python -m industry_first_research company \
 PYTHONPATH=src python -m industry_first_research industry-radar \
   --config config/industries/your-industry.json
 ```
+
+生产白酒配置引用的本地研究文件未检入时，来源完整性会降级为
+`INSUFFICIENT`，相关公司因没有可用配置资产而进入 `BLOCKED`，不会继续进入深研层。
+黄金链路只用于验证 13 家轻量公司、5 家深度公司和确定性输出；同内容重复执行是幂等的，
+不同内容复用同一不可变路径会报冲突。
 
 ## 外部研究资产
 

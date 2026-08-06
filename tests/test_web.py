@@ -77,6 +77,22 @@ def test_web_resolve_task_persists_idempotently_and_keeps_execution_disabled(tmp
     assert list((tmp_path / "data" / "research_tasks").glob("*.json"))
 
 
+def test_web_resolve_task_rejects_conflicting_immutable_task(tmp_path):
+    app = ResearchWebApplication(data_root=tmp_path / "data")
+    payload = {
+        "input": "白酒行业",
+        "research_as_of": "2026-07-27",
+    }
+    first = app.resolve_task(payload)
+    task_path = Path(first["task_path"])
+    stored = json.loads(task_path.read_text(encoding="utf-8"))
+    stored["content_hash"] = "different"
+    task_path.write_text(json.dumps(stored), encoding="utf-8")
+
+    with pytest.raises(WebApplicationError, match="different content hash"):
+        app.resolve_task(payload)
+
+
 def test_web_rejects_invalid_tasks_and_path_escape(tmp_path):
     app = ResearchWebApplication(data_root=tmp_path / "data", web_root=Path("web"))
 

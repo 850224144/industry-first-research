@@ -1,5 +1,6 @@
 import hashlib
 import json
+from pathlib import Path
 import sys
 
 import pytest
@@ -155,3 +156,42 @@ def test_public_draft_cli_writes_json_and_markdown(tmp_path, monkeypatch, capsys
     main()
     validation = json.loads(capsys.readouterr().out)
     assert validation["valid"] is True
+
+
+def test_public_draft_conflict_keeps_preexisting_markdown(
+    tmp_path, monkeypatch, capsys
+):
+    report = company_report()
+    report_path = tmp_path / "report.json"
+    lock_path = tmp_path / "lock.json"
+    output_dir = tmp_path / "public_drafts"
+    report_path.write_text(json.dumps(report, ensure_ascii=False), encoding="utf-8")
+    lock_path.write_text(
+        json.dumps(lock_for(report), ensure_ascii=False), encoding="utf-8"
+    )
+    argv = [
+        "industry-first-research",
+        "public-draft",
+        "--input",
+        str(report_path),
+        "--source-lock",
+        str(lock_path),
+        "--output-dir",
+        str(output_dir),
+    ]
+    monkeypatch.setattr(sys, "argv", argv)
+
+    main()
+    first = json.loads(capsys.readouterr().out)
+    content_path = Path(first["content_path"])
+    original_content = content_path.read_text(encoding="utf-8")
+    draft_path = next(output_dir.glob("*.json"))
+    stored = json.loads(draft_path.read_text(encoding="utf-8"))
+    stored["title"] = "conflicting stored draft"
+    draft_path.write_text(json.dumps(stored, ensure_ascii=False), encoding="utf-8")
+
+    monkeypatch.setattr(sys, "argv", argv)
+    with pytest.raises(SystemExit):
+        main()
+
+    assert content_path.read_text(encoding="utf-8") == original_content

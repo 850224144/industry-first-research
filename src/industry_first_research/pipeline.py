@@ -43,14 +43,14 @@ class IndustryFirstDiscovery:
         self.policy = policy or ResourcePolicy()
         self.policy.validate()
 
-    def run(self, as_of: str) -> ScanResult:
+    def run(self, as_of: str, *, scan_id: str = "") -> ScanResult:
         snapshots = list(self.radar.snapshots(as_of))
         selected = [item for item in snapshots if item.state in _ELIGIBLE_STATES]
         selected.sort(key=self._priority, reverse=True)
         selected = selected[: self.policy.max_selected_industries]
 
         result = ScanResult(
-            scan_id=f"scan-{uuid4().hex[:12]}",
+            scan_id=scan_id.strip() or f"scan-{uuid4().hex[:12]}",
             as_of=as_of,
             selected_industries=selected,
             rejected_industries=[

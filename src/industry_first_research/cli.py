@@ -130,6 +130,10 @@ from .source_health import (
     build_source_health_snapshot,
     validate_source_health_snapshot,
 )
+from .source_integrity import (
+    apply_source_integrity,
+    build_source_integrity_report,
+)
 from .data_refresh import (
     DataRefreshError,
     build_data_source_refresh,
@@ -303,7 +307,16 @@ from .config import (
 )
 from .local_assets import ConfigCompanyPool, LocalAssetDataProvider, LocalResearchAssetCatalog
 from .report import render_scan_html, render_scan_markdown
-from .storage import JsonSnapshotStore, SnapshotExistsError
+from .storage import (
+    ArtifactSnapshotError,
+    ImmutableFileExistsError,
+    JsonSnapshotStore,
+    SnapshotExistsError,
+    SnapshotIdError,
+    write_bytes_immutable,
+    write_files_immutable,
+    write_text_immutable,
+)
 from .trend import RadarTrendError, build_trend_report, write_trend_report
 
 
@@ -317,6 +330,18 @@ def _research_version_content_hash(version: Mapping[str, Any]) -> str:
     value = {key: item for key, item in version.items() if key != "content_hash"}
     encoded = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+
+def _store_artifact(
+    parser: argparse.ArgumentParser,
+    store: JsonSnapshotStore,
+    artifact_id: str,
+    payload: dict[str, Any],
+) -> Path:
+    try:
+        return store.write_artifact(artifact_id, payload)
+    except (ArtifactSnapshotError, SnapshotExistsError, SnapshotIdError) as error:
+        parser.error(str(error))
 from .tonghuashun import TonghuashunAPIError, TonghuashunIndustryRadar
 from .tonghuashun_company_pool import TonghuashunCompanyPool, TonghuashunCompanyPoolError
 from .tonghuashun_light_data import TonghuashunLightCompanyData
@@ -1725,9 +1750,12 @@ def main() -> None:
         snapshot = CompanyResearchAssembler(default_data_source_router()).collect(
             snapshot_from_config(config)
         )
-        snapshot_path = JsonSnapshotStore(args.snapshot_dir).write(
+        snapshot_path = _store_artifact(
+            parser,
+            JsonSnapshotStore(args.snapshot_dir),
             f"company-{snapshot.company_id.replace('.', '-')}-{snapshot.as_of}",
             {
+                "schema_version": "company-research-snapshot.v1",
                 "company": config,
                 "research": snapshot.to_dict(),
                 "execution_mode": "LOCAL_DATA_ROUTER",
@@ -1745,9 +1773,12 @@ def main() -> None:
         collection = IndustryRadarCollector(default_data_source_router()).collect(
             config, as_of=args.as_of
         )
-        snapshot_path = JsonSnapshotStore(args.snapshot_dir).write(
+        snapshot_path = _store_artifact(
+            parser,
+            JsonSnapshotStore(args.snapshot_dir),
             f"radar-{collection.snapshot.industry_id}-{collection.snapshot.as_of}",
             {
+                "schema_version": "configured-industry-radar-snapshot.v1",
                 "industry": config,
                 "radar": collection.to_dict(),
                 "execution_mode": "INDUSTRY_SIGNAL_ROUTER",
@@ -1763,19 +1794,38 @@ def main() -> None:
     elif args.command == "industry":
         config = load_config(args.config)
         project_root = Path.cwd()
+        source_integrity = build_source_integrity_report(config, project_root)
+        config = apply_source_integrity(config, source_integrity)
+        catalog = LocalResearchAssetCatalog(project_root)
+        scan_id = (
+            f"industry-scan-{config['industry_id']}-{config['as_of']}-"
+            f"{source_integrity['content_hash'][:12]}"
+        )
         scan = IndustryFirstDiscovery(
             InMemoryRadar([radar_from_config(config)]),
             ConfigCompanyPool(
                 candidates_from_config(config),
-                catalog=LocalResearchAssetCatalog(project_root),
+                catalog=catalog,
             ),
             LocalAssetDataProvider(),
-        ).run(config["as_of"])
-        snapshot_path = JsonSnapshotStore(args.snapshot_dir).write(
+        ).run(config["as_of"], scan_id=scan_id)
+        store = JsonSnapshotStore(args.snapshot_dir)
+        _store_artifact(
+            parser,
+            store,
+            source_integrity["report_id"],
+            source_integrity,
+        )
+        snapshot_path = _store_artifact(
+            parser,
+            store,
             scan.scan_id,
             {
+                "schema_version": "industry-vertical-slice.v1",
                 "scan": scan.to_dict(),
                 "industry": config,
+                "source_integrity_report_id": source_integrity["report_id"],
+                "source_integrity_content_hash": source_integrity["content_hash"],
                 "execution_mode": "LOCAL_ASSET_REUSE",
             },
         )
@@ -1783,14 +1833,16 @@ def main() -> None:
         html_report = render_scan_html(scan, config, source_documents(config))
         if args.output:
             target = Path(args.output)
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_text(report, encoding="utf-8")
             result = {"report": str(target), "snapshot": str(snapshot_path)}
+            rendered_files = [(target, report.encode("utf-8"))]
             if args.html_output:
                 html_target = Path(args.html_output)
-                html_target.parent.mkdir(parents=True, exist_ok=True)
-                html_target.write_text(html_report, encoding="utf-8")
+                rendered_files.append((html_target, html_report.encode("utf-8")))
                 result["html_report"] = str(html_target)
+            try:
+                write_files_immutable(rendered_files)
+            except ImmutableFileExistsError as error:
+                parser.error(str(error))
             print(json.dumps(result, ensure_ascii=False))
         else:
             print(report)
@@ -2103,7 +2155,7 @@ def main() -> None:
         ) as error:
             parser.error(str(error))
         report_id = f"company-light-screen-{Path(args.input_path).stem}"
-        JsonSnapshotStore(Path(args.output_dir)).write(report_id, report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report_id, report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "queue":
         try:
@@ -2117,7 +2169,7 @@ def main() -> None:
         except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError, CandidateQueueError) as error:
             parser.error(str(error))
         queue_id = queue_report["queue_id"]
-        JsonSnapshotStore(Path(args.output_dir)).write(queue_id, queue_report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(queue_id, queue_report)
         print(json.dumps(queue_report, ensure_ascii=False, indent=2))
     elif args.command == "supplemental":
         try:
@@ -2149,7 +2201,7 @@ def main() -> None:
             SupplementalEvidenceError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "product-profile":
         try:
@@ -2174,7 +2226,7 @@ def main() -> None:
             ProductProfileError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "product-profit-bridge":
         try:
@@ -2321,7 +2373,7 @@ def main() -> None:
             ApplicationMappingError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "demand-transmission":
         try:
@@ -2342,7 +2394,7 @@ def main() -> None:
             DemandTransmissionError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "industry-situation":
         try:
@@ -2363,7 +2415,7 @@ def main() -> None:
             IndustrySituationError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "cycle-reversal":
         try:
@@ -2384,7 +2436,7 @@ def main() -> None:
             CycleReversalError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "competitive-position":
         try:
@@ -2405,7 +2457,7 @@ def main() -> None:
             CompetitivePositionError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "survival-analysis":
         try:
@@ -2426,7 +2478,7 @@ def main() -> None:
             SurvivalAnalysisError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "valuation-scenarios":
         try:
@@ -2447,7 +2499,7 @@ def main() -> None:
             ValuationScenarioError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "market-structure":
         try:
@@ -2472,7 +2524,7 @@ def main() -> None:
             MarketStructureError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "market-structure-compare":
         try:
@@ -2500,7 +2552,7 @@ def main() -> None:
             MarketStructureAdapterError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(
             report["comparison_id"], report
         )
         print(json.dumps(report, ensure_ascii=False, indent=2))
@@ -2527,7 +2579,7 @@ def main() -> None:
             AdversarialReviewError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "research-report":
         try:
@@ -2546,7 +2598,7 @@ def main() -> None:
             ResearchReportError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "render-report":
         try:
@@ -2592,9 +2644,20 @@ def main() -> None:
         output_root = Path(args.output_dir)
         output_root.mkdir(parents=True, exist_ok=True)
         content_path = output_root / f"{draft['public_draft_id']}.md"
-        content_path.write_text(draft["content"], encoding="utf-8")
         draft["content_uri"] = str(content_path)
-        JsonSnapshotStore(output_root).write_immutable(draft["public_draft_id"], draft)
+        content_existed = content_path.exists()
+        try:
+            write_text_immutable(content_path, draft["content"])
+            try:
+                JsonSnapshotStore(output_root).write_artifact(
+                    draft["public_draft_id"], draft
+                )
+            except Exception:
+                if not content_existed:
+                    content_path.unlink(missing_ok=True)
+                raise
+        except (ImmutableFileExistsError, SnapshotExistsError) as error:
+            parser.error(str(error))
         print(json.dumps({"draft": draft, "content_path": str(content_path)}, ensure_ascii=False, indent=2))
     elif args.command == "validate-public-draft":
         try:
@@ -2885,7 +2948,7 @@ def main() -> None:
             TrackingError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "compare-versions":
         try:
@@ -2920,7 +2983,7 @@ def main() -> None:
             TrackingError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["comparison_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["comparison_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "thesis-check":
         try:
@@ -2948,7 +3011,7 @@ def main() -> None:
             TrackingError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["check_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["check_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "thesis-lock":
         try:
@@ -2973,7 +3036,7 @@ def main() -> None:
             HoldingThesisError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["snapshot_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["snapshot_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "decision-snapshot":
         try:
@@ -3022,7 +3085,7 @@ def main() -> None:
             DecisionSnapshotError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["snapshot_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["snapshot_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "attribution":
         try:
@@ -3058,7 +3121,7 @@ def main() -> None:
             AttributionError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(
             report["attribution_id"], report
         )
         print(json.dumps(report, ensure_ascii=False, indent=2))
@@ -3094,7 +3157,7 @@ def main() -> None:
             QualityScorecardError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(
             report["scorecard_id"], report
         )
         print(json.dumps(report, ensure_ascii=False, indent=2))
@@ -3121,7 +3184,7 @@ def main() -> None:
             SimulationPortfolioError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(
             report["portfolio_id"], report
         )
         print(json.dumps(report, ensure_ascii=False, indent=2))
@@ -3164,7 +3227,7 @@ def main() -> None:
             SimulationPortfolioError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(
             report["replay_id"], report
         )
         print(json.dumps(report, ensure_ascii=False, indent=2))
@@ -3235,7 +3298,7 @@ def main() -> None:
             OpportunityCandidateError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(
             report["candidate_id"], report
         )
         print(json.dumps(report, ensure_ascii=False, indent=2))
@@ -3266,7 +3329,7 @@ def main() -> None:
         catalog_hash = hashlib.sha256(
             json.dumps(catalog, ensure_ascii=False, sort_keys=True).encode("utf-8")
         ).hexdigest()[:20]
-        JsonSnapshotStore(Path(args.output_dir)).write(
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(
             f"announcement-template-catalog-{catalog_hash}", catalog
         )
         print(json.dumps(catalog, ensure_ascii=False, indent=2))
@@ -3304,14 +3367,13 @@ def main() -> None:
                 / "raw"
                 / f"{report['document_id']}-v{version}{raw_path.suffix or '.bin'}"
             )
-            raw_target.parent.mkdir(parents=True, exist_ok=True)
-            if raw_target.exists():
+            try:
+                write_bytes_immutable(raw_target, raw_content)
+            except ImmutableFileExistsError:
                 if raw_target.read_bytes() != raw_content:
                     raise AnnouncementTemplateError(
                         f"immutable raw snapshot already exists with different content: {raw_target}"
                     )
-            else:
-                raw_target.write_bytes(raw_content)
             report = parse_announcement_input(
                 metadata,
                 raw_content,
@@ -3346,8 +3408,7 @@ def main() -> None:
                     / "raw"
                     / f"{document_id}-v{version}{source_path.suffix or '.bin'}"
                 )
-                raw_target.parent.mkdir(parents=True, exist_ok=True)
-                raw_target.write_bytes(raw_content)
+                write_bytes_immutable(raw_target, raw_content)
                 raw_content_uri = str(raw_target)
             report = build_announcement_asset(
                 payload,
@@ -3362,6 +3423,7 @@ def main() -> None:
             TypeError,
             ValueError,
             AnnouncementAssetError,
+            ImmutableFileExistsError,
         ) as error:
             parser.error(str(error))
         JsonSnapshotStore(Path(args.output_dir)).write_immutable(
@@ -3446,7 +3508,7 @@ def main() -> None:
             FuturesIdentityError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["identity_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["identity_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "futures-fundamentals":
         try:
@@ -3476,7 +3538,7 @@ def main() -> None:
             FuturesFundamentalsError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "futures-input-from-refresh":
         try:
@@ -3561,7 +3623,7 @@ def main() -> None:
             FuturesCompanyExposureError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "commodity-adapters":
         try:
@@ -3578,7 +3640,7 @@ def main() -> None:
             CommodityAdapterError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(
             report["registry_id"], report
         )
         print(json.dumps(report, ensure_ascii=False, indent=2))
@@ -3611,7 +3673,7 @@ def main() -> None:
             CommodityAdapterError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(
             report["validation_id"], report
         )
         print(json.dumps(report, ensure_ascii=False, indent=2))
@@ -3654,7 +3716,7 @@ def main() -> None:
             ResearchAssetError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(snapshot_id, report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(snapshot_id, report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "security-master":
         try:
@@ -3678,7 +3740,7 @@ def main() -> None:
             SecurityMasterError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["snapshot_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["snapshot_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "security-master-validate":
         try:
@@ -3695,7 +3757,7 @@ def main() -> None:
             SecurityMasterError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(
             "security-master-validation-" + Path(args.input_path).stem,
             report,
         )
@@ -3706,7 +3768,7 @@ def main() -> None:
             report = build_company_scope_report(payload, scope_id=args.scope_id)
         except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError, ValueError, CompanyScopeError) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["scope_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["scope_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "company-scope-validate":
         try:
@@ -3714,7 +3776,7 @@ def main() -> None:
             report = validate_company_scope_report(payload)
         except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError, ValueError, CompanyScopeError) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(
             "company-scope-validation-" + Path(args.input_path).stem, report
         )
         print(json.dumps(report, ensure_ascii=False, indent=2))
@@ -3731,7 +3793,7 @@ def main() -> None:
             )
         except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError, ValueError, MarketDataError) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["snapshot_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["snapshot_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "market-data-validate":
         try:
@@ -3744,7 +3806,7 @@ def main() -> None:
             report = validate_market_data_snapshot(payload, market_registry=market_registry)
         except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError, ValueError, MarketDataError) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(
             "market-data-validation-" + Path(args.input_path).stem, report
         )
         print(json.dumps(report, ensure_ascii=False, indent=2))
@@ -3754,7 +3816,7 @@ def main() -> None:
             report = build_market_registry_report(payload)
         except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError, ValueError, MarketRegistryError) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(
             report["registry_id"] + "-" + report["version"], report
         )
         print(json.dumps(report, ensure_ascii=False, indent=2))
@@ -3767,7 +3829,7 @@ def main() -> None:
             report = validate_market_reference(reference, registry)
         except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError, ValueError, MarketRegistryError) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(
             "market-reference-validation-" + Path(args.input_path).stem, report
         )
         print(json.dumps(report, ensure_ascii=False, indent=2))
@@ -3786,7 +3848,7 @@ def main() -> None:
             IndustryAdapterError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["registry_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["registry_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "industry-profile":
         try:
@@ -3807,7 +3869,7 @@ def main() -> None:
             IndustryAdapterError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["profile_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["profile_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "evidence-template":
         try:
@@ -3827,7 +3889,7 @@ def main() -> None:
             ManualEvidenceTemplateError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(
             template["template_id"], template
         )
         print(json.dumps(template, ensure_ascii=False, indent=2))
@@ -3848,7 +3910,7 @@ def main() -> None:
             ResearchabilityError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "quick-research":
         try:
@@ -3871,7 +3933,7 @@ def main() -> None:
             QuickResearchError,
         ) as error:
             parser.error(str(error))
-        JsonSnapshotStore(Path(args.output_dir)).write(report["report_id"], report)
+        JsonSnapshotStore(Path(args.output_dir)).write_artifact(report["report_id"], report)
         print(json.dumps(report, ensure_ascii=False, indent=2))
     elif args.command == "external-ai":
         record = ExternalAIResearchRecord(

@@ -174,4 +174,21 @@ def test_asset_catalog_records_hash_and_candidate_sections(tmp_path: Path):
 def test_missing_asset_is_explicit(tmp_path: Path):
     inspected = LocalResearchAssetCatalog(tmp_path).inspect(["missing.md"])[0]
     assert inspected["exists"] is False
+    assert inspected["available"] is False
     assert inspected["parse_status"] == "MISSING"
+
+
+def test_empty_and_outside_assets_are_not_available(tmp_path: Path):
+    empty = tmp_path / "empty.md"
+    empty.touch()
+    outside = tmp_path.parent / "outside.md"
+    outside.write_text("outside\n", encoding="utf-8")
+
+    empty_status, outside_status = LocalResearchAssetCatalog(tmp_path).inspect(
+        ["empty.md", str(outside)]
+    )
+
+    assert empty_status["parse_status"] == "EMPTY"
+    assert empty_status["available"] is False
+    assert outside_status["parse_status"] == "OUTSIDE_PROJECT"
+    assert outside_status["available"] is False

@@ -140,9 +140,13 @@ def render_scan_markdown(
         path = source.get("path", "")
         label = source.get("title", path)
         level = source.get("level", "UNKNOWN")
+        availability = source.get("availability_status", "UNCHECKED")
         url = source.get("url")
         location = f"[{label}]({url})" if url else f"`{label}`"
-        lines.append(f"- {location}：{level}；{source.get('role', '研究参考资料')}。")
+        lines.append(
+            f"- {location}：{level}；可用性 `{availability}`；"
+            f"{source.get('role', '研究参考资料')}。"
+        )
     lines.extend(["", "### 公司研究资产状态", ""])
     for industry_id, candidates in result.company_pools.items():
         for candidate in candidates:
@@ -232,9 +236,13 @@ def render_scan_html(
     for source in source_documents:
         label = escape(source.get("title", source.get("path", "研究资料")))
         level = escape(source.get("level", "UNKNOWN"))
+        availability = escape(source.get("availability_status", "UNCHECKED"))
         url = source.get("url")
         link = f'<a href="{escape(url, quote=True)}">查看来源</a>' if url else "本地参考"
-        source_items.append(f"<li><strong>{label}</strong>：{level}；{link}</li>")
+        source_items.append(
+            f"<li><strong>{label}</strong>：{level}；"
+            f"可用性 <code>{availability}</code>；{link}</li>"
+        )
 
     return f"""<!doctype html>
 <html lang="zh-CN">

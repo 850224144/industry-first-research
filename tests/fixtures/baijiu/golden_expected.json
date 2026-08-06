@@ -1,0 +1,14 @@
+{
+  "industry_id": "baijiu",
+  "evidence_completeness": "CROSS_VALIDATED",
+  "source_integrity_status": "READY",
+  "light_data_company_count": 13,
+  "deep_data_company_count": 5,
+  "selected_company_ids": [
+    "600519.SH",
+    "000568.SZ",
+    "600809.SH",
+    "000858.SZ",
+    "000596.SZ"
+  ]
+}

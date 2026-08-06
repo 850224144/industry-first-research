@@ -18,21 +18,62 @@ from .models import CompanyCandidate, CompanyDataTier, IndustryRadarSnapshot
 
 class LocalResearchAssetCatalog:
     def __init__(self, project_root: str | Path) -> None:
-        self.project_root = Path(project_root)
+        self.project_root = Path(project_root).resolve()
 
     def inspect(self, references: Sequence[str]) -> list[dict[str, Any]]:
         assets: list[dict[str, Any]] = []
         for reference in references:
-            path = self.project_root / reference
+            normalized = str(reference or "").strip()
             item = {
-                "path": reference,
-                "exists": path.exists(),
-                "asset_type": self._asset_type(reference),
+                "path": normalized,
+                "asset_type": self._asset_type(normalized),
             }
-            if path.is_file():
-                item.update(self._parse_asset(path))
+            if not normalized:
+                item.update(
+                    {
+                        "exists": False,
+                        "available": False,
+                        "parse_status": "UNDECLARED",
+                        "fields": [],
+                    }
+                )
+                assets.append(item)
+                continue
+            try:
+                path = (self.project_root / normalized).resolve()
+                path.relative_to(self.project_root)
+            except (OSError, RuntimeError, ValueError):
+                item.update(
+                    {
+                        "exists": False,
+                        "available": False,
+                        "parse_status": "OUTSIDE_PROJECT",
+                        "fields": [],
+                    }
+                )
+                assets.append(item)
+                continue
+            if not path.exists():
+                item.update(
+                    {
+                        "exists": False,
+                        "available": False,
+                        "parse_status": "MISSING",
+                        "fields": [],
+                    }
+                )
+            elif not path.is_file():
+                item.update(
+                    {
+                        "exists": False,
+                        "available": False,
+                        "parse_status": "NOT_FILE",
+                        "fields": [],
+                    }
+                )
             else:
-                item.update({"parse_status": "MISSING", "fields": []})
+                item["exists"] = True
+                item.update(self._parse_asset(path))
             assets.append(item)
         return assets
 
@@ -44,12 +85,27 @@ class LocalResearchAssetCatalog:
         marked as candidates until an official source adapter verifies them.
         """
 
-        raw = path.read_bytes()
+        try:
+            raw = path.read_bytes()
+        except OSError:
+            return {
+                "available": False,
+                "parse_status": "UNREADABLE",
+                "fields": [],
+            }
+        if not raw:
+            return {
+                "available": False,
+                "parse_status": "EMPTY",
+                "bytes": 0,
+                "fields": [],
+            }
         digest = hashlib.sha256(raw).hexdigest()
         try:
             text = raw.decode("utf-8")
         except UnicodeDecodeError:
             return {
+                "available": True,
                 "parse_status": "BINARY_UNSUPPORTED",
                 "bytes": len(raw),
                 "sha256": digest,
@@ -61,6 +117,7 @@ class LocalResearchAssetCatalog:
                 payload = json.loads(text)
             except json.JSONDecodeError:
                 return {
+                    "available": True,
                     "parse_status": "INVALID_JSON",
                     "bytes": len(raw),
                     "sha256": digest,
@@ -94,6 +151,7 @@ class LocalResearchAssetCatalog:
                         {"name": label, "status": "KEYWORD_PRESENT", "value_type": "text"}
                     )
         return {
+            "available": True,
             "parse_status": "PARSED",
             "bytes": len(raw),
             "sha256": digest,
@@ -154,7 +212,8 @@ def _summarize_assets(assets: Sequence[dict[str, Any]]) -> dict[str, int | bool]
     return {
         "configured": len(assets),
         "existing": sum(1 for asset in assets if asset.get("exists")),
+        "available": sum(1 for asset in assets if asset.get("available")),
         "parsed": sum(1 for asset in assets if asset.get("parse_status") == "PARSED"),
-        "missing": sum(1 for asset in assets if not asset.get("exists")),
-        "complete": bool(assets) and all(asset.get("exists") for asset in assets),
+        "missing": sum(1 for asset in assets if not asset.get("available")),
+        "complete": bool(assets) and all(asset.get("available") for asset in assets),
     }

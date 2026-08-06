@@ -174,5 +174,8 @@ def test_validation_and_cli_write_an_immutable_bridge(tmp_path, monkeypatch, cap
             str(output_dir),
         ],
     )
-    with pytest.raises(SystemExit):
-        main()
+    main()
+    replay = json.loads(capsys.readouterr().out)
+
+    assert replay == report
+    assert len(list(output_dir.glob("*.json"))) == 1
