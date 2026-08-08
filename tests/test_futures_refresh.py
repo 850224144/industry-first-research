@@ -51,27 +51,28 @@ class FixtureAdapter:
 
 
 def _refresh_report(subject_id="CU"):
+    prefix = subject_id.lower()
     payload = {
         "schema_version": "data-source-refresh-input.v1",
-        "refresh_id": "fixture-futures-refresh-cu",
+        "refresh_id": f"fixture-futures-refresh-{prefix}",
         "as_of": "2026-07-20",
         "queries": [
             {
-                "query_id": "cu-spot-benchmark",
+                "query_id": f"{prefix}-spot-benchmark",
                 "subject_type": "futures_variety",
                 "subject_id": subject_id,
                 "source_names": ["eastmoney"],
                 "request": {"endpoint": "spot_fixture"},
             },
             {
-                "query_id": "cu-inventory",
+                "query_id": f"{prefix}-inventory",
                 "subject_type": "futures_variety",
                 "subject_id": subject_id,
                 "source_names": ["eastmoney"],
                 "request": {"endpoint": "inventory_fixture"},
             },
             {
-                "query_id": "cu-exchange-inventory",
+                "query_id": f"{prefix}-exchange-inventory",
                 "subject_type": "futures_variety",
                 "subject_id": subject_id,
                 "source_names": ["eastmoney"],
@@ -93,22 +94,23 @@ def _refresh_report(subject_id="CU"):
     return build_data_source_refresh(payload, router)
 
 
-def _mapping():
+def _mapping(variety_id="CU"):
+    prefix = variety_id.lower()
     return {
         "schema_version": "futures-fundamentals-refresh-mapping.v1",
-        "mapping_id": "cu-refresh-fixture-mapping",
-        "variety_id": "CU",
+        "mapping_id": f"{prefix}-refresh-fixture-mapping",
+        "variety_id": variety_id,
         "as_of": "2026-07-20",
         "field_mappings": [
             {
                 "target": "spot_benchmark",
-                "query_id": "cu-spot-benchmark",
+                "query_id": f"{prefix}-spot-benchmark",
                 "value_path": "data.0",
                 "unit": "CNY/ton",
             },
             {
                 "target": "inventory_by_location",
-                "query_id": "cu-inventory",
+                "query_id": f"{prefix}-inventory",
                 "value_path": "data.0",
                 "unit": "ton",
             },
@@ -116,7 +118,7 @@ def _mapping():
         "observation_mappings": [
             {
                 "target": "spot_price",
-                "query_id": "cu-spot-benchmark",
+                "query_id": f"{prefix}-spot-benchmark",
                 "rows_path": "data",
                 "date_path": "date",
                 "value_path": "price",
@@ -124,7 +126,7 @@ def _mapping():
             },
             {
                 "target": "inventory",
-                "query_id": "cu-inventory",
+                "query_id": f"{prefix}-inventory",
                 "rows_path": "data",
                 "date_path": "date",
                 "value_path": "inventory",
@@ -257,6 +259,23 @@ def test_refresh_mapping_rejects_verified_status_and_future_observation():
     refresh = _refresh_report(subject_id="RB")
     with pytest.raises(FuturesRefreshMappingError, match="does not match variety_id"):
         build_futures_fundamentals_input_from_refresh(refresh, _mapping())
+
+
+def test_refresh_mapping_covers_all_initial_commodity_families():
+    for variety_id in ("RB", "SC", "M", "LC"):
+        refresh = _refresh_report(subject_id=variety_id)
+        mapped = build_futures_fundamentals_input_from_refresh(
+            refresh, _mapping(variety_id)
+        )
+
+        assert mapped["variety_id"] == variety_id
+        assert mapped["status"] == "REVIEW"
+        assert mapped["fields"]["spot_benchmark"]["status"] == "UNVERIFIED"
+        assert mapped["fields"]["inventory_by_location"]["metadata"]["query_id"] == (
+            f"{variety_id.lower()}-inventory"
+        )
+        assert mapped["observations"]["spot_price"][-1]["value"] == 102
+        assert mapped["policy"]["automatic_fact_promotion"] is False
 
 
 def test_five_initial_commodity_families_keep_the_same_report_contract():
