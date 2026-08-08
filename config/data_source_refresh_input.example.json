@@ -1,0 +1,30 @@
+{
+  "schema_version": "data-source-refresh-input.v1",
+  "refresh_id": "daily-research-subjects-example",
+  "as_of": "2026-07-25",
+  "queries": [
+    {
+      "query_id": "company-600438-history",
+      "subject_type": "listed_company",
+      "subject_id": "600438.SH",
+      "source_names": [
+        "eastmoney",
+        "akshare",
+        "baostock"
+      ],
+      "request": {
+        "endpoint": "stock_zh_a_hist",
+        "params": {
+          "symbol": "600438",
+          "period": "daily",
+          "start_date": "20260701",
+          "end_date": "20260725",
+          "adjust": ""
+        },
+        "required_fields": [
+          "data"
+        ]
+      }
+    }
+  ]
+}

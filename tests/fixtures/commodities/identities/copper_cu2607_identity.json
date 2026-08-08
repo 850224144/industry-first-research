@@ -1,0 +1,26 @@
+{
+  "schema_version": "futures-object-identity.v1",
+  "identity_id": "futures-identity-cu2607-20260520-001",
+  "object_type": "futures_contract",
+  "exchange": "SHFE",
+  "variety_id": "CU",
+  "variety_name": "沪铜",
+  "contract": {
+    "contract_code": "CU2607",
+    "contract_month": "202607",
+    "last_trade_date": "2026-07-15",
+    "contract_multiplier": 5,
+    "tick_size": 10.0,
+    "settlement_basis": "daily_settlement",
+    "delivery_month": "2026-07",
+    "delivery_period": "2026-07-16至2026-07-20"
+  },
+  "as_of": "2026-05-20T16:00:00+08:00",
+  "commodity_adapter_id": "copper",
+  "spot_benchmark": {
+    "benchmark_id": "shanghai_copper_spot",
+    "name": "上海电解铜现货"
+  },
+  "status": "READY",
+  "identification_method": "explicit_exchange_variety_contract"
+}

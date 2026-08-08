@@ -1,0 +1,30 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "security_code": "300750",
+    "security_name": "宁德时代",
+    "listing_market": "SZ",
+    "listing_date": "2018-06-11",
+    "company_name": "宁德时代新能源科技股份有限公司",
+    "registered_capital": "2324990000",
+    "legal_representative": "曾毓群",
+    "established_date": "2011-12-16",
+    "registered_address": "福建省宁德市蕉城区漳湾镇新港路2号",
+    "office_address": "福建省宁德市蕉城区漳湾镇新港路2号",
+    "business_scope": "锂离子电池、锂聚合物电池、燃料电池、超级电容器、动力电池、储能电池的研发、生产和销售...",
+    "main_business": "专注于新能源汽车动力电池系统、储能系统的研发、生产和销售",
+    "industry": "电气机械和器材制造业",
+    "industry_code": "C38",
+    "total_shares": "2324990000",
+    "float_shares": "2087641000",
+    "chairman": "曾毓群",
+    "general_manager": "周佳",
+    "secretary": "蒋理",
+    "employees": "75326",
+    "website": "www.catl.com",
+    "email": "IR@catl.com",
+    "as_of": "2026-03-31",
+    "source_document_id": "eastmoney-profile-300750-20260331"
+  }
+}

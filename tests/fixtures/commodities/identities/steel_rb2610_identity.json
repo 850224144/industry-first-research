@@ -1,0 +1,26 @@
+{
+  "schema_version": "futures-object-identity.v1",
+  "identity_id": "futures-identity-rb2610-20260520-001",
+  "object_type": "futures_contract",
+  "exchange": "SHFE",
+  "variety_id": "RB",
+  "variety_name": "螺纹钢",
+  "contract": {
+    "contract_code": "RB2610",
+    "contract_month": "202610",
+    "last_trade_date": "2026-10-15",
+    "contract_multiplier": 10,
+    "tick_size": 1.0,
+    "settlement_basis": "daily_settlement",
+    "delivery_month": "2026-10",
+    "delivery_period": "2026-10-16至2026-10-20"
+  },
+  "as_of": "2026-05-20T16:00:00+08:00",
+  "commodity_adapter_id": "steel",
+  "spot_benchmark": {
+    "benchmark_id": "east_china_rebar_spot",
+    "name": "华东螺纹钢现货"
+  },
+  "status": "READY",
+  "identification_method": "explicit_exchange_variety_contract"
+}

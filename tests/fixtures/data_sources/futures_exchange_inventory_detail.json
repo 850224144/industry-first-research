@@ -1,0 +1,44 @@
+{
+  "code": 0,
+  "msg": "查询成功",
+  "data": {
+    "exchange": "DCE",
+    "variety": "M",
+    "variety_name": "豆粕",
+    "report_date": "2026-03-10",
+    "warehouse_receipts": [
+      {
+        "warehouse_name": "大连良运库",
+        "region": "辽宁",
+        "prev_receipts": 15680,
+        "curr_receipts": 16240,
+        "change": 560,
+        "unit": "张"
+      },
+      {
+        "warehouse_name": "天津五洲库",
+        "region": "天津",
+        "prev_receipts": 12340,
+        "curr_receipts": 11890,
+        "change": -450,
+        "unit": "张"
+      },
+      {
+        "warehouse_name": "江苏南通库",
+        "region": "江苏",
+        "prev_receipts": 8950,
+        "curr_receipts": 9320,
+        "change": 370,
+        "unit": "张"
+      }
+    ],
+    "total_prev": 36970,
+    "total_curr": 37450,
+    "total_change": 480,
+    "conversion_factor": 10,
+    "unit": "张（每张10吨）",
+    "total_tonnage": 374500,
+    "publish_time": "2026-03-10T16:00:00+08:00",
+    "source_document_id": "dce-inventory-M-20260310"
+  }
+}

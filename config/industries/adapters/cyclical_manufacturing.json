@@ -1,0 +1,49 @@
+{
+  "schema_version": "industry-adapter.v1",
+  "adapter_id": "cyclical_manufacturing",
+  "display_name": "周期制造",
+  "aliases": ["周期制造业", "强周期制造"],
+  "supported_industry_ids": ["photovoltaic", "steel", "chemical", "non_ferrous", "lithium_battery"],
+  "supported_industry_names": ["光伏", "钢铁", "化工", "有色金属", "锂电"],
+  "supported_industry_families": ["manufacturing", "materials", "new_energy"],
+  "business_models": ["制造", "材料", "设备制造"],
+  "classification_attributes": {
+    "cyclicality": "STRONG_CYCLICAL",
+    "asset_intensity": "CAPITAL_INTENSIVE",
+    "demand_rigidity": "MIXED",
+    "competition_type": "CAPACITY_AND_COST_CURVE",
+    "technology_risk": "MEDIUM_TO_HIGH",
+    "policy_sensitivity": "MEDIUM_TO_HIGH"
+  },
+  "required_metrics": [
+    "effective_capacity",
+    "capacity_utilization",
+    "industry_price",
+    "cash_cost",
+    "full_cost",
+    "inventory",
+    "industry_profit",
+    "capacity_exit",
+    "capex_pipeline",
+    "impairment_risk",
+    "operating_cashflow"
+  ],
+  "valuation_methods": ["mid_cycle_profit", "replacement_cost_with_survival_check", "three_scenario_cashflow"],
+  "survival_questions": [
+    "现金成本和完全成本位于行业成本曲线什么位置",
+    "低价持续时现金、债务和资本开支能支撑多久",
+    "产能、设备和商誉是否存在减值压力",
+    "行业出清时公司能否获得份额而不是只获得价格反弹"
+  ],
+  "product_application_questions": [
+    "主要产品、材料或设备是什么",
+    "产品在下游方案中属于关键件、通用件还是可选件",
+    "客户认证、订单、收入和利润是否已经逐级验证"
+  ],
+  "demand_transmission_stages": ["CONCEPT", "CUSTOMER_VALIDATED", "ORDER_VALIDATED", "REVENUE_VALIDATED", "PROFIT_VALIDATED"],
+  "lifecycle_status": "ACTIVE",
+  "acceptance_samples": [
+    {"sample_id": "cycle-bottom-watch", "description": "价格低于完全成本但库存、供给退出和现金流证据未齐全时只能 WATCH"},
+    {"sample_id": "non-cycle-rejection", "description": "非周期行业不得套用库存、现金成本和产能出清结论"}
+  ]
+}

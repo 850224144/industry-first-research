@@ -1,0 +1,141 @@
+{
+  "schema_version": "futures-fundamentals-input.v1",
+  "variety_id": "M",
+  "variety_name": "豆粕",
+  "exchange": "DCE",
+  "as_of": "2025-12-20T16:00:00+08:00",
+  "research_cutoff": "2025-12-20",
+  "market_phase": "abundant_supply",
+  "spot_benchmark": {
+    "benchmark_id": "north_china_soybean_meal_spot",
+    "price": 3420,
+    "unit": "CNY/ton",
+    "date": "2025-12-20",
+    "source": "cofeed_weekly",
+    "field_status": "VERIFIED",
+    "grade": "43% protein"
+  },
+  "contract_quotes": [
+    {
+      "contract": "M2605",
+      "settlement_price": 3520,
+      "close_price": 3515,
+      "volume": 1456789,
+      "open_interest": 2234567,
+      "date": "2025-12-20",
+      "source": "dce_settlement",
+      "field_status": "VERIFIED"
+    }
+  ],
+  "inventory": {
+    "exchange_inventory": {
+      "value": 52340,
+      "unit": "lot",
+      "ton_equivalent": 523400,
+      "date": "2025-12-20",
+      "source": "dce_daily_warrant",
+      "field_status": "VERIFIED",
+      "note": "每张10吨，库存大幅增加"
+    },
+    "crushing_mill_inventory": {
+      "value": 1234567,
+      "unit": "ton",
+      "date": "2025-12-17",
+      "source": "cofeed_weekly",
+      "field_status": "VERIFIED"
+    },
+    "port_soybean": {
+      "value": 8765432,
+      "unit": "ton",
+      "date": "2025-12-17",
+      "source": "cofeed_weekly",
+      "field_status": "VERIFIED",
+      "note": "港口大豆库存充裕"
+    }
+  },
+  "production": {
+    "weekly_crush": {
+      "value": 2012345,
+      "unit": "ton_soybean",
+      "date": "2025-12-17",
+      "source": "cofeed_weekly",
+      "field_status": "VERIFIED"
+    },
+    "crush_rate": {
+      "value": 201234,
+      "unit": "ton_per_day",
+      "date": "2025-12-17",
+      "source": "cofeed_weekly",
+      "field_status": "VERIFIED"
+    },
+    "utilization_rate": {
+      "value": 74.8,
+      "unit": "percent",
+      "date": "2025-12-17",
+      "source": "cofeed_weekly",
+      "field_status": "VERIFIED"
+    }
+  },
+  "trade": {
+    "soybean_imports": {
+      "value": 9876543,
+      "unit": "ton",
+      "date": "2025-11-30",
+      "source": "customs_monthly",
+      "field_status": "VERIFIED",
+      "note": "进口量创新高"
+    },
+    "arrival_forecast": {
+      "value": 10234567,
+      "unit": "ton",
+      "date": "2025-12-31",
+      "source": "cofeed_forecast",
+      "field_status": "FORECAST"
+    }
+  },
+  "cost": {
+    "soybean_import_cost": {
+      "value": 3850,
+      "unit": "CNY/ton",
+      "date": "2025-12-20",
+      "source": "calculated",
+      "calculation": "CBOT + freight + CNH",
+      "field_status": "CALCULATED",
+      "note": "南美丰产压低成本"
+    },
+    "crushing_cost": {
+      "value": 150,
+      "unit": "CNY/ton",
+      "date": "2025-12-01",
+      "source": "industry_average",
+      "field_status": "ESTIMATED"
+    }
+  },
+  "margin": {
+    "crush_margin": {
+      "value": 420,
+      "unit": "CNY/ton_soybean",
+      "date": "2025-12-20",
+      "source": "calculated",
+      "field_status": "CALCULATED",
+      "note": "压榨利润回升"
+    }
+  },
+  "basis": {
+    "spot_futures_basis": {
+      "value": -100,
+      "unit": "CNY/ton",
+      "calculation": "spot - M2605_settlement",
+      "date": "2025-12-20",
+      "field_status": "CALCULATED"
+    }
+  },
+  "seasonality": {
+    "planting_season": "South America planting season",
+    "harvest_arrival": "Brazil harvest completed, abundant supply",
+    "hog_cycle": "peak phase"
+  },
+  "market_narrative": "2025年Q4豆粕供应充裕，南美丰产、进口量大、库存累积、价格下跌",
+  "evidence_ids": ["soybean-meal-dce-warrant-20251220", "soybean-cofeed-weekly-20251217"],
+  "source_document_id": "soybean-meal-fundamentals-input-20251220"
+}

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Industry First Research</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">INDUSTRY FIRST RESEARCH</p>
+        <h1>研究控制台</h1>
+      </div>
+      <div class="runtime-status" id="runtime-status">检查本地状态...</div>
+    </header>
+
+    <main class="workspace">
+      <section class="intro-band">
+        <div>
+          <p class="eyebrow">从行业到标的</p>
+          <h2>先识别研究对象，再进入证据链</h2>
+          <p class="muted">这里负责发起研究任务、查看已保存快照和确认数据状态。它不会自动交易，也不会调用模型或公众号接口。</p>
+        </div>
+        <div class="guardrail-list" aria-label="运行边界">
+          <span>本地模式</span><span>不自动交易</span><span>人工确认发布</span>
+        </div>
+      </section>
+
+      <section class="metrics" id="metrics" aria-label="研究概览">
+        <div class="metric"><span>已保存快照</span><strong id="snapshot-count">--</strong></div>
+        <div class="metric"><span>研究任务</span><strong id="task-count">--</strong></div>
+        <div class="metric"><span>待复核</span><strong id="review-count">--</strong></div>
+        <div class="metric"><span>执行状态</span><strong class="safe" id="execution-state">关闭</strong></div>
+      </section>
+
+      <section class="research-grid">
+        <div class="panel task-panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">NEW RESEARCH</p><h2>发起研究任务</h2></div>
+            <span class="panel-index">01</span>
+          </div>
+          <form id="task-form">
+            <label for="research-input">研究对象</label>
+            <input id="research-input" name="input" placeholder="例如：白酒行业、600438.SH、沪铜或发现机会" required>
+            <div class="form-row">
+              <div>
+                <label for="task-depth">研究深度</label>
+                <select id="task-depth" name="requested_depth">
+                  <option value="QUICK">QUICK</option>
+                  <option value="STANDARD" selected>STANDARD</option>
+                  <option value="DEEP">DEEP</option>
+                </select>
+              </div>
+              <div>
+                <label for="research-as-of">研究截止日</label>
+                <input id="research-as-of" name="research_as_of" type="date">
+              </div>
+            </div>
+            <button type="submit" class="primary-button">解析并保存任务</button>
+          </form>
+          <div id="task-result" class="result" hidden></div>
+        </div>
+
+        <div class="panel status-panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">RESEARCH STATE</p><h2>当前状态</h2></div>
+            <span class="panel-index">02</span>
+          </div>
+          <div id="status-summary" class="status-summary"><p class="muted">正在读取快照...</p></div>
+          <div class="boundary-note"><strong>安全边界</strong><p>任务解析只做本地分类；正式研究仍由既有 CLI 和数据源主备链路执行。</p></div>
+        </div>
+      </section>
+
+      <section class="panel snapshot-panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">IMMUTABLE SNAPSHOTS</p><h2>最近研究资产</h2></div>
+          <button class="secondary-button" id="refresh-button" type="button">刷新列表</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>对象</th><th>类型</th><th>状态</th><th>截止日</th><th>边界</th></tr></thead>
+            <tbody id="snapshot-table"><tr><td colspan="5" class="muted">正在读取...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,28 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+
+# Local research data and generated artifacts
+data/
+artifacts/
+outputs/*.html
+outputs/*.json
+outputs/render_*.mjs
+outputs/*.md
+!outputs/投研分析系统-需求文档.md
+!outputs/投研分析系统-设计文档.md
+!outputs/投研分析系统-评审记录-2026-07-17.md
+
+# Vendored upstream worktrees stay local until licensing and redistribution are confirmed.
+vendor/*
+!vendor/SOURCES.md
+!vendor/试用说明.md

@@ -1,0 +1,44 @@
+{
+  "schema_version": "industry-adapter.v1",
+  "adapter_id": "utilities",
+  "display_name": "公用事业",
+  "aliases": ["公用事业", "电力", "燃气", "水务"],
+  "supported_industry_ids": ["utility", "power", "gas", "water"],
+  "supported_industry_names": ["公用事业", "电力", "燃气", "水务"],
+  "supported_industry_families": ["utilities"],
+  "business_models": ["发电", "输配电", "燃气供应", "水务", "公用事业"],
+  "classification_attributes": {
+    "cyclicality": "REGULATED_OR_DEFENSIVE",
+    "asset_intensity": "CAPITAL_INTENSIVE",
+    "demand_rigidity": "RELATIVELY_RIGID",
+    "competition_type": "REGULATED_AND_COST_CURVE",
+    "technology_risk": "MEDIUM",
+    "policy_sensitivity": "HIGH"
+  },
+  "required_metrics": [
+    "tariff_or_price_mechanism",
+    "utilization_and_dispatch",
+    "fuel_or_purchase_cost",
+    "regulated_return",
+    "net_debt_and_interest_cost",
+    "maintenance_and_growth_capex",
+    "operating_cashflow",
+    "capacity_and_contract_status"
+  ],
+  "valuation_methods": ["dividend_discount", "regulated_asset_base", "three_scenario_cashflow"],
+  "survival_questions": [
+    "电价、气价或水价机制能否覆盖成本和资本开支",
+    "高资本开支、利率和燃料价格变化下现金流是否稳定",
+    "政策、调度、合同和资产负债表是否支持长期经营"
+  ],
+  "product_application_questions": [
+    "公司主要靠哪些发电、供气、供水或输配服务赚钱",
+    "收入受监管价格、长期合同、市场交易还是利用率驱动",
+    "新产能、项目核准和并网是否已经转化为可兑现现金流"
+  ],
+  "demand_transmission_stages": ["PROJECT_APPROVED", "CAPACITY_AVAILABLE", "CONTRACT_OR_DISPATCH_VALIDATED", "REVENUE_VALIDATED", "CASHFLOW_VALIDATED"],
+  "lifecycle_status": "ACTIVE",
+  "acceptance_samples": [
+    {"sample_id": "utility-cashflow-first", "description": "公用事业优先分析价格机制、利用率、成本、债务和资本开支，不套用制造业库存出清逻辑"}
+  ]
+}

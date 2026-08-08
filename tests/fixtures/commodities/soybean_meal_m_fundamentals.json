@@ -1,0 +1,143 @@
+{
+  "schema_version": "futures-fundamentals-input.v1",
+  "variety_id": "M",
+  "variety_name": "豆粕",
+  "exchange": "DCE",
+  "as_of": "2026-05-20T16:00:00+08:00",
+  "research_cutoff": "2026-05-20",
+  "spot_benchmark": {
+    "benchmark_id": "north_china_soybean_meal_spot",
+    "price": 3850,
+    "unit": "CNY/ton",
+    "date": "2026-05-20",
+    "source": "dce_spot_index",
+    "field_status": "VERIFIED",
+    "grade": "43% protein"
+  },
+  "contract_quotes": [
+    {
+      "contract": "M2609",
+      "settlement_price": 3920,
+      "close_price": 3915,
+      "volume": 1234567,
+      "open_interest": 2345678,
+      "date": "2026-05-20",
+      "source": "dce_settlement",
+      "field_status": "VERIFIED"
+    }
+  ],
+  "inventory": {
+    "exchange_inventory": {
+      "value": 37450,
+      "unit": "lot",
+      "ton_equivalent": 374500,
+      "date": "2026-05-20",
+      "source": "dce_daily_warrant",
+      "field_status": "VERIFIED",
+      "note": "每张10吨"
+    },
+    "crushing_mill_inventory": {
+      "value": 876543,
+      "unit": "ton",
+      "date": "2026-05-17",
+      "source": "cofeed_weekly",
+      "field_status": "VERIFIED"
+    },
+    "port_soybean": {
+      "value": 6543210,
+      "unit": "ton",
+      "date": "2026-05-17",
+      "source": "cofeed_weekly",
+      "field_status": "VERIFIED"
+    }
+  },
+  "production": {
+    "weekly_crush": {
+      "value": 1876543,
+      "unit": "ton_soybean",
+      "date": "2026-05-17",
+      "source": "cofeed_weekly",
+      "field_status": "VERIFIED"
+    },
+    "crush_rate": {
+      "value": 186543,
+      "unit": "ton_per_day",
+      "date": "2026-05-17",
+      "source": "cofeed_weekly",
+      "field_status": "VERIFIED"
+    },
+    "utilization_rate": {
+      "value": 68.5,
+      "unit": "percent",
+      "date": "2026-05-17",
+      "source": "cofeed_weekly",
+      "field_status": "VERIFIED"
+    }
+  },
+  "trade": {
+    "soybean_imports": {
+      "value": 8765432,
+      "unit": "ton",
+      "date": "2026-04-30",
+      "source": "customs_monthly",
+      "field_status": "VERIFIED"
+    },
+    "arrival_forecast": {
+      "value": 9876543,
+      "unit": "ton",
+      "date": "2026-05-31",
+      "source": "cofeed_forecast",
+      "field_status": "FORECAST"
+    }
+  },
+  "cost": {
+    "soybean_import_cost": {
+      "value": 4200,
+      "unit": "CNY/ton",
+      "date": "2026-05-20",
+      "source": "calculated",
+      "calculation": "CBOT + freight + CNH",
+      "field_status": "CALCULATED"
+    },
+    "crushing_cost": {
+      "value": 150,
+      "unit": "CNY/ton",
+      "date": "2026-05-01",
+      "source": "industry_average",
+      "field_status": "ESTIMATED"
+    },
+    "meal_yield": {
+      "value": 78.5,
+      "unit": "percent",
+      "date": "2026-05-01",
+      "source": "industry_standard",
+      "field_status": "VERIFIED"
+    }
+  },
+  "margin": {
+    "crush_margin": {
+      "value": 320,
+      "unit": "CNY/ton_soybean",
+      "date": "2026-05-20",
+      "source": "calculated",
+      "calculation": "meal_price * yield + oil_price * yield - soybean_cost - crush_cost",
+      "field_status": "CALCULATED"
+    }
+  },
+  "basis": {
+    "spot_futures_basis": {
+      "value": -70,
+      "unit": "CNY/ton",
+      "calculation": "spot - M2609_settlement",
+      "date": "2026-05-20",
+      "field_status": "CALCULATED"
+    }
+  },
+  "seasonality": {
+    "planting_season": "US planting ongoing",
+    "harvest_arrival": "Brazil harvest completed",
+    "hog_cycle": "recovery phase"
+  },
+  "evidence_ids": ["soybean-meal-dce-warrant-20260520", "soybean-cofeed-weekly-20260517"],
+  "source_document_id": "soybean-meal-fundamentals-input-20260520"
+}

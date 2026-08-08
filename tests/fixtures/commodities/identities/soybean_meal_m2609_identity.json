@@ -1,0 +1,26 @@
+{
+  "schema_version": "futures-object-identity.v1",
+  "identity_id": "futures-identity-m2609-20260520-001",
+  "object_type": "futures_contract",
+  "exchange": "DCE",
+  "variety_id": "M",
+  "variety_name": "豆粕",
+  "contract": {
+    "contract_code": "M2609",
+    "contract_month": "202609",
+    "last_trade_date": "2026-09-10",
+    "contract_multiplier": 10,
+    "tick_size": 1.0,
+    "settlement_basis": "daily_settlement",
+    "delivery_month": "2026-09",
+    "delivery_period": "2026-09-11至2026-09-15"
+  },
+  "as_of": "2026-05-20T16:00:00+08:00",
+  "commodity_adapter_id": "soybean_meal",
+  "spot_benchmark": {
+    "benchmark_id": "north_china_soybean_meal_spot",
+    "name": "华北豆粕现货"
+  },
+  "status": "READY",
+  "identification_method": "explicit_exchange_variety_contract"
+}

@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "industry-first-research"
+version = "0.1.0"
+description = "Industry-first research and simulated decision support for personal investment research."
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{name = "850224144"}]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+data = ["akshare>=1.16.0", "baostock>=0.8.8"]
+
+[project.scripts]
+industry-first-research = "industry_first_research.cli:main"
+
+[tool.pytest.ini_options]
+addopts = "-q"
+pythonpath = ["src"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

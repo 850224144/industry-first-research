@@ -1,0 +1,60 @@
+{
+  "schema_version": "industry-aliases.v1",
+  "mappings": [
+    {
+      "canonical_id": "power",
+      "canonical_name": "\u7535\u529b",
+      "aliases": {
+        "eastmoney": ["\u7535\u529b"],
+        "tonghuashun": ["\u7535\u529b", "\u7535\u529b\u884c\u4e1a"]
+      },
+      "note": "Manual source-name normalization for the power industry."
+    },
+    {
+      "canonical_id": "banking",
+      "canonical_name": "\u94f6\u884c",
+      "aliases": {
+        "eastmoney": ["\u94f6\u884c"],
+        "tonghuashun": ["\u94f6\u884c", "\u94f6\u884c\u4e1a"]
+      },
+      "note": "Manual source-name normalization for banking."
+    },
+    {
+      "canonical_id": "ports-shipping",
+      "canonical_name": "\u6e2f\u53e3\u822a\u8fd0",
+      "aliases": {
+        "eastmoney": ["\u6e2f\u53e3\u822a\u8fd0"],
+        "tonghuashun": ["\u6e2f\u53e3\u822a\u8fd0", "\u6e2f\u53e3\u822a\u8fd0\u884c\u4e1a"]
+      },
+      "note": "Manual source-name normalization for ports and shipping."
+    },
+    {
+      "canonical_id": "baijiu",
+      "canonical_name": "\u767d\u9152",
+      "aliases": {
+        "eastmoney": ["\u767d\u9152\u2161", "\u767d\u9152\u2162"],
+        "tonghuashun": ["\u767d\u9152"],
+        "tonghuashun_company_profile": ["\u767d\u9152\u2161", "\u767d\u9152\u2162"]
+      },
+      "note": "Eastmoney and Tonghuashun company-profile second- and third-level baijiu labels are mapped to Tonghuashun's baijiu category; this is an explicit category-level mapping, not fuzzy matching."
+    },
+    {
+      "canonical_id": "insurance",
+      "canonical_name": "\u4fdd\u9669",
+      "aliases": {
+        "eastmoney": ["\u4fdd\u9669\u2161", "\u4fdd\u9669\u2162"],
+        "tonghuashun": ["\u4fdd\u9669"]
+      },
+      "note": "Eastmoney second- and third-level insurance labels are mapped to Tonghuashun's insurance category; level differences remain visible in source display names."
+    },
+    {
+      "canonical_id": "precious-metals",
+      "canonical_name": "\u8d35\u91d1\u5c5e",
+      "aliases": {
+        "eastmoney": ["\u8d35\u91d1\u5c5e"],
+        "tonghuashun": ["\u8d35\u91d1\u5c5e"]
+      },
+      "note": "Exact category-name match across Eastmoney and Tonghuashun."
+    }
+  ]
+}

@@ -1,0 +1,168 @@
+{
+  "schema_version": "futures-fundamentals-input.v1",
+  "variety_id": "SC",
+  "variety_name": "上海原油",
+  "exchange": "INE",
+  "as_of": "2025-09-20T16:00:00+08:00",
+  "research_cutoff": "2025-09-20",
+  "market_phase": "demand_slowdown",
+  "spot_benchmark": {
+    "benchmark_id": "middle_east_crude_spot",
+    "price": 74.2,
+    "unit": "USD/barrel",
+    "date": "2025-09-20",
+    "source": "platts",
+    "field_status": "VERIFIED",
+    "grade": "Dubai crude"
+  },
+  "contract_quotes": [
+    {
+      "contract": "SC2511",
+      "settlement_price": 536.8,
+      "close_price": 538.2,
+      "volume": 287654,
+      "open_interest": 398765,
+      "date": "2025-09-20",
+      "source": "ine_settlement",
+      "field_status": "VERIFIED",
+      "note": "CNY/barrel"
+    }
+  ],
+  "inventory": {
+    "exchange_inventory": {
+      "value": 2876543,
+      "unit": "barrel",
+      "date": "2025-09-20",
+      "source": "ine_daily",
+      "field_status": "VERIFIED",
+      "note": "库存上升"
+    },
+    "china_commercial": {
+      "value": 1123456789,
+      "unit": "barrel",
+      "date": "2025-09-17",
+      "source": "klcc_weekly",
+      "field_status": "ESTIMATED"
+    },
+    "oecd_inventory": {
+      "value": 2987654321,
+      "unit": "barrel",
+      "date": "2025-08-31",
+      "source": "iea_monthly",
+      "field_status": "REFERENCE",
+      "note": "库存高于5年均值"
+    },
+    "us_commercial": {
+      "value": 478901234,
+      "unit": "barrel",
+      "date": "2025-09-14",
+      "source": "eia_weekly",
+      "field_status": "REFERENCE"
+    }
+  },
+  "production": {
+    "opec_output": {
+      "value": 29.2,
+      "unit": "million_barrel_per_day",
+      "date": "2025-08-31",
+      "source": "opec_monthly",
+      "field_status": "VERIFIED",
+      "note": "OPEC增产"
+    },
+    "us_output": {
+      "value": 13.6,
+      "unit": "million_barrel_per_day",
+      "date": "2025-09-14",
+      "source": "eia_weekly",
+      "field_status": "REFERENCE"
+    },
+    "russia_output": {
+      "value": 11.1,
+      "unit": "million_barrel_per_day",
+      "date": "2025-08-31",
+      "source": "analyst_estimate",
+      "field_status": "ESTIMATED"
+    }
+  },
+  "demand": {
+    "china_refinery_throughput": {
+      "value": 14.2,
+      "unit": "million_barrel_per_day",
+      "date": "2025-08-31",
+      "source": "klcc_monthly",
+      "field_status": "VERIFIED",
+      "note": "炼厂开工率下降"
+    },
+    "global_demand": {
+      "value": 101.8,
+      "unit": "million_barrel_per_day",
+      "date": "2025-09-01",
+      "source": "iea_forecast",
+      "field_status": "FORECAST",
+      "note": "需求增速放缓"
+    }
+  },
+  "cost": {
+    "production_cost": {
+      "value": 45.0,
+      "unit": "USD/barrel",
+      "date": "2025-09-01",
+      "source": "analyst_estimate",
+      "field_status": "ESTIMATED"
+    },
+    "freight": {
+      "value": 3.2,
+      "unit": "USD/barrel",
+      "date": "2025-09-20",
+      "source": "baltic_index",
+      "field_status": "VERIFIED"
+    },
+    "import_parity_china": {
+      "value": 532.0,
+      "unit": "CNY/barrel",
+      "date": "2025-09-20",
+      "source": "calculated",
+      "field_status": "CALCULATED"
+    }
+  },
+  "fx": {
+    "usdcnh": {
+      "value": 7.12,
+      "date": "2025-09-20",
+      "source": "cfets",
+      "field_status": "VERIFIED"
+    }
+  },
+  "basis": {
+    "spot_futures_basis": {
+      "value": -4.8,
+      "unit": "CNY/barrel",
+      "calculation": "import_parity - SC2511_settlement",
+      "date": "2025-09-20",
+      "field_status": "CALCULATED"
+    }
+  },
+  "crack_spread": {
+    "gasoline": {
+      "value": 13.2,
+      "unit": "USD/barrel",
+      "date": "2025-09-20",
+      "source": "calculated",
+      "note": "裂解利润收缩"
+    },
+    "diesel": {
+      "value": 16.8,
+      "unit": "USD/barrel",
+      "date": "2025-09-20",
+      "source": "calculated"
+    }
+  },
+  "seasonality": {
+    "driving_season": "US summer driving season ending",
+    "refinery_maintenance": "autumn maintenance starting",
+    "hurricane_risk": "hurricane season impact minimal"
+  },
+  "market_narrative": "2025年Q3原油需求放缓，中国炼厂开工率下降、OPEC增产、库存上升、油价下跌",
+  "evidence_ids": ["crude-oil-ine-settlement-20250920", "crude-oil-platts-20250920"],
+  "source_document_id": "crude-oil-fundamentals-input-20250920"
+}

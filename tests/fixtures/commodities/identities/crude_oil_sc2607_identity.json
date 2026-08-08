@@ -1,0 +1,26 @@
+{
+  "schema_version": "futures-object-identity.v1",
+  "identity_id": "futures-identity-sc2607-20260520-001",
+  "object_type": "futures_contract",
+  "exchange": "INE",
+  "variety_id": "SC",
+  "variety_name": "上海原油",
+  "contract": {
+    "contract_code": "SC2607",
+    "contract_month": "202607",
+    "last_trade_date": "2026-06-25",
+    "contract_multiplier": 1000,
+    "tick_size": 0.1,
+    "settlement_basis": "daily_settlement",
+    "delivery_month": "2026-07",
+    "delivery_period": "2026-07-01至2026-07-31"
+  },
+  "as_of": "2026-05-20T16:00:00+08:00",
+  "commodity_adapter_id": "crude_oil",
+  "spot_benchmark": {
+    "benchmark_id": "middle_east_crude_spot",
+    "name": "中东原油现货基准"
+  },
+  "status": "READY",
+  "identification_method": "explicit_exchange_variety_contract"
+}

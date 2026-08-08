@@ -1,0 +1,87 @@
+{
+  "code": 0,
+  "source": "company_official_website",
+  "data": {
+    "company_code": "002594",
+    "company_name": "比亚迪股份有限公司",
+    "website": "www.byd.com",
+    "product_categories": [
+      {
+        "category_id": "new_energy_vehicles",
+        "category_name": "新能源汽车",
+        "sub_categories": [
+          {
+            "name": "纯电动乘用车",
+            "products": [
+              {
+                "model": "海豹",
+                "type": "轿车",
+                "price_range": "18.98-28.68万元",
+                "battery_capacity": "61.44kWh/82.56kWh",
+                "range": "550km/700km",
+                "launch_date": "2022-05"
+              },
+              {
+                "model": "汉EV",
+                "type": "轿车",
+                "price_range": "20.98-32.98万元",
+                "battery_capacity": "85.44kWh",
+                "range": "715km",
+                "launch_date": "2020-07"
+              },
+              {
+                "model": "元PLUS",
+                "type": "SUV",
+                "price_range": "13.98-16.58万元",
+                "battery_capacity": "60.48kWh",
+                "range": "510km",
+                "launch_date": "2022-02"
+              }
+            ]
+          },
+          {
+            "name": "插电混动乘用车",
+            "products": [
+              {
+                "model": "秦PLUS DM-i",
+                "type": "轿车",
+                "price_range": "9.98-15.98万元",
+                "battery_capacity": "18.3kWh",
+                "pure_electric_range": "120km",
+                "launch_date": "2021-03"
+              },
+              {
+                "model": "宋PLUS DM-i",
+                "type": "SUV",
+                "price_range": "14.68-21.68万元",
+                "battery_capacity": "18.3kWh/28.3kWh",
+                "pure_electric_range": "110km/200km",
+                "launch_date": "2021-05"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "category_id": "battery_energy",
+        "category_name": "动力电池及储能",
+        "products": [
+          {
+            "name": "刀片电池",
+            "type": "磷酸铁锂电池",
+            "features": ["高安全性", "长续航", "长寿命"],
+            "application": "新能源汽车动力电池"
+          },
+          {
+            "name": "储能系统",
+            "type": "电化学储能",
+            "capacity_range": "2.5MWh-100MWh",
+            "application": "发电侧、电网侧、用户侧储能"
+          }
+        ]
+      }
+    ],
+    "crawl_time": "2026-03-15T14:20:00+08:00",
+    "source_document_id": "byd-website-product-20260315"
+  }
+}

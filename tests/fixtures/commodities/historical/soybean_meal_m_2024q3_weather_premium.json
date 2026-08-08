@@ -1,0 +1,142 @@
+{
+  "schema_version": "futures-fundamentals-input.v1",
+  "variety_id": "M",
+  "variety_name": "豆粕",
+  "exchange": "DCE",
+  "as_of": "2024-09-20T16:00:00+08:00",
+  "research_cutoff": "2024-09-20",
+  "market_phase": "weather_premium",
+  "spot_benchmark": {
+    "benchmark_id": "north_china_soybean_meal_spot",
+    "price": 4320,
+    "unit": "CNY/ton",
+    "date": "2024-09-20",
+    "source": "cofeed_weekly",
+    "field_status": "VERIFIED",
+    "grade": "43% protein"
+  },
+  "contract_quotes": [
+    {
+      "contract": "M2501",
+      "settlement_price": 4410,
+      "close_price": 4405,
+      "volume": 1987654,
+      "open_interest": 2876543,
+      "date": "2024-09-20",
+      "source": "dce_settlement",
+      "field_status": "VERIFIED"
+    }
+  ],
+  "inventory": {
+    "exchange_inventory": {
+      "value": 21340,
+      "unit": "lot",
+      "ton_equivalent": 213400,
+      "date": "2024-09-20",
+      "source": "dce_daily_warrant",
+      "field_status": "VERIFIED",
+      "note": "每张10吨，库存偏低"
+    },
+    "crushing_mill_inventory": {
+      "value": 543210,
+      "unit": "ton",
+      "date": "2024-09-17",
+      "source": "cofeed_weekly",
+      "field_status": "VERIFIED"
+    },
+    "port_soybean": {
+      "value": 4567890,
+      "unit": "ton",
+      "date": "2024-09-17",
+      "source": "cofeed_weekly",
+      "field_status": "VERIFIED",
+      "note": "港口大豆库存偏低"
+    }
+  },
+  "production": {
+    "weekly_crush": {
+      "value": 1654321,
+      "unit": "ton_soybean",
+      "date": "2024-09-17",
+      "source": "cofeed_weekly",
+      "field_status": "VERIFIED"
+    },
+    "crush_rate": {
+      "value": 164321,
+      "unit": "ton_per_day",
+      "date": "2024-09-17",
+      "source": "cofeed_weekly",
+      "field_status": "VERIFIED"
+    },
+    "utilization_rate": {
+      "value": 62.3,
+      "unit": "percent",
+      "date": "2024-09-17",
+      "source": "cofeed_weekly",
+      "field_status": "VERIFIED",
+      "note": "开工率下降"
+    }
+  },
+  "trade": {
+    "soybean_imports": {
+      "value": 7234567,
+      "unit": "ton",
+      "date": "2024-08-31",
+      "source": "customs_monthly",
+      "field_status": "VERIFIED"
+    },
+    "arrival_forecast": {
+      "value": 6543210,
+      "unit": "ton",
+      "date": "2024-09-30",
+      "source": "cofeed_forecast",
+      "field_status": "FORECAST",
+      "note": "到港预期下降"
+    }
+  },
+  "cost": {
+    "soybean_import_cost": {
+      "value": 4680,
+      "unit": "CNY/ton",
+      "date": "2024-09-20",
+      "source": "calculated",
+      "calculation": "CBOT + freight + CNH",
+      "field_status": "CALCULATED",
+      "note": "美豆天气炒作推高成本"
+    },
+    "crushing_cost": {
+      "value": 150,
+      "unit": "CNY/ton",
+      "date": "2024-09-01",
+      "source": "industry_average",
+      "field_status": "ESTIMATED"
+    }
+  },
+  "margin": {
+    "crush_margin": {
+      "value": 180,
+      "unit": "CNY/ton_soybean",
+      "date": "2024-09-20",
+      "source": "calculated",
+      "field_status": "CALCULATED",
+      "note": "压榨利润压缩"
+    }
+  },
+  "basis": {
+    "spot_futures_basis": {
+      "value": -90,
+      "unit": "CNY/ton",
+      "calculation": "spot - M2501_settlement",
+      "date": "2024-09-20",
+      "field_status": "CALCULATED"
+    }
+  },
+  "seasonality": {
+    "planting_season": "US harvest starting, weather concerns",
+    "harvest_arrival": "Brazil next crop planting",
+    "hog_cycle": "recovery phase"
+  },
+  "market_narrative": "2024年Q3豆粕受美豆天气炒作影响，成本上升、到港预期下降、压榨利润压缩",
+  "evidence_ids": ["soybean-meal-dce-warrant-20240920", "soybean-cofeed-weekly-20240917"],
+  "source_document_id": "soybean-meal-fundamentals-input-20240920"
+}

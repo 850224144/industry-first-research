@@ -1,0 +1,26 @@
+{
+  "schema_version": "futures-object-identity.v1",
+  "identity_id": "futures-identity-lc2607-20260520-001",
+  "object_type": "futures_contract",
+  "exchange": "GFEX",
+  "variety_id": "LC",
+  "variety_name": "碳酸锂",
+  "contract": {
+    "contract_code": "LC2607",
+    "contract_month": "202607",
+    "last_trade_date": "2026-07-15",
+    "contract_multiplier": 1,
+    "tick_size": 10.0,
+    "settlement_basis": "daily_settlement",
+    "delivery_month": "2026-07",
+    "delivery_period": "2026-07-16至2026-07-25"
+  },
+  "as_of": "2026-05-20T16:00:00+08:00",
+  "commodity_adapter_id": "lithium_carbonate",
+  "spot_benchmark": {
+    "benchmark_id": "china_battery_grade_lithium_carbonate",
+    "name": "中国电池级碳酸锂现货"
+  },
+  "status": "READY",
+  "identification_method": "explicit_exchange_variety_contract"
+}

@@ -1,0 +1,111 @@
+{
+  "schema_version": "futures-fundamentals-input.v1",
+  "variety_id": "CU",
+  "variety_name": "沪铜",
+  "exchange": "SHFE",
+  "as_of": "2026-05-20T16:00:00+08:00",
+  "research_cutoff": "2026-05-20",
+  "spot_benchmark": {
+    "benchmark_id": "shanghai_copper_spot",
+    "price": 75200,
+    "unit": "CNY/ton",
+    "date": "2026-05-20",
+    "source": "shanghai_spot_market",
+    "field_status": "VERIFIED"
+  },
+  "contract_quotes": [
+    {
+      "contract": "CU2607",
+      "settlement_price": 75080,
+      "close_price": 75120,
+      "volume": 186742,
+      "open_interest": 234567,
+      "date": "2026-05-20",
+      "source": "shfe_settlement",
+      "field_status": "VERIFIED"
+    }
+  ],
+  "inventory": {
+    "exchange_inventory": {
+      "value": 106960,
+      "unit": "ton",
+      "date": "2026-05-20",
+      "source": "shfe_daily_warrant",
+      "field_status": "VERIFIED",
+      "details": "包含江苏46150吨、上海37920吨、浙江22890吨"
+    },
+    "bonded_warehouse": {
+      "value": 234567,
+      "unit": "ton",
+      "date": "2026-05-17",
+      "source": "sme_weekly",
+      "field_status": "VERIFIED"
+    },
+    "lme_inventory": {
+      "value": 156789,
+      "unit": "ton",
+      "date": "2026-05-19",
+      "source": "lme_daily",
+      "field_status": "REFERENCE"
+    }
+  },
+  "production": {
+    "smelter_output": {
+      "value": 876543,
+      "unit": "ton",
+      "date": "2026-04-30",
+      "source": "antaike_monthly",
+      "field_status": "VERIFIED"
+    },
+    "utilization_rate": {
+      "value": 82.3,
+      "unit": "percent",
+      "date": "2026-05-17",
+      "source": "sme_weekly",
+      "field_status": "VERIFIED"
+    }
+  },
+  "cost": {
+    "concentrate_tc": {
+      "value": 85,
+      "unit": "USD/ton",
+      "date": "2026-05-01",
+      "source": "market_benchmark",
+      "field_status": "VERIFIED"
+    },
+    "smelting_cost": {
+      "value": 3500,
+      "unit": "CNY/ton",
+      "date": "2026-05-01",
+      "source": "industry_average",
+      "field_status": "ESTIMATED"
+    },
+    "import_parity": {
+      "value": 74800,
+      "unit": "CNY/ton",
+      "date": "2026-05-20",
+      "source": "calculated",
+      "calculation": "LME + freight + fx",
+      "field_status": "CALCULATED"
+    }
+  },
+  "basis": {
+    "spot_futures_basis": {
+      "value": 120,
+      "unit": "CNY/ton",
+      "calculation": "spot - CU2607_settlement",
+      "date": "2026-05-20",
+      "field_status": "CALCULATED"
+    }
+  },
+  "term_structure": {
+    "contango_backwardation": "CONTANGO",
+    "spread_2607_2608": {
+      "value": 230,
+      "unit": "CNY/ton",
+      "date": "2026-05-20"
+    }
+  },
+  "evidence_ids": ["copper-shfe-settlement-20260520", "copper-warrant-20260520-001"],
+  "source_document_id": "copper-fundamentals-input-20260520"
+}

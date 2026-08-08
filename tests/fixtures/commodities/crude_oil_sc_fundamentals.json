@@ -1,0 +1,163 @@
+{
+  "schema_version": "futures-fundamentals-input.v1",
+  "variety_id": "SC",
+  "variety_name": "上海原油",
+  "exchange": "INE",
+  "as_of": "2026-05-20T16:00:00+08:00",
+  "research_cutoff": "2026-05-20",
+  "spot_benchmark": {
+    "benchmark_id": "middle_east_crude_spot",
+    "price": 82.5,
+    "unit": "USD/barrel",
+    "date": "2026-05-20",
+    "source": "platts",
+    "field_status": "VERIFIED",
+    "grade": "Dubai crude"
+  },
+  "contract_quotes": [
+    {
+      "contract": "SC2607",
+      "settlement_price": 593.5,
+      "close_price": 595.2,
+      "volume": 234567,
+      "open_interest": 345678,
+      "date": "2026-05-20",
+      "source": "ine_settlement",
+      "field_status": "VERIFIED",
+      "note": "CNY/barrel"
+    }
+  ],
+  "inventory": {
+    "exchange_inventory": {
+      "value": 2345678,
+      "unit": "barrel",
+      "date": "2026-05-20",
+      "source": "ine_daily",
+      "field_status": "VERIFIED"
+    },
+    "china_commercial": {
+      "value": 987654321,
+      "unit": "barrel",
+      "date": "2026-05-17",
+      "source": "klcc_weekly",
+      "field_status": "ESTIMATED"
+    },
+    "oecd_inventory": {
+      "value": 2876543210,
+      "unit": "barrel",
+      "date": "2026-04-30",
+      "source": "iea_monthly",
+      "field_status": "REFERENCE"
+    },
+    "us_commercial": {
+      "value": 456789012,
+      "unit": "barrel",
+      "date": "2026-05-14",
+      "source": "eia_weekly",
+      "field_status": "REFERENCE"
+    }
+  },
+  "production": {
+    "opec_output": {
+      "value": 28.5,
+      "unit": "million_barrel_per_day",
+      "date": "2026-04-30",
+      "source": "opec_monthly",
+      "field_status": "VERIFIED"
+    },
+    "us_output": {
+      "value": 13.2,
+      "unit": "million_barrel_per_day",
+      "date": "2026-05-14",
+      "source": "eia_weekly",
+      "field_status": "REFERENCE"
+    },
+    "russia_output": {
+      "value": 10.8,
+      "unit": "million_barrel_per_day",
+      "date": "2026-04-30",
+      "source": "analyst_estimate",
+      "field_status": "ESTIMATED"
+    }
+  },
+  "demand": {
+    "china_refinery_throughput": {
+      "value": 14.5,
+      "unit": "million_barrel_per_day",
+      "date": "2026-04-30",
+      "source": "klcc_monthly",
+      "field_status": "VERIFIED"
+    },
+    "global_demand": {
+      "value": 102.3,
+      "unit": "million_barrel_per_day",
+      "date": "2026-05-01",
+      "source": "iea_forecast",
+      "field_status": "FORECAST"
+    }
+  },
+  "cost": {
+    "production_cost": {
+      "value": 45.0,
+      "unit": "USD/barrel",
+      "date": "2026-05-01",
+      "source": "analyst_estimate",
+      "field_status": "ESTIMATED",
+      "note": "Middle East average"
+    },
+    "freight": {
+      "value": 3.5,
+      "unit": "USD/barrel",
+      "date": "2026-05-20",
+      "source": "baltic_index",
+      "field_status": "VERIFIED"
+    },
+    "import_parity_china": {
+      "value": 588.0,
+      "unit": "CNY/barrel",
+      "date": "2026-05-20",
+      "source": "calculated",
+      "calculation": "Dubai + freight + insurance converted to CNY",
+      "field_status": "CALCULATED"
+    }
+  },
+  "fx": {
+    "usdcnh": {
+      "value": 7.15,
+      "date": "2026-05-20",
+      "source": "cfets",
+      "field_status": "VERIFIED"
+    }
+  },
+  "basis": {
+    "spot_futures_basis": {
+      "value": -5.5,
+      "unit": "CNY/barrel",
+      "calculation": "import_parity - SC2607_settlement",
+      "date": "2026-05-20",
+      "field_status": "CALCULATED",
+      "note": "考虑汇率后的基差"
+    }
+  },
+  "crack_spread": {
+    "gasoline": {
+      "value": 15.2,
+      "unit": "USD/barrel",
+      "date": "2026-05-20",
+      "source": "calculated"
+    },
+    "diesel": {
+      "value": 18.5,
+      "unit": "USD/barrel",
+      "date": "2026-05-20",
+      "source": "calculated"
+    }
+  },
+  "seasonality": {
+    "driving_season": "approaching US summer driving season",
+    "refinery_maintenance": "spring maintenance ending",
+    "hurricane_risk": "entering Atlantic hurricane season"
+  },
+  "evidence_ids": ["crude-oil-ine-settlement-20260520", "crude-oil-platts-20260520"],
+  "source_document_id": "crude-oil-fundamentals-input-20260520"
+}

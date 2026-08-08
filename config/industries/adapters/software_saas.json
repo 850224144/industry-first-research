@@ -1,0 +1,44 @@
+{
+  "schema_version": "industry-adapter.v1",
+  "adapter_id": "software_saas",
+  "display_name": "软件与SaaS",
+  "aliases": ["软件", "SaaS", "云软件", "软件服务"],
+  "supported_industry_ids": ["software", "saas", "cloud_software"],
+  "supported_industry_names": ["软件", "SaaS", "云软件", "软件服务"],
+  "supported_industry_families": ["software", "technology"],
+  "business_models": ["软件订阅", "SaaS", "软件服务", "平台软件"],
+  "classification_attributes": {
+    "cyclicality": "NON_CYCLICAL",
+    "asset_intensity": "R_AND_D_INTENSIVE",
+    "demand_rigidity": "MIXED",
+    "competition_type": "PRODUCT_AND_ECOSYSTEM",
+    "technology_risk": "HIGH",
+    "policy_sensitivity": "MEDIUM"
+  },
+  "required_metrics": [
+    "arr_or_recurring_revenue",
+    "renewal_rate",
+    "net_revenue_retention",
+    "customer_acquisition_cost_payback",
+    "gross_margin",
+    "research_and_development_efficiency",
+    "deferred_revenue",
+    "free_cashflow_and_stock_compensation"
+  ],
+  "valuation_methods": ["revenue_multiple_with_retention", "fcf_multiple", "three_scenario_cashflow"],
+  "survival_questions": [
+    "现金跑道、续费收入和客户集中度能否支撑低增长阶段",
+    "研发投入、销售费用和股权激励是否能转化为可持续现金流",
+    "产品替代、开源软件和平台迁移是否会缩短生命周期"
+  ],
+  "product_application_questions": [
+    "公司主要靠哪些软件模块、订阅层级或服务合同赚钱",
+    "产品解决的是刚性业务流程、效率问题还是可选创新需求",
+    "客户导入、续费、扩容和交叉销售是否逐级验证"
+  ],
+  "demand_transmission_stages": ["CONCEPT", "TECHNICALLY_FEASIBLE", "CUSTOMER_QUALIFIED", "RENEWAL_VALIDATED", "PROFIT_VALIDATED"],
+  "lifecycle_status": "ACTIVE",
+  "acceptance_samples": [
+    {"sample_id": "software-retention-first", "description": "软件研究优先检查续费、留存、获客回收和现金流，不套用库存周期"}
+  ]
+}

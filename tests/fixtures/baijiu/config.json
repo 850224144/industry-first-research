@@ -1,0 +1,156 @@
+{
+  "industry_id": "baijiu",
+  "display_name": "中国白酒回归夹具",
+  "industry_type": "consumer",
+  "as_of": "2026-07-16",
+  "state": "INFLECTION_CANDIDATE",
+  "evidence_completeness": "CROSS_VALIDATED",
+  "opportunity_types": ["cycle_reversal", "quality_repair"],
+  "reason": "合成回归夹具，仅用于验证有界行业到公司纵向链路。",
+  "signals": [
+    {
+      "name": "industry_cycle",
+      "value": "mature_contraction",
+      "source": "tests/fixtures/baijiu/industry-primary.md",
+      "evidence_status": "CROSS_VALIDATED"
+    },
+    {
+      "name": "supply_exit",
+      "value": "visible",
+      "source": "tests/fixtures/baijiu/industry-secondary.md",
+      "evidence_status": "CROSS_VALIDATED"
+    },
+    {
+      "name": "channel_price",
+      "value": "divergent",
+      "source": "tests/fixtures/baijiu/industry-primary.md",
+      "evidence_status": "REFERENCE_ONLY"
+    },
+    {
+      "name": "consumer_demand",
+      "value": "structurally_mixed",
+      "source": "tests/fixtures/baijiu/industry-secondary.md",
+      "evidence_status": "CROSS_VALIDATED"
+    }
+  ],
+  "source_documents": [
+    {
+      "title": "白酒行业主夹具",
+      "path": "tests/fixtures/baijiu/industry-primary.md",
+      "level": "REFERENCE_ONLY",
+      "role": "确定性回归夹具"
+    },
+    {
+      "title": "白酒行业交叉夹具",
+      "path": "tests/fixtures/baijiu/industry-secondary.md",
+      "level": "REFERENCE_ONLY",
+      "role": "独立路径交叉验证夹具"
+    }
+  ],
+  "companies": [
+    {
+      "company_id": "600519.SH",
+      "display_name": "贵州茅台",
+      "score": 8,
+      "hard_gate_status": "PASS",
+      "source": "fixture",
+      "source_assets": ["tests/fixtures/baijiu/company-reference.md"]
+    },
+    {
+      "company_id": "000568.SZ",
+      "display_name": "泸州老窖",
+      "score": 8,
+      "hard_gate_status": "PASS",
+      "source": "fixture",
+      "source_assets": ["tests/fixtures/baijiu/company-reference.md"]
+    },
+    {
+      "company_id": "600809.SH",
+      "display_name": "山西汾酒",
+      "score": 7,
+      "hard_gate_status": "PASS",
+      "source": "fixture",
+      "source_assets": ["tests/fixtures/baijiu/company-reference.md"]
+    },
+    {
+      "company_id": "000858.SZ",
+      "display_name": "五粮液",
+      "score": 6,
+      "hard_gate_status": "OBSERVE",
+      "source": "fixture",
+      "source_assets": ["tests/fixtures/baijiu/company-reference.md"]
+    },
+    {
+      "company_id": "000596.SZ",
+      "display_name": "古井贡酒",
+      "score": 6,
+      "hard_gate_status": "PASS",
+      "source": "fixture",
+      "source_assets": ["tests/fixtures/baijiu/company-reference.md"]
+    },
+    {
+      "company_id": "603369.SH",
+      "display_name": "今世缘",
+      "score": 6,
+      "hard_gate_status": "PASS",
+      "source": "fixture",
+      "source_assets": ["tests/fixtures/baijiu/company-reference.md"]
+    },
+    {
+      "company_id": "603198.SH",
+      "display_name": "迎驾贡酒",
+      "score": 5,
+      "hard_gate_status": "PASS",
+      "source": "fixture",
+      "source_assets": ["tests/fixtures/baijiu/company-reference.md"]
+    },
+    {
+      "company_id": "002304.SZ",
+      "display_name": "洋河股份",
+      "score": 5,
+      "hard_gate_status": "OBSERVE",
+      "source": "fixture",
+      "source_assets": ["tests/fixtures/baijiu/company-reference.md"]
+    },
+    {
+      "company_id": "600702.SH",
+      "display_name": "舍得酒业",
+      "score": 4,
+      "hard_gate_status": "OBSERVE",
+      "source": "fixture",
+      "source_assets": ["tests/fixtures/baijiu/company-reference.md"]
+    },
+    {
+      "company_id": "603589.SH",
+      "display_name": "口子窖",
+      "score": 4,
+      "hard_gate_status": "OBSERVE",
+      "source": "fixture",
+      "source_assets": ["tests/fixtures/baijiu/company-reference.md"]
+    },
+    {
+      "company_id": "000799.SZ",
+      "display_name": "酒鬼酒",
+      "score": 3,
+      "hard_gate_status": "OBSERVE",
+      "source": "fixture",
+      "source_assets": ["tests/fixtures/baijiu/company-reference.md"]
+    },
+    {
+      "company_id": "600779.SH",
+      "display_name": "水井坊",
+      "score": 3,
+      "hard_gate_status": "OBSERVE",
+      "source": "fixture",
+      "source_assets": ["tests/fixtures/baijiu/company-reference.md"]
+    },
+    {
+      "company_id": "000860.SZ",
+      "display_name": "顺鑫农业",
+      "score": 2,
+      "hard_gate_status": "OBSERVE",
+      "source": "fixture",
+      "source_assets": ["tests/fixtures/baijiu/company-reference.md"]
+    }
+  ]
+}

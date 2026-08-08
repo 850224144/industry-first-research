@@ -1,0 +1,17 @@
+{
+  "schema_version": "futures-simulation-input.v1",
+  "simulation_id": "copper-contract-demo",
+  "simulation_name": "具体沪铜合约模拟",
+  "initial_capital": 100000,
+  "currency": "CNY",
+  "review_date": "2026-08-15",
+  "benchmark": {
+    "name": "locked-commodity-benchmark",
+    "series_id": "commodity-index-demo",
+    "locked": true
+  },
+  "margin_policy": {
+    "allow_additional_funding": false,
+    "max_additional_funding": 0
+  }
+}

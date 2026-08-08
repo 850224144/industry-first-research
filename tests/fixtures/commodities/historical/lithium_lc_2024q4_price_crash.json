@@ -1,0 +1,145 @@
+{
+  "schema_version": "futures-fundamentals-input.v1",
+  "variety_id": "LC",
+  "variety_name": "碳酸锂",
+  "exchange": "GFEX",
+  "as_of": "2024-12-20T16:00:00+08:00",
+  "research_cutoff": "2024-12-20",
+  "market_phase": "price_crash",
+  "spot_benchmark": {
+    "benchmark_id": "china_battery_grade_lithium_carbonate",
+    "price": 78500,
+    "unit": "CNY/ton",
+    "date": "2024-12-20",
+    "source": "smm_daily",
+    "field_status": "VERIFIED",
+    "grade": "99.5% battery grade"
+  },
+  "contract_quotes": [
+    {
+      "contract": "LC2502",
+      "settlement_price": 76800,
+      "close_price": 77200,
+      "volume": 67890,
+      "open_interest": 123456,
+      "date": "2024-12-20",
+      "source": "gfex_settlement",
+      "field_status": "VERIFIED"
+    }
+  ],
+  "inventory": {
+    "converter_inventory": {
+      "value": 56789,
+      "unit": "ton",
+      "date": "2024-12-17",
+      "source": "smm_weekly",
+      "field_status": "VERIFIED",
+      "note": "库存大幅上升"
+    },
+    "cathode_factory_inventory": {
+      "value": 43210,
+      "unit": "ton",
+      "date": "2024-12-17",
+      "source": "smm_weekly",
+      "field_status": "VERIFIED"
+    },
+    "exchange_inventory": {
+      "value": 15678,
+      "unit": "ton",
+      "date": "2024-12-20",
+      "source": "gfex_daily",
+      "field_status": "VERIFIED"
+    }
+  },
+  "production": {
+    "lithium_carbonate_output": {
+      "value": 52100,
+      "unit": "ton",
+      "date": "2024-11-30",
+      "source": "smm_monthly",
+      "field_status": "VERIFIED"
+    },
+    "effective_supply": {
+      "value": 54300,
+      "unit": "ton",
+      "date": "2024-11-30",
+      "source": "smm_monthly",
+      "field_status": "ESTIMATED",
+      "note": "供给大幅增加"
+    },
+    "utilization_rate": {
+      "value": 82.1,
+      "unit": "percent",
+      "date": "2024-12-17",
+      "source": "smm_weekly",
+      "field_status": "VERIFIED"
+    }
+  },
+  "demand": {
+    "battery_output": {
+      "value": 95600,
+      "unit": "GWh",
+      "date": "2024-11-30",
+      "source": "ggii_monthly",
+      "field_status": "VERIFIED"
+    },
+    "ev_sales": {
+      "value": 923400,
+      "unit": "units",
+      "date": "2024-11-30",
+      "source": "caam_monthly",
+      "field_status": "VERIFIED"
+    },
+    "lithium_demand": {
+      "value": 47500,
+      "unit": "ton_LCE",
+      "date": "2024-11-30",
+      "source": "calculated",
+      "field_status": "ESTIMATED",
+      "note": "供给超过需求"
+    }
+  },
+  "cost": {
+    "ore_cost": {
+      "value": 38000,
+      "unit": "CNY/ton",
+      "date": "2024-12-01",
+      "source": "industry_average",
+      "field_status": "ESTIMATED"
+    },
+    "brine_cost": {
+      "value": 28000,
+      "unit": "CNY/ton",
+      "date": "2024-12-01",
+      "source": "industry_average",
+      "field_status": "ESTIMATED"
+    },
+    "conversion_cost": {
+      "value": 22000,
+      "unit": "CNY/ton",
+      "date": "2024-12-01",
+      "source": "industry_average",
+      "field_status": "ESTIMATED"
+    },
+    "cost_curve_p90": {
+      "value": 70000,
+      "unit": "CNY/ton",
+      "date": "2024-12-01",
+      "source": "analyst_estimate",
+      "field_status": "ESTIMATED",
+      "note": "价格接近成本线"
+    }
+  },
+  "basis": {
+    "spot_futures_basis": {
+      "value": 1700,
+      "unit": "CNY/ton",
+      "calculation": "spot - LC2502_settlement",
+      "date": "2024-12-20",
+      "field_status": "CALCULATED"
+    }
+  },
+  "market_narrative": "2024年底碳酸锂价格暴跌，新产能释放、库存累积、价格跌破多数厂商成本线",
+  "evidence_ids": ["lithium-smm-weekly-20241217", "lithium-gfex-settlement-20241220"],
+  "source_document_id": "lithium-fundamentals-input-20241220"
+}

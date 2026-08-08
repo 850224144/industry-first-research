@@ -1,0 +1,101 @@
+{
+  "schema_version": "futures-fundamentals-input.v1",
+  "variety_id": "RB",
+  "variety_name": "螺纹钢",
+  "exchange": "SHFE",
+  "as_of": "2026-05-20T16:00:00+08:00",
+  "research_cutoff": "2026-05-20",
+  "spot_benchmark": {
+    "benchmark_id": "east_china_rebar_spot",
+    "price": 3650,
+    "unit": "CNY/ton",
+    "date": "2026-05-20",
+    "source": "mysteel",
+    "field_status": "VERIFIED"
+  },
+  "contract_quotes": [
+    {
+      "contract": "RB2610",
+      "settlement_price": 3720,
+      "close_price": 3715,
+      "volume": 2456789,
+      "open_interest": 1876543,
+      "date": "2026-05-20",
+      "source": "shfe_settlement",
+      "field_status": "VERIFIED"
+    }
+  ],
+  "inventory": {
+    "exchange_inventory": {
+      "value": 1876543,
+      "unit": "ton",
+      "date": "2026-05-20",
+      "source": "shfe_daily_inventory",
+      "field_status": "VERIFIED"
+    },
+    "social_inventory": {
+      "value": 8765432,
+      "unit": "ton",
+      "date": "2026-05-17",
+      "source": "mysteel_weekly",
+      "field_status": "VERIFIED"
+    },
+    "steel_mill_inventory": {
+      "value": 2345678,
+      "unit": "ton",
+      "date": "2026-05-17",
+      "source": "mysteel_weekly",
+      "field_status": "VERIFIED"
+    }
+  },
+  "production": {
+    "weekly_output": {
+      "value": 3456789,
+      "unit": "ton",
+      "date": "2026-05-17",
+      "source": "mysteel_weekly",
+      "field_status": "VERIFIED"
+    },
+    "utilization_rate": {
+      "value": 78.5,
+      "unit": "percent",
+      "date": "2026-05-17",
+      "source": "mysteel_weekly",
+      "field_status": "VERIFIED"
+    }
+  },
+  "cost": {
+    "iron_ore_cost": {
+      "value": 850,
+      "unit": "CNY/ton",
+      "date": "2026-05-20",
+      "source": "market_average",
+      "field_status": "ESTIMATED"
+    },
+    "coking_coal_cost": {
+      "value": 1850,
+      "unit": "CNY/ton",
+      "date": "2026-05-20",
+      "source": "market_average",
+      "field_status": "ESTIMATED"
+    },
+    "cash_cost": {
+      "value": 3200,
+      "unit": "CNY/ton",
+      "date": "2026-05-20",
+      "source": "calculated",
+      "field_status": "ESTIMATED"
+    }
+  },
+  "basis": {
+    "spot_futures_basis": {
+      "value": -70,
+      "unit": "CNY/ton",
+      "calculation": "spot - RB2610_settlement",
+      "date": "2026-05-20",
+      "field_status": "CALCULATED"
+    }
+  },
+  "evidence_ids": ["steel-mysteel-20260520-001", "steel-shfe-settlement-20260520"],
+  "source_document_id": "steel-fundamentals-input-20260520"
+}

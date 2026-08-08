@@ -1,0 +1,19 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "art_code": "AN202603251234567890",
+    "notice_title": "宁德时代新能源科技股份有限公司2026年第一季度报告",
+    "notice_date": "2026-04-28",
+    "codes": "300750",
+    "security_code": "300750",
+    "company_name": "宁德时代",
+    "security_name": "宁德时代",
+    "notice_type": "季报",
+    "column": "定期报告",
+    "pdf_url": "https://data.eastmoney.com/notices/detail/300750/AN202603251234567890.html",
+    "publish_timestamp": 1745740800,
+    "important_flag": 1,
+    "batch_num": "202604280001"
+  }
+}

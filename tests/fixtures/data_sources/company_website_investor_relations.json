@@ -1,0 +1,40 @@
+{
+  "code": 0,
+  "source": "company_official_website",
+  "data": {
+    "company_code": "601012",
+    "company_name": "隆基绿能科技股份有限公司",
+    "company_name_en": "LONGi Green Energy Technology Co., Ltd.",
+    "website": "www.longi.com",
+    "ir_contact": {
+      "department": "证券事务部",
+      "secretary": "刘晓东",
+      "email": "ir@longi.com",
+      "phone": "+86-29-81566205",
+      "fax": "+86-29-81566100",
+      "address": "陕西省西安市经济技术开发区尚苑路8369号"
+    },
+    "company_profile": {
+      "brief": "隆基绿能是全球领先的太阳能科技公司，专注于为全球客户提供单晶硅棒、硅片、电池、组件及光伏系统解决方案",
+      "established": "2000-02-14",
+      "listing_date": "2012-04-11",
+      "listing_market": "上海证券交易所",
+      "main_business": "单晶硅棒、硅片、电池组件的研发、生产和销售，太阳能光伏电站工程业务",
+      "core_products": ["单晶硅片", "Hi-MO系列组件", "HPBC电池"],
+      "production_bases": [
+        "陕西西安",
+        "云南保山",
+        "江苏无锡",
+        "浙江嘉兴",
+        "马来西亚古晋"
+      ]
+    },
+    "latest_announcement": {
+      "title": "隆基绿能科技股份有限公司2026年第一季度报告",
+      "date": "2026-04-28",
+      "url": "http://www.longi.com/cn/investor/announcement/2026/0428/123.html"
+    },
+    "crawl_time": "2026-05-15T10:30:00+08:00",
+    "source_document_id": "longi-website-ir-20260515"
+  }
+}

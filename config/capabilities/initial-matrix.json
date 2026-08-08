@@ -1,0 +1,618 @@
+{
+  "schema_version": "capability-matrix-input.v1",
+  "matrix_id": "initial-platform-capabilities",
+  "as_of": "2026-07-27",
+  "items": [
+    {
+      "capability_id": "research-assets.company-profile",
+      "capability_name": "公司/行业画像与代表公司池导入",
+      "component": "luopan + ai-berkshire",
+      "component_version": "local-vendor-snapshot",
+      "interfaces": ["ResearchAssetAdapter.discover", "map_company_profile", "import_candidate_set"],
+      "output_quality": "字段候选，需身份轻校验",
+      "license_status": "LOCAL_REVIEW_REQUIRED",
+      "temporal_cutoff_support": "research_date_and_file_hash",
+      "safety_boundary": "REFERENCE_ONLY_until_authoritative_validation; candidate_set_not_security_master",
+      "decision": "ADAPTER_REUSE",
+      "reuse_reason": "已有研究资产可复用，缺口是统一字段、版本与证据协议",
+      "evidence_refs": ["research_assets.py"],
+      "validated_at": "2026-07-22"
+    },
+    {
+      "capability_id": "data.free-source-routing",
+      "capability_name": "交易所/公司披露与免费数据主备切换",
+      "component": "official_exchange + eastmoney + akshare + baostock",
+      "component_version": "local-adapter-v1",
+      "interfaces": ["DataSourceRouter.fetch", "health_check", "DataSourceAttempt"],
+      "output_quality": "来源尝试链与字段完整度可追踪",
+      "license_status": "PUBLIC_ENDPOINTS_REVIEW_REQUIRED",
+      "temporal_cutoff_support": "as_of_and_published_at_required",
+      "safety_boundary": "read_only; no_qmt_or_broker_execution",
+      "decision": "ADAPTER_REUSE",
+      "reuse_reason": "各来源已有可用采集能力，本系统只统一路由和审计",
+      "evidence_refs": [
+        "data_sources.py",
+        "docs/decisions/0003-free-cross-platform-data-sources.md",
+        "docs/decisions/0006-fixed-data-source-response-fixtures.md",
+        "tests/test_data_sources.py",
+        "tests/fixtures/data_sources"
+      ],
+      "validated_at": "2026-07-27"
+    },
+    {
+      "capability_id": "market-structure.czsc-chan",
+      "capability_name": "缠论/市场结构特征",
+      "component": "czsc + chan.py",
+      "component_version": "adapter-bound",
+      "interfaces": ["CzscAdapter", "ChanPyAdapter", "build_market_structure_comparison"],
+      "output_quality": "结构特征，定义可能不一致",
+      "license_status": "LICENSE_REVIEW_REQUIRED",
+      "temporal_cutoff_support": "input_ohlcv_snapshot_required",
+      "safety_boundary": "market_structure_only; no_trading_signal",
+      "decision": "ADAPTER_REUSE",
+      "reuse_reason": "复用成熟结构实现，统一输入快照和输出边界",
+      "evidence_refs": ["market_structure_adapters.py"],
+      "validated_at": "2026-07-22"
+    },
+    {
+      "capability_id": "evidence.unified-lineage",
+      "capability_name": "统一证据、来源文档与字段级血缘",
+      "component": "industry-first-research",
+      "component_version": "evidence-lineage-rules.v1",
+      "interfaces": ["build_source_document", "build_evidence", "reconcile_evidence", "validate_evidence_cutoff"],
+      "output_quality": "不可变、可截止日过滤、冲突可审计",
+      "license_status": "PROJECT_LICENSE",
+      "temporal_cutoff_support": "published_at_and_research_as_of",
+      "safety_boundary": "evidence_only; no_investment_conclusion",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "既有组件的字段协议和版本边界不统一，必须建立公共连接层",
+      "capability_gap": "缺少跨来源、跨资产、字段级时间截面与冲突裁决公共对象",
+      "evidence_refs": ["evidence.py"],
+      "validated_at": "2026-07-22"
+    },
+    {
+      "capability_id": "execution.depth-and-llm-audit",
+      "capability_name": "研究深度、LOCAL_ONLY 降级与 Token 审计",
+      "component": "industry-first-research",
+      "component_version": "research-execution-rules.v1",
+      "interfaces": ["build_research_request", "build_research_execution_plan", "build_llm_run", "build_execution_audit"],
+      "output_quality": "确定性任务本地执行，模型任务可审计",
+      "license_status": "PROJECT_LICENSE",
+      "temporal_cutoff_support": "research_as_of_and_evidence_manifest_hash",
+      "safety_boundary": "planner_does_not_call_model; execution_disabled",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "现有项目没有统一深度/执行正交路由与预算审计协议",
+      "capability_gap": "缺少 QUICK/STANDARD/DEEP 与 LOCAL_ONLY/LLM_ASSISTED 的统一执行审计",
+      "evidence_refs": ["research_execution.py"],
+      "validated_at": "2026-07-22"
+    },
+    {
+      "capability_id": "orchestration.task-resolution",
+      "capability_name": "统一公司/行业/期货/机会发现任务解析",
+      "component": "industry-first-research",
+      "component_version": "research-task-resolution-rules.v1",
+      "interfaces": ["resolve_research_task", "validate_research_task", "resolve-task CLI"],
+      "output_quality": "本地分类、主数据精确匹配可审计，身份不确定显式待确认",
+      "license_status": "PROJECT_LICENSE",
+      "temporal_cutoff_support": "research_as_of_required",
+      "safety_boundary": "classification_only; execution_disabled; no_remote_lookup",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "既有研究执行请求只接受已归一对象，缺少从用户自然输入到统一任务外壳的安全解析层",
+      "capability_gap": "缺少统一 task_type/subject_type 解析、裸代码市场确认和公司名歧义闸门",
+      "evidence_refs": ["task_resolution.py", "research_execution.py", "security_master.py"],
+      "validated_at": "2026-07-23"
+    },
+    {
+      "capability_id": "research-assets.bounded-company-pool",
+      "capability_name": "既有研究资产候选池接入机会发现",
+      "component": "luopan + ai-berkshire + industry-first-research",
+      "component_version": "research-asset-company-pool-v1",
+      "interfaces": ["ResearchAssetCompanyPool.candidates", "discover --research-candidate-set"],
+      "output_quality": "结构化候选池优先、来源与边界可追溯、无合格候选可回退",
+      "license_status": "LOCAL_REVIEW_REQUIRED",
+      "temporal_cutoff_support": "candidate_set_research_date_and_file_hash",
+      "safety_boundary": "bounded_representative_pool; no_security_master; no_full_market_data",
+      "decision": "ADAPTER_REUSE",
+      "reuse_reason": "上游已有结构化 watchlist/candidate set；本系统只增加行业池协议、首期市场过滤和回退审计",
+      "evidence_refs": ["research_assets.py", "cli.py", "tests/test_research_assets.py"],
+      "validated_at": "2026-07-23"
+    },
+    {
+      "capability_id": "evidence.announcement-template-parser",
+      "capability_name": "交易所/公司披露公告模板与本地解析",
+      "component": "official_exchange + company_disclosure + eastmoney + industry-first-research",
+      "component_version": "announcement-template-rules.v1",
+      "interfaces": ["load_template_catalog", "parse_announcement_input", "announcement-parse CLI", "announcement-templates CLI"],
+      "output_quality": "JSON/HTML/文本字段定位、内容哈希、版本链和失败降级可审计",
+      "license_status": "PUBLIC_ENDPOINTS_REVIEW_REQUIRED",
+      "temporal_cutoff_support": "published_at_and_research_as_of_required",
+      "safety_boundary": "local_snapshot_only; no_network_fetch; blocked_input_cannot_be_promoted; no_investment_conclusion",
+      "decision": "ADAPTER_REUSE",
+      "reuse_reason": "交易所/公司/东方财富来源和公告资产已有；新增仅为版本化字段协议与本地解析薄适配器，不替换主备采集链",
+      "evidence_refs": ["announcement_templates.py", "config/announcement_templates.v1.json", "announcement_asset.py"],
+      "validated_at": "2026-07-23"
+    },
+    {
+      "capability_id": "company.product-profit-bridge",
+      "capability_name": "产品级收入利润现金流桥接",
+      "component": "industry-first-research",
+      "component_version": "product-profit-bridge-rules.v1",
+      "interfaces": ["build_product_profit_bridge_report", "product-profit-bridge CLI", "product-profit-bridge-validate CLI", "research_pipeline optional attachment"],
+      "output_quality": "显式假设、区间运算、分摊口径和未知项可审计",
+      "license_status": "PROJECT_LICENSE",
+      "temporal_cutoff_support": "as_of_and_assumption_as_of_required",
+      "safety_boundary": "reference_model_only; no_company_forecast; no_target_price; no_execution",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "现有产品画像仅检查 product_financial_bridge 字段，缺少可计算的销量/价格/成本/现金流公式、区间传播和分摊冲突处理",
+      "capability_gap": "缺少独立 product_profit_bridges 协议与确定性产品经济学计算层",
+      "evidence_refs": ["product_profit_bridge.py", "research_pipeline.py", "tests/test_product_profit_bridge.py"],
+      "validated_at": "2026-07-23"
+    },
+    {
+      "capability_id": "company.product-lifecycle-snapshot",
+      "capability_name": "产品生命周期与市场状态快照",
+      "component": "industry-first-research",
+      "component_version": "product-lifecycle-rules.v1",
+      "interfaces": ["build_product_lifecycle_report", "product-lifecycle CLI", "product-lifecycle-validate CLI", "research_pipeline optional attachment"],
+      "output_quality": "显式阶段、市场字段、下一阶段条件、替代因素和未来数据排除可审计",
+      "license_status": "PROJECT_LICENSE",
+      "temporal_cutoff_support": "as_of_and_field_as_of_required",
+      "safety_boundary": "evidence_only; no_stage_inference; no_investment_conclusion; no_execution",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "现有 product_profile 仅把 lifecycle_state 作为字段覆盖，不提供独立市场快照、阶段选项、替代因素和未来字段排除协议",
+      "capability_gap": "缺少 product-lifecycle-snapshot.v1 的阶段与市场状态证据层",
+      "evidence_refs": ["product_lifecycle.py", "research_pipeline.py", "tests/test_product_lifecycle.py"],
+      "validated_at": "2026-07-23"
+    },
+    {
+      "capability_id": "company.financial-model",
+      "capability_name": "确定性财务现金流压力测试与情景观察模型",
+      "component": "industry-first-research",
+      "component_version": "financial-model-rules.v1",
+      "interfaces": ["build_financial_model_report", "financial-model CLI", "financial-model-validate CLI", "research_pipeline optional attachment"],
+      "output_quality": "利润率、现金转换、自由现金流、现金跑道、债务缺口和估值观察值可复算",
+      "license_status": "PROJECT_LICENSE",
+      "temporal_cutoff_support": "fact_period_and_as_of_required",
+      "safety_boundary": "reference_observation_only; no_target_price; no_investment_conclusion; no_execution",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "现有 survival/valuation 模块只做字段闸门，不执行确定性财务公式、现金跑道、债务缺口和三情景观察计算",
+      "capability_gap": "缺少 financial-model.v1 的事实计算、压力测试和非目标价情景观察层",
+      "evidence_refs": ["financial_model.py", "research_pipeline.py", "tests/test_financial_model.py"],
+      "validated_at": "2026-07-23"
+    },
+    {
+      "capability_id": "platform.third-party-component-registry",
+      "capability_name": "第三方基础组件注册、健康检查与可替换适配器",
+      "component": "industry-first-research + optional pypdf/pdfplumber/Camelot/quantstats",
+      "component_version": "third-party-components-rules.v1",
+      "interfaces": [
+        "build_component_registry",
+        "build_component_registration_from_candidate",
+        "build_component_health_snapshot",
+        "parse_local_document",
+        "build_performance_metrics_report"
+      ],
+      "output_quality": "版本、许可证、可用性、原始输入哈希和回退边界可追踪",
+      "license_status": "ADAPTER_LICENSE_REVIEW_REQUIRED",
+      "temporal_cutoff_support": "local_input_as_of_and_locked_series_as_of",
+      "safety_boundary": "optional_read_only_adapter; no_fact_promotion; no_causal_attribution; no_execution",
+      "decision": "ADAPTER_REUSE",
+      "reuse_reason": "外部项目只承担明确的 PDF 提取和统计辅助能力；统一注册、健康、版本、失败降级和证据边界由本系统适配层负责",
+      "evidence_refs": [
+        "third_party_components.py",
+        "config/third_party_components.v1.json",
+        "tests/test_third_party_components.py"
+      ],
+      "validated_at": "2026-07-24"
+    },
+    {
+      "capability_id": "simulation.futures-settlement-ledger",
+      "capability_name": "具体期货合约逐日盯市、保证金、移仓与模拟强平回放",
+      "component": "industry-first-research",
+      "component_version": "futures-simulation-rules.v1",
+      "interfaces": [
+        "build_futures_simulation",
+        "replay_futures_simulation",
+        "futures-simulation-create CLI",
+        "futures-simulation-replay CLI"
+      ],
+      "output_quality": "具体合约、每日结算、保证金、限价阻断、移仓和追加资金状态可审计",
+      "license_status": "PROJECT_LICENSE",
+      "temporal_cutoff_support": "settlement_and_rule_rows_must_not_exceed_closed_at",
+      "safety_boundary": "specific_contract_only; no_continuous_trade; no_broker; no_order; no_execution",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "现有 simulation_portfolio 只支持股票全额资金口径；现有期货基础模块没有逐日盯市、保证金、显式移仓和模拟强平账本",
+      "capability_gap": "缺少 futures-simulation.v1 与 futures-simulation-replay.v1 的确定性期货结算回放",
+      "evidence_refs": [
+        "futures_simulation.py",
+        "tests/test_futures_simulation.py",
+        "config/futures_simulation_input.example.json",
+        "config/futures_simulation_outcome.example.json"
+      ],
+      "validated_at": "2026-07-24"
+    },
+    {
+      "capability_id": "platform.third-party-candidate-review",
+      "capability_name": "外部项目能力切片候选评审、状态事件与适配器试点治理",
+      "component": "industry-first-research",
+      "component_version": "third-party-candidate-review-rules.v1",
+      "interfaces": [
+        "build_candidate_review",
+        "build_candidate_review_event",
+        "build_candidate_review_projection",
+        "third-party-candidate-review CLI",
+        "third-party-candidate-review-event CLI",
+        "validate-third-party-candidate-review CLI"
+      ],
+      "output_quality": "候选能力切片、许可证/安全审查、固定夹具、基线、适配器、回退和状态变化不可变可追踪",
+      "license_status": "PROJECT_LICENSE",
+      "temporal_cutoff_support": "discovered_and_reviewed_at_required; fixture_as_of_by_candidate",
+      "safety_boundary": "review_only; no_install; no_remote_fetch; runtime_registry_separate; no_execution",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "现有第三方组件注册表只描述已登记运行组件，缺少按能力切片的候选评审、状态事件、夹具门槛和退出留痕",
+      "capability_gap": "缺少 third-party-candidate-review.v1 生命周期和运行注册前的隔离评审协议",
+      "evidence_refs": [
+        "third_party_candidate_review.py",
+        "tests/test_third_party_candidate_review.py",
+        "config/third_party_candidate_review.example.json",
+        "outputs/投研分析系统-需求文档.md",
+        "outputs/投研分析系统-设计文档.md"
+      ],
+      "validated_at": "2026-07-24"
+    },
+    {
+      "capability_id": "company.industry-adapter-matrix",
+      "capability_name": "多行业配置驱动研究适配器矩阵",
+      "component": "industry-first-research + config/industries/adapters",
+      "component_version": "industry-adapter-rules.v1",
+      "interfaces": [
+        "IndustryAdapterRegistry.from_directory",
+        "build_industry_adapter_registry_report",
+        "build_industry_profile_report",
+        "industry-adapters CLI",
+        "industry-profile CLI"
+      ],
+      "output_quality": "按行业和经营模式切换指标、估值方法、生存问题与产品传导问题；分类仍是候选契约",
+      "license_status": "PROJECT_LICENSE_AND_CONFIG",
+      "temporal_cutoff_support": "profile_as_of_required; adapter_configuration_hash",
+      "safety_boundary": "configuration_contract_only; no_data_fetch; no_cycle_inference_for_non_physical_industries; no_execution",
+      "decision": "ADAPTER_REUSE",
+      "reuse_reason": "复用既有配置驱动适配器接口，通过新增金融服务、软件/SaaS、医药健康和公用事业配置扩展行业覆盖，不重复开发研究核心",
+      "evidence_refs": [
+        "industry_adapters.py",
+        "config/industries/adapters",
+        "tests/test_industry_adapters.py"
+      ],
+      "validated_at": "2026-07-25"
+    },
+    {
+      "capability_id": "futures.commodity-adapter-matrix",
+      "capability_name": "多品种配置驱动商品期货研究适配器矩阵",
+      "component": "industry-first-research + config/commodities",
+      "component_version": "commodity-adapter-rules.v1",
+      "interfaces": [
+        "CommodityAdapterRegistry.from_directory",
+        "build_commodity_adapter_registry_report",
+        "build_commodity_adapter_validation_report",
+        "commodity-adapters CLI",
+        "commodity-adapter-validate CLI"
+      ],
+      "output_quality": "覆盖 5 类商品和 7 个唯一品种代码的研究契约、字段覆盖和验证状态可审计",
+      "license_status": "PROJECT_LICENSE_AND_CONFIG",
+      "temporal_cutoff_support": "configuration_hash_required; evidence_as_of_required_for_data_validation",
+      "safety_boundary": "configuration_contract_only; no_data_fetch; no_directional_conclusion; no_investment_conclusion; no_execution",
+      "decision": "ADAPTER_REUSE",
+      "reuse_reason": "复用已有 CommodityAdapterDefinition/Registry 和共享期货基本面协议，通过新增钢材、原油、豆粕、铜、碳酸锂配置扩展覆盖，不重复开发研究核心",
+      "evidence_refs": [
+        "commodity_adapters.py",
+        "config/commodities",
+        "tests/test_commodity_adapters.py",
+        "outputs/投研分析系统-需求文档.md",
+        "outputs/投研分析系统-设计文档.md"
+      ],
+      "validated_at": "2026-07-25"
+    },
+    {
+      "capability_id": "futures.fundamentals-continuous-tracking",
+      "capability_name": "期货基本面报告前后版本持续跟踪",
+      "component": "industry-first-research",
+      "component_version": "futures-tracking-rules.v1",
+      "interfaces": [
+        "build_futures_tracking_report",
+        "futures-tracking CLI",
+        "futures_fundamentals_delta_scan scheduler task"
+      ],
+      "output_quality": "按交易所/品种/对象类型/合约比较状态、派生指标和情景变化，旧报告与当前报告不可变",
+      "license_status": "PROJECT_LICENSE",
+      "temporal_cutoff_support": "current_and_previous_as_of_must_not_exceed_tracking_cutoff",
+      "safety_boundary": "saved_reports_only; read_only; no_data_fetch; no_directional_conclusion; no_decision_snapshot; no_execution",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "已有公司/行业增量跟踪只覆盖公司管线和行业雷达，缺少期货品种/合约专属状态、现货/库存/仓单/基差/期限结构字段比较协议",
+      "capability_gap": "缺少 futures-fundamentals-tracking.v1 与有界 futures_fundamentals_delta_scan 调度任务",
+      "evidence_refs": [
+        "futures_tracking.py",
+        "scheduled_tasks.py",
+        "scheduler.py",
+        "tests/test_futures_tracking.py",
+        "tests/test_scheduled_tasks.py"
+      ],
+      "validated_at": "2026-07-25"
+    },
+    {
+      "capability_id": "reporting.company-futures-human-readable-rendering",
+      "capability_name": "公司/期货结构化研究报告 Markdown 与 HTML 渲染",
+      "component": "industry-first-research",
+      "component_version": "research-report-render.v1",
+      "interfaces": [
+        "render_research_markdown",
+        "render_research_html",
+        "write_rendered_reports",
+        "render-report CLI"
+      ],
+      "output_quality": "从不可变公司/期货/期货跟踪 JSON 生成可读报告，保留证据、状态和自动交易边界",
+      "license_status": "PROJECT_LICENSE",
+      "temporal_cutoff_support": "renders_input_snapshot_only; no_new_evidence",
+      "safety_boundary": "derived_render_only; no_fact_promotion; no_directional_conclusion; no_decision_snapshot; no_execution",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "已有机会扫描 Markdown/HTML 渲染不能覆盖公司研究报告、期货基本面报告和跟踪报告；新增仅为确定性展示层，不重复研究或结论逻辑",
+      "capability_gap": "缺少统一 company-research-report.v1、futures-fundamentals-report.v1 和 futures-fundamentals-tracking.v1 的人类可读输出",
+      "evidence_refs": [
+        "report_rendering.py",
+        "cli.py",
+        "tests/test_report_rendering.py"
+      ],
+      "validated_at": "2026-07-25"
+    },
+    {
+      "capability_id": "reporting.public-draft-redaction",
+      "capability_name": "锁定研究报告脱敏公开稿生成与完整性校验",
+      "component": "industry-first-research",
+      "component_version": "public-draft-rules.v1",
+      "interfaces": [
+        "build_public_draft",
+        "validate_public_draft",
+        "public-draft CLI",
+        "validate-public-draft CLI"
+      ],
+      "output_quality": "来源锁定、私有字段删除路径、敏感表达、来源/版权人工复核和正文哈希可追踪",
+      "license_status": "PROJECT_LICENSE",
+      "temporal_cutoff_support": "source_report_lock_and_hash_required",
+      "safety_boundary": "one_way_from_locked_report; local_only; no_publication_api; no_fact_promotion; no_decision_change; no_execution",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "现有报告渲染只负责可读展示，缺少从显式锁定报告生成递归脱敏副本、敏感表达检查和不可发布校验的公共传播边界",
+      "capability_gap": "缺少 public-draft.v1 的锁定哈希、字段脱敏、人工审核状态和 NOT_PUBLISHED 策略协议",
+      "evidence_refs": [
+        "public_draft.py",
+        "cli.py",
+        "tests/test_public_draft.py",
+        "outputs/投研分析系统-需求文档.md",
+        "outputs/投研分析系统-设计文档.md"
+      ],
+      "validated_at": "2026-07-25"
+    },
+    {
+      "capability_id": "data-source.bounded-refresh-router",
+      "capability_name": "有界研究对象数据刷新与主备路由留痕",
+      "component": "industry-first-research + official_exchange/eastmoney/akshare/baostock",
+      "component_version": "data-source-refresh-rules.v1",
+      "interfaces": [
+        "build_data_source_refresh",
+        "validate_data_source_refresh",
+        "data-refresh CLI",
+        "validate-data-refresh CLI",
+        "data_source_refresh scheduler task"
+      ],
+      "output_quality": "显式对象查询、主备来源、实际返回、内容哈希、失败尝试、截断和来源健康可追踪",
+      "license_status": "PUBLIC_ENDPOINTS_REVIEW_REQUIRED",
+      "temporal_cutoff_support": "as_of_and_query_manifest_locked",
+      "safety_boundary": "bounded_explicit_queries; no_full_market_deep_data; no_fact_promotion; no_investment_conclusion; no_execution",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "复用既有 DataSourceRouter、免费来源适配器、不可变存储和研究版本；新增仅为显式查询清单、行数边界和调度接线",
+      "capability_gap": "缺少持续任务可调用的 data-source-refresh.v1 查询清单、主备结果快照和空清单不联网闸门",
+      "evidence_refs": [
+        "data_refresh.py",
+        "data_sources.py",
+        "scheduled_tasks.py",
+        "scheduler.py",
+        "cli.py",
+        "tests/test_data_refresh.py",
+        "tests/fixtures/data_sources",
+        "docs/decisions/0006-fixed-data-source-response-fixtures.md",
+        "config/data_source_refresh_input.example.json",
+        "outputs/投研分析系统-需求文档.md",
+        "outputs/投研分析系统-设计文档.md"
+      ],
+      "validated_at": "2026-07-27"
+    },
+    {
+      "capability_id": "futures.refresh-to-fundamentals-input",
+      "capability_name": "期货刷新结果到基本面输入的显式映射",
+      "component": "industry-first-research",
+      "component_version": "futures-fundamentals-refresh-mapping-rules.v1",
+      "interfaces": [
+        "build_futures_fundamentals_input_from_refresh",
+        "validate_futures_refresh_mapping",
+        "futures-input-from-refresh CLI"
+      ],
+      "output_quality": "按品种和查询 ID 从标准化刷新结果生成待复核输入，保留刷新/来源/字段路径血缘并覆盖 CU、RB、SC、M、LC 回归",
+      "license_status": "PROJECT_LICENSE_AND_PUBLIC_ENDPOINTS_REVIEW_REQUIRED",
+      "temporal_cutoff_support": "refresh_content_hash_and_mapping_as_of_required",
+      "safety_boundary": "explicit_mapping_only; subject_id_match_required; unverified_by_default; no_fact_promotion; no_directional_conclusion; no_decision_snapshot; no_execution",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "复用 data-source-refresh.v1、DataSourceRouter、futures-fundamentals.v1 和人工证据闸门；新增仅为标准化结果路径映射、品种主体校验和字段级刷新血缘",
+      "capability_gap": "缺少 data-source-refresh.v1 到 futures-fundamentals-input.v1 的显式字段/序列映射协议",
+      "evidence_refs": [
+        "futures_refresh.py",
+        "futures_fundamentals.py",
+        "data_refresh.py",
+        "tests/test_futures_refresh.py",
+        "config/futures_fundamentals_refresh_mapping.example.json",
+        "outputs/投研分析系统-需求文档.md",
+        "outputs/投研分析系统-设计文档.md"
+      ],
+      "validated_at": "2026-07-27"
+    },
+    {
+      "capability_id": "web.local-research-console",
+      "capability_name": "本地 Web 研究控制台",
+      "component": "industry-first-research + web",
+      "component_version": "research-web-api.v1",
+      "interfaces": [
+        "ResearchWebApplication.health",
+        "ResearchWebApplication.summary",
+        "ResearchWebApplication.snapshots",
+        "ResearchWebApplication.resolve_task",
+        "web CLI"
+      ],
+      "output_quality": "展示白名单快照元数据、状态概览并复用统一任务解析器保存幂等研究任务",
+      "license_status": "PROJECT_LICENSE_AND_PYTHON_STDLIB",
+      "temporal_cutoff_support": "task_resolution_as_of_and_snapshot_metadata_only",
+      "safety_boundary": "localhost_only; metadata_bounded; no_market_fetch; no_model_call; no_decision_snapshot; no_publication_api; no_execution",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "复用 task_resolution、JsonSnapshotStore、既有研究对象 schema 和本地数据目录；新增仅为浏览器控制面、白名单索引和 HTTP 边界",
+      "capability_gap": "缺少供个人使用的本地研究任务入口、快照概览和统一安全状态展示",
+      "evidence_refs": [
+        "web.py",
+        "web/index.html",
+        "web/app.js",
+        "web/styles.css",
+        "tests/test_web.py",
+        "outputs/投研分析系统-需求文档.md",
+        "outputs/投研分析系统-设计文档.md"
+      ],
+      "validated_at": "2026-07-28"
+    },
+    {
+      "capability_id": "evidence.refresh-promotion-gate",
+      "capability_name": "刷新快照到统一证据层的人工字段映射闸门",
+      "component": "industry-first-research + evidence",
+      "component_version": "data-source-refresh-evidence-rules.v1",
+      "interfaces": [
+        "build_refresh_evidence_gate",
+        "validate_refresh_evidence_gate",
+        "evidence-from-refresh CLI",
+        "validate-evidence-from-refresh CLI"
+      ],
+      "output_quality": "查询到证据的字段映射、审核元数据、来源文档哈希、时间截面和正式证据包状态可追踪",
+      "license_status": "PROJECT_LICENSE",
+      "temporal_cutoff_support": "published_at_captured_at_research_as_of_required",
+      "safety_boundary": "manual_confirmation_required; no_automatic_fact_promotion; no_investment_conclusion; no_decision_snapshot; no_execution",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "复用既有 source-document、evidence 和 evidence-bundle 构建器；新增仅为刷新查询 ID 到证据字段的人工映射与审核闸门",
+      "capability_gap": "缺少 data-source-refresh.v1 到 evidence.v1 的显式字段映射、来源文档候选和人工确认协议",
+      "evidence_refs": [
+        "refresh_evidence.py",
+        "evidence.py",
+        "cli.py",
+        "tests/test_refresh_evidence.py",
+        "outputs/投研分析系统-需求文档.md",
+        "outputs/投研分析系统-设计文档.md"
+      ],
+      "validated_at": "2026-07-25"
+    },
+    {
+      "capability_id": "tracking.bounded-refresh-delta",
+      "capability_name": "有界数据刷新快照前后差异跟踪",
+      "component": "industry-first-research",
+      "component_version": "data-source-refresh-tracking-rules.v1",
+      "interfaces": [
+        "build_data_refresh_tracking_report",
+        "validate_data_refresh_tracking_report",
+        "data-refresh-track CLI",
+        "data_source_refresh scheduler task"
+      ],
+      "output_quality": "按查询、来源、数据哈希、状态、截断和尝试状态生成不可变变化清单",
+      "license_status": "PROJECT_LICENSE",
+      "temporal_cutoff_support": "current_and_previous_refresh_as_of_required",
+      "safety_boundary": "saved_refreshes_only; no_data_fetch; no_fact_promotion; no_directional_conclusion; no_execution",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "复用期货跟踪的不可变前后版本思路和研究版本引用；新增通用查询行、来源变化和稳定数据哈希比较",
+      "capability_gap": "缺少通用 data-source-refresh.v1 前后快照的变化清单和受影响查询集合",
+      "evidence_refs": [
+        "data_refresh_tracking.py",
+        "scheduled_tasks.py",
+        "cli.py",
+        "tests/test_data_refresh_tracking.py",
+        "outputs/投研分析系统-需求文档.md",
+        "outputs/投研分析系统-设计文档.md"
+      ],
+      "validated_at": "2026-07-25"
+    },
+    {
+      "capability_id": "opportunity.demand-acceleration-screen",
+      "capability_name": "需求加速机会的行业与公司确定性初筛",
+      "component": "industry-first-research",
+      "component_version": "opportunity-screening-rules.v1",
+      "interfaces": [
+        "assess_industry_opportunities",
+        "assess_company_opportunities",
+        "demand_acceleration opportunity type"
+      ],
+      "output_quality": "按需求、订单、出货/商业化和经济结果分组，独立证据与缺口可追踪",
+      "license_status": "PROJECT_LICENSE",
+      "temporal_cutoff_support": "IndustrySignal.as_of_and_evidence_status_required",
+      "safety_boundary": "queue_status_only; concept_not_sufficient; no_investment_conclusion; no_execution",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "既有筛选器仅覆盖供给出清和质量修复；新增规则复用 IndustrySignal/CompanyCandidate 和四维候选闸门，不新增数据抓取",
+      "capability_gap": "缺少 demand_acceleration 的独立经营证据组与公司层逐级验证规则",
+      "evidence_refs": [
+        "screening.py",
+        "tests/test_screening_and_assets.py",
+        "tests/test_pipeline.py",
+        "outputs/投研分析系统-需求文档.md",
+        "outputs/投研分析系统-设计文档.md"
+      ],
+      "validated_at": "2026-07-27"
+    },
+    {
+      "capability_id": "opportunity.bottleneck-pricing-screen",
+      "capability_name": "瓶颈涨价机会的行业与公司确定性初筛",
+      "component": "industry-first-research",
+      "component_version": "opportunity-screening-rules.v1",
+      "interfaces": [
+        "assess_industry_opportunities",
+        "assess_company_opportunities",
+        "bottleneck_pricing opportunity type"
+      ],
+      "output_quality": "稀缺、定价、替代/扩产壁垒及公司利润传导分组可追踪",
+      "license_status": "PROJECT_LICENSE",
+      "temporal_cutoff_support": "IndustrySignal.as_of_and_evidence_status_required",
+      "safety_boundary": "queue_status_only; price_only_insufficient; no_investment_conclusion; no_execution",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "既有筛选器没有瓶颈稀缺与公司暴露传导规则；新增仅复用现有行业雷达和公司候选对象协议",
+      "capability_gap": "缺少 scarcity/pricing/barrier 三组证据和公司产品关键性、定价、利润暴露闸门",
+      "evidence_refs": [
+        "screening.py",
+        "tests/test_screening_and_assets.py",
+        "tests/test_pipeline.py",
+        "outputs/投研分析系统-需求文档.md",
+        "outputs/投研分析系统-设计文档.md"
+      ],
+      "validated_at": "2026-07-27"
+    },
+    {
+      "capability_id": "reporting.simulation-recommendation",
+      "capability_name": "研究报告到模拟决策的只读建议投影",
+      "component": "industry-first-research",
+      "component_version": "company-research-report-rules.v1",
+      "interfaces": [
+        "build_research_report",
+        "simulation_recommendation projection"
+      ],
+      "output_quality": "根据报告状态输出等待资料、继续复核或用户确认，并保留依据/缺口/触发/失效条件",
+      "license_status": "PROJECT_LICENSE",
+      "temporal_cutoff_support": "inherits_research_report_as_of_and_evidence_lineage",
+      "safety_boundary": "workflow_guidance_only; neutral_direction; no_target_price; no_decision_snapshot; no_execution",
+      "decision": "NEW_DEVELOPMENT",
+      "reuse_reason": "既有研究报告已有结论状态和 allowed_actions，但没有统一的 FR-09 模拟建议投影；新增仅组合已有状态与跟踪字段",
+      "capability_gap": "缺少从 BLOCKED/REVIEW/REVIEWABLE 到用户模拟动作的结构化建议、数据缺口和失效条件协议",
+      "evidence_refs": [
+        "research_report.py",
+        "tests/test_research_report.py",
+        "outputs/投研分析系统-需求文档.md",
+        "outputs/投研分析系统-设计文档.md"
+      ],
+      "validated_at": "2026-07-27"
+    }
+  ]
+}

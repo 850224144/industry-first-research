@@ -1,0 +1,130 @@
+{
+  "schema_version": "futures-fundamentals-input.v1",
+  "variety_id": "LC",
+  "variety_name": "碳酸锂",
+  "exchange": "GFEX",
+  "as_of": "2023-02-20T16:00:00+08:00",
+  "research_cutoff": "2023-02-20",
+  "market_phase": "high_price_peak",
+  "spot_benchmark": {
+    "benchmark_id": "china_battery_grade_lithium_carbonate",
+    "price": 485000,
+    "unit": "CNY/ton",
+    "date": "2023-02-20",
+    "source": "smm_daily",
+    "field_status": "VERIFIED",
+    "grade": "99.5% battery grade"
+  },
+  "contract_quotes": [
+    {
+      "contract": "LC2304",
+      "settlement_price": 452000,
+      "close_price": 458000,
+      "volume": 12345,
+      "open_interest": 23456,
+      "date": "2023-02-20",
+      "source": "gfex_settlement",
+      "field_status": "VERIFIED"
+    }
+  ],
+  "inventory": {
+    "converter_inventory": {
+      "value": 12345,
+      "unit": "ton",
+      "date": "2023-02-17",
+      "source": "smm_weekly",
+      "field_status": "VERIFIED",
+      "note": "库存处于低位"
+    },
+    "cathode_factory_inventory": {
+      "value": 8765,
+      "unit": "ton",
+      "date": "2023-02-17",
+      "source": "smm_weekly",
+      "field_status": "VERIFIED"
+    }
+  },
+  "production": {
+    "lithium_carbonate_output": {
+      "value": 28900,
+      "unit": "ton",
+      "date": "2023-01-31",
+      "source": "smm_monthly",
+      "field_status": "VERIFIED"
+    },
+    "effective_supply": {
+      "value": 29500,
+      "unit": "ton",
+      "date": "2023-01-31",
+      "source": "smm_monthly",
+      "field_status": "ESTIMATED"
+    },
+    "utilization_rate": {
+      "value": 89.5,
+      "unit": "percent",
+      "date": "2023-02-17",
+      "source": "smm_weekly",
+      "field_status": "VERIFIED"
+    }
+  },
+  "demand": {
+    "battery_output": {
+      "value": 68900,
+      "unit": "GWh",
+      "date": "2023-01-31",
+      "source": "ggii_monthly",
+      "field_status": "VERIFIED"
+    },
+    "ev_sales": {
+      "value": 567890,
+      "unit": "units",
+      "date": "2023-01-31",
+      "source": "caam_monthly",
+      "field_status": "VERIFIED"
+    },
+    "lithium_demand": {
+      "value": 32000,
+      "unit": "ton_LCE",
+      "date": "2023-01-31",
+      "source": "calculated",
+      "field_status": "ESTIMATED",
+      "note": "需求超过供给"
+    }
+  },
+  "cost": {
+    "ore_cost": {
+      "value": 180000,
+      "unit": "CNY/ton",
+      "date": "2023-02-01",
+      "source": "industry_average",
+      "field_status": "ESTIMATED"
+    },
+    "brine_cost": {
+      "value": 120000,
+      "unit": "CNY/ton",
+      "date": "2023-02-01",
+      "source": "industry_average",
+      "field_status": "ESTIMATED"
+    },
+    "cost_curve_p90": {
+      "value": 250000,
+      "unit": "CNY/ton",
+      "date": "2023-02-01",
+      "source": "analyst_estimate",
+      "field_status": "ESTIMATED"
+    }
+  },
+  "basis": {
+    "spot_futures_basis": {
+      "value": 33000,
+      "unit": "CNY/ton",
+      "calculation": "spot - LC2304_settlement",
+      "date": "2023-02-20",
+      "field_status": "CALCULATED",
+      "note": "现货大幅升水"
+    }
+  },
+  "market_narrative": "2023年初碳酸锂处于历史高价，新能源车需求旺盛，供给紧张",
+  "evidence_ids": ["lithium-smm-weekly-20230217", "lithium-gfex-settlement-20230220"],
+  "source_document_id": "lithium-fundamentals-input-20230220"
+}

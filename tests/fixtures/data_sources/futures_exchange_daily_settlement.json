@@ -1,0 +1,33 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "exchange": "SHFE",
+    "variety": "CU",
+    "contract": "CU2607",
+    "trade_date": "2026-05-20",
+    "pre_settlement": "74850",
+    "open": "74920",
+    "high": "75380",
+    "low": "74650",
+    "close": "75120",
+    "settlement": "75080",
+    "change": "230",
+    "pct_change": "0.31",
+    "volume": "186742",
+    "open_interest": "234567",
+    "open_interest_change": "+3421",
+    "turnover": "13987654320.00",
+    "delivery_month": "202607",
+    "multiplier": "5",
+    "tick_size": "10",
+    "margin_ratio": "0.08",
+    "trading_unit": "吨",
+    "limit_up": "78393",
+    "limit_down": "71307",
+    "last_trading_date": "2026-07-15",
+    "delivery_date": "2026-07-20",
+    "timestamp": "2026-05-20T15:30:00+08:00",
+    "source_document_id": "shfe-settlement-CU2607-20260520"
+  }
+}

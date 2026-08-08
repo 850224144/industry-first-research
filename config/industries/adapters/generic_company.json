@@ -1,0 +1,43 @@
+{
+  "schema_version": "industry-adapter.v1",
+  "adapter_id": "generic_company",
+  "display_name": "通用公司",
+  "aliases": ["generic", "通用行业"],
+  "supported_industry_ids": [],
+  "supported_industry_names": [],
+  "supported_industry_families": [],
+  "business_models": [],
+  "classification_attributes": {
+    "cyclicality": "UNKNOWN",
+    "asset_intensity": "UNKNOWN",
+    "demand_rigidity": "UNKNOWN",
+    "competition_type": "UNKNOWN",
+    "technology_risk": "UNKNOWN",
+    "policy_sensitivity": "UNKNOWN"
+  },
+  "required_metrics": [
+    "revenue_structure",
+    "profit_sources",
+    "operating_cashflow",
+    "debt_and_liquidity",
+    "competitive_position",
+    "product_validation"
+  ],
+  "valuation_methods": ["insufficient_until_business_model_identified"],
+  "survival_questions": [
+    "现金和可用融资能覆盖多久",
+    "核心产品或服务是否仍然产生经营现金流",
+    "主要债务、再融资和持续经营风险是什么"
+  ],
+  "product_application_questions": [
+    "公司主要靠什么产品或服务赚钱",
+    "产品解决什么客户问题",
+    "产品在下游系统中处于什么层级且是否可替代"
+  ],
+  "demand_transmission_stages": ["CONCEPT", "CUSTOMER_VALIDATED", "ORDER_VALIDATED", "REVENUE_VALIDATED", "PROFIT_VALIDATED"],
+  "lifecycle_status": "ACTIVE",
+  "fallback": true,
+  "acceptance_samples": [
+    {"sample_id": "unknown-industry", "description": "行业和经营模式不足时保留通用适配器并降级为 PARTIAL"}
+  ]
+}

@@ -1,0 +1,711 @@
+{
+  "as_of": "2026-05-20T16:00:00+08:00",
+  "assessments": {
+    "conditional_conclusion": "NOT_ASSESSED",
+    "contract_relative_value": "NOT_ASSESSED",
+    "evidence_ids": [],
+    "variety_bias": "NOT_ASSESSED"
+  },
+  "contract": {
+    "contract_code": "CU2607",
+    "contract_month": "202607",
+    "contract_multiplier": 5,
+    "delivery_month": "2026-07",
+    "delivery_period": "2026-07-16至2026-07-20",
+    "last_trade_date": "2026-07-15",
+    "settlement_basis": "daily_settlement",
+    "tick_size": 10.0
+  },
+  "contract_view": {
+    "basis_and_calendar_spread": {
+      "as_of": [],
+      "evidence_ids": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "conclusion_boundary": "合约判断必须同时看到现货、库存/仓单、基差、期限结构和交割规则。",
+    "contract_bound": true,
+    "contract_code": "CU2607",
+    "contract_month": "202607",
+    "contract_multiplier": 5,
+    "delivery": {
+      "as_of": [],
+      "evidence_ids": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "evidence_gaps": [
+      {
+        "evidence_ids": [],
+        "field": "exchange_inventory_and_warrants",
+        "reason": "FIELD_NOT_VERIFIED",
+        "status": "MISSING"
+      },
+      {
+        "evidence_ids": [],
+        "field": "spot_benchmark",
+        "reason": "FIELD_NOT_VERIFIED",
+        "status": "MISSING"
+      },
+      {
+        "evidence_ids": [],
+        "field": "basis_and_calendar_spread",
+        "reason": "FIELD_NOT_VERIFIED",
+        "status": "MISSING"
+      },
+      {
+        "evidence_ids": [],
+        "field": "term_structure",
+        "reason": "FIELD_NOT_VERIFIED",
+        "status": "MISSING"
+      },
+      {
+        "evidence_ids": [],
+        "field": "delivery_rules_and_warrant_expiry",
+        "reason": "FIELD_NOT_VERIFIED",
+        "status": "MISSING"
+      }
+    ],
+    "exchange_inventory_and_warrants": {
+      "as_of": [],
+      "evidence_ids": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "judgment": "NOT_ASSESSED",
+    "last_trade_date": "2026-07-15",
+    "latest": {
+      "basis": null,
+      "calendar_spread": null,
+      "contract_minus_spot": null,
+      "contract_settlement": null
+    },
+    "open_interest": {
+      "as_of": [],
+      "evidence_ids": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "reasons": [
+      "SPOT_BENCHMARK_MISSING",
+      "BASIS_AND_CALENDAR_SPREAD_MISSING",
+      "TERM_STRUCTURE_MISSING",
+      "EXCHANGE_INVENTORY_AND_WARRANTS_MISSING",
+      "DELIVERY_RULES_AND_WARRANT_EXPIRY_MISSING",
+      "CONTRACT_SETTLEMENT_SERIES_NOT_SUPPLIED",
+      "BASIS_SERIES_NOT_SUPPLIED",
+      "CALENDAR_SPREAD_SERIES_NOT_SUPPLIED"
+    ],
+    "settlement_basis": "daily_settlement",
+    "spot_benchmark": {
+      "as_of": [],
+      "evidence_ids": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "status": "INSUFFICIENT",
+    "term_structure": {
+      "as_of": [],
+      "evidence_ids": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    }
+  },
+  "derived_metrics": {
+    "basis_latest": null,
+    "calendar_spread_latest": null,
+    "cash_cost": null,
+    "contract_minus_spot": null,
+    "contract_settlement_latest": null,
+    "exchange_inventory_latest": null,
+    "full_cost": null,
+    "inventory_change": null,
+    "inventory_latest": null,
+    "open_interest_latest": null,
+    "registered_warrants_change": null,
+    "registered_warrants_latest": null,
+    "spot_latest": null,
+    "spot_minus_cash_cost": null,
+    "spot_minus_full_cost": null
+  },
+  "evidence_gaps": [
+    {
+      "evidence_ids": [],
+      "field": "supply_demand_balance",
+      "reason": "FIELD_NOT_VERIFIED",
+      "status": "MISSING"
+    },
+    {
+      "evidence_ids": [],
+      "field": "production_and_utilization",
+      "reason": "FIELD_NOT_VERIFIED",
+      "status": "MISSING"
+    },
+    {
+      "evidence_ids": [],
+      "field": "imports_exports",
+      "reason": "FIELD_NOT_VERIFIED",
+      "status": "MISSING"
+    },
+    {
+      "evidence_ids": [],
+      "field": "inventory_by_location",
+      "reason": "FIELD_NOT_VERIFIED",
+      "status": "MISSING"
+    },
+    {
+      "evidence_ids": [],
+      "field": "exchange_inventory_and_warrants",
+      "reason": "FIELD_NOT_VERIFIED",
+      "status": "MISSING"
+    },
+    {
+      "evidence_ids": [],
+      "field": "spot_benchmark",
+      "reason": "FIELD_NOT_VERIFIED",
+      "status": "MISSING"
+    },
+    {
+      "evidence_ids": [],
+      "field": "production_and_import_cost",
+      "reason": "FIELD_NOT_VERIFIED",
+      "status": "MISSING"
+    },
+    {
+      "evidence_ids": [],
+      "field": "industry_margin",
+      "reason": "FIELD_NOT_VERIFIED",
+      "status": "MISSING"
+    },
+    {
+      "evidence_ids": [],
+      "field": "basis_and_calendar_spread",
+      "reason": "FIELD_NOT_VERIFIED",
+      "status": "MISSING"
+    },
+    {
+      "evidence_ids": [],
+      "field": "term_structure",
+      "reason": "FIELD_NOT_VERIFIED",
+      "status": "MISSING"
+    },
+    {
+      "evidence_ids": [],
+      "field": "seasonality",
+      "reason": "FIELD_NOT_VERIFIED",
+      "status": "MISSING"
+    },
+    {
+      "evidence_ids": [],
+      "field": "open_interest_and_available_member_positions",
+      "reason": "FIELD_NOT_VERIFIED",
+      "status": "MISSING"
+    },
+    {
+      "evidence_ids": [],
+      "field": "delivery_rules_and_warrant_expiry",
+      "reason": "FIELD_NOT_VERIFIED",
+      "status": "MISSING"
+    }
+  ],
+  "exchange": "SHFE",
+  "execution_enabled": false,
+  "fields": {
+    "basis_and_calendar_spread": {
+      "as_of": [],
+      "evidence_ids": [],
+      "evidence_tiers": [],
+      "metadata": {},
+      "notes": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "delivery_rules_and_warrant_expiry": {
+      "as_of": [],
+      "evidence_ids": [],
+      "evidence_tiers": [],
+      "metadata": {},
+      "notes": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "exchange_inventory_and_warrants": {
+      "as_of": [],
+      "evidence_ids": [],
+      "evidence_tiers": [],
+      "metadata": {},
+      "notes": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "imports_exports": {
+      "as_of": [],
+      "evidence_ids": [],
+      "evidence_tiers": [],
+      "metadata": {},
+      "notes": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "industry_margin": {
+      "as_of": [],
+      "evidence_ids": [],
+      "evidence_tiers": [],
+      "metadata": {},
+      "notes": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "inventory_by_location": {
+      "as_of": [],
+      "evidence_ids": [],
+      "evidence_tiers": [],
+      "metadata": {},
+      "notes": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "open_interest_and_available_member_positions": {
+      "as_of": [],
+      "evidence_ids": [],
+      "evidence_tiers": [],
+      "metadata": {},
+      "notes": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "production_and_import_cost": {
+      "as_of": [],
+      "evidence_ids": [],
+      "evidence_tiers": [],
+      "metadata": {},
+      "notes": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "production_and_utilization": {
+      "as_of": [],
+      "evidence_ids": [],
+      "evidence_tiers": [],
+      "metadata": {},
+      "notes": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "seasonality": {
+      "as_of": [],
+      "evidence_ids": [],
+      "evidence_tiers": [],
+      "metadata": {},
+      "notes": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "spot_benchmark": {
+      "as_of": [],
+      "evidence_ids": [],
+      "evidence_tiers": [],
+      "metadata": {},
+      "notes": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "supply_demand_balance": {
+      "as_of": [],
+      "evidence_ids": [],
+      "evidence_tiers": [],
+      "metadata": {},
+      "notes": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "term_structure": {
+      "as_of": [],
+      "evidence_ids": [],
+      "evidence_tiers": [],
+      "metadata": {},
+      "notes": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    }
+  },
+  "identity_id": "futures-identity-cu2607-20260520-001",
+  "identity_status": "READY",
+  "investment_conclusion": false,
+  "market_structure": {
+    "implementation": null,
+    "interpretation": "市场结构未提供，只保留基本面研究，不影响品种与合约证据层。",
+    "report_id": null,
+    "signal": null,
+    "status": "NOT_SUPPLIED"
+  },
+  "object_type": "futures_contract",
+  "observations": {
+    "basis": [],
+    "calendar_spread": [],
+    "contract_settlement": [],
+    "exchange_inventory": [],
+    "inventory": [],
+    "member_position": [],
+    "open_interest": [],
+    "registered_warrants": [],
+    "spot_price": []
+  },
+  "phases": {
+    "F10_report_and_follow_up": {
+      "evidence_gap_count": 13,
+      "follow_up": [
+        "补齐阻塞条件后重新运行期货研究",
+        "补充字段证据: supply_demand_balance",
+        "补充字段证据: production_and_utilization",
+        "补充字段证据: imports_exports",
+        "补充字段证据: inventory_by_location",
+        "补充字段证据: exchange_inventory_and_warrants",
+        "补充字段证据: spot_benchmark",
+        "补充字段证据: production_and_import_cost",
+        "补充字段证据: industry_margin",
+        "补充字段证据: basis_and_calendar_spread",
+        "补充字段证据: term_structure",
+        "补充字段证据: seasonality",
+        "补充字段证据: open_interest_and_available_member_positions",
+        "补充字段证据: delivery_rules_and_warrant_expiry"
+      ],
+      "status": "INSUFFICIENT"
+    },
+    "F1_identity_and_rules": {
+      "exchange": "SHFE",
+      "object_type": "futures_contract",
+      "research_only": false,
+      "rule_version": null,
+      "status": "READY"
+    },
+    "F2_spot_chain_and_indicator_map": {
+      "industry_chain": null,
+      "required_field": "spot_benchmark",
+      "status": "PARTIAL"
+    },
+    "F3_supply_and_demand": {
+      "fields": [
+        "supply_demand_balance",
+        "production_and_utilization",
+        "imports_exports",
+        "inventory_by_location",
+        "spot_benchmark",
+        "production_and_import_cost",
+        "industry_margin",
+        "seasonality"
+      ],
+      "status": "INSUFFICIENT"
+    },
+    "F4_spot_inventory_warrants_cutoff": {
+      "series": {
+        "exchange_inventory": 0,
+        "inventory": 0,
+        "registered_warrants": 0,
+        "spot_price": 0
+      },
+      "status": "INSUFFICIENT"
+    },
+    "F5_cost_basis_term_structure": {
+      "derived_metrics": [
+        "spot_minus_cash_cost",
+        "spot_minus_full_cost",
+        "basis_latest",
+        "calendar_spread_latest"
+      ],
+      "status": "INSUFFICIENT"
+    },
+    "F6_seasonality_delivery_and_warrant_expiry": {
+      "delivery_rule_present": false,
+      "status": "INSUFFICIENT"
+    },
+    "F7_price_scenarios": {
+      "observation_range_only": true,
+      "scenario_names": [
+        "BEAR",
+        "BASE",
+        "BULL"
+      ],
+      "status": "INSUFFICIENT"
+    },
+    "F8_market_structure_optional": {
+      "signal": null,
+      "status": "NOT_SUPPLIED"
+    },
+    "F9_adversarial_review": {
+      "findings": [
+        {
+          "message": "未提供具体合约结算价序列，不能复核合约相对价值。",
+          "severity": "REVIEW",
+          "type": "CONTRACT_PRICE_MISSING"
+        }
+      ],
+      "status": "REVIEW_REQUIRED"
+    }
+  },
+  "policy": {
+    "automatic_order_included": false,
+    "continuous_series_research_only": true,
+    "decision_snapshot_created": false,
+    "directional_investment_conclusion": false,
+    "execution_enabled": false,
+    "future_data_rejected": true,
+    "intrinsic_value_generated": false,
+    "missing_spot_inventory_warrant_degrades_conclusion": true,
+    "price_scenarios_are_observation_ranges": true,
+    "read_only": true,
+    "review_only": true,
+    "source_data_fetched": false,
+    "specific_contract_required_for_simulation": true
+  },
+  "price_scenarios": {
+    "intrinsic_value": null,
+    "missing": [
+      "BEAR",
+      "BASE",
+      "BULL"
+    ],
+    "observation_range_only": true,
+    "scenarios": {
+      "BASE": {
+        "drivers": [],
+        "evidence_ids": [],
+        "invalidators": [],
+        "range": null,
+        "status": "MISSING"
+      },
+      "BEAR": {
+        "drivers": [],
+        "evidence_ids": [],
+        "invalidators": [],
+        "range": null,
+        "status": "MISSING"
+      },
+      "BULL": {
+        "drivers": [],
+        "evidence_ids": [],
+        "invalidators": [],
+        "range": null,
+        "status": "MISSING"
+      }
+    },
+    "status": "INSUFFICIENT"
+  },
+  "read_only": true,
+  "report_id": "futures-fundamentals-futures-identity-cu2607-20260520-001",
+  "research_cutoff": "2026-05-20T16:00:00+08:00",
+  "review_only": true,
+  "rule_version": "futures-fundamentals-rules.v1",
+  "schema_version": "futures-fundamentals-report.v1",
+  "simulation_view": {
+    "action": "OBSERVE",
+    "blockers": [
+      "VARIETY_EVIDENCE_INSUFFICIENT",
+      "CONTRACT_VIEW_INSUFFICIENT",
+      "PRICE_SCENARIOS_NOT_READY"
+    ],
+    "conclusion_boundary": "此层只说明是否具备进入用户确认的模拟研究条件，不是下单指令。",
+    "decision_snapshot_created": false,
+    "direction": "NOT_ASSESSED",
+    "market_structure_used_as_signal": false,
+    "price_scenarios": {
+      "intrinsic_value": null,
+      "missing": [
+        "BEAR",
+        "BASE",
+        "BULL"
+      ],
+      "observation_range_only": true,
+      "scenarios": {
+        "BASE": {
+          "drivers": [],
+          "evidence_ids": [],
+          "invalidators": [],
+          "range": null,
+          "status": "MISSING"
+        },
+        "BEAR": {
+          "drivers": [],
+          "evidence_ids": [],
+          "invalidators": [],
+          "range": null,
+          "status": "MISSING"
+        },
+        "BULL": {
+          "drivers": [],
+          "evidence_ids": [],
+          "invalidators": [],
+          "range": null,
+          "status": "MISSING"
+        }
+      },
+      "status": "INSUFFICIENT"
+    },
+    "simulation_allowed_by_identity": false,
+    "status": "INSUFFICIENT",
+    "user_confirmation_required": true
+  },
+  "source": "",
+  "source_metadata": {},
+  "status": "INSUFFICIENT",
+  "variety_id": "CU",
+  "variety_name": "沪铜",
+  "variety_view": {
+    "conclusion_boundary": "品种判断只描述供需与成本证据，不等同于任意月份合约方向。",
+    "cost_and_margin": {
+      "cost": {
+        "as_of": [],
+        "evidence_ids": [],
+        "sources": [],
+        "status": "MISSING",
+        "unit": "",
+        "value": null
+      },
+      "industry_margin": {
+        "as_of": [],
+        "evidence_ids": [],
+        "sources": [],
+        "status": "MISSING",
+        "unit": "",
+        "value": null
+      },
+      "spot_minus_cash_cost": null,
+      "spot_minus_full_cost": null
+    },
+    "evidence_gaps": [
+      {
+        "evidence_ids": [],
+        "field": "supply_demand_balance",
+        "reason": "FIELD_NOT_VERIFIED",
+        "status": "MISSING"
+      },
+      {
+        "evidence_ids": [],
+        "field": "production_and_utilization",
+        "reason": "FIELD_NOT_VERIFIED",
+        "status": "MISSING"
+      },
+      {
+        "evidence_ids": [],
+        "field": "imports_exports",
+        "reason": "FIELD_NOT_VERIFIED",
+        "status": "MISSING"
+      },
+      {
+        "evidence_ids": [],
+        "field": "inventory_by_location",
+        "reason": "FIELD_NOT_VERIFIED",
+        "status": "MISSING"
+      },
+      {
+        "evidence_ids": [],
+        "field": "spot_benchmark",
+        "reason": "FIELD_NOT_VERIFIED",
+        "status": "MISSING"
+      },
+      {
+        "evidence_ids": [],
+        "field": "production_and_import_cost",
+        "reason": "FIELD_NOT_VERIFIED",
+        "status": "MISSING"
+      },
+      {
+        "evidence_ids": [],
+        "field": "industry_margin",
+        "reason": "FIELD_NOT_VERIFIED",
+        "status": "MISSING"
+      },
+      {
+        "evidence_ids": [],
+        "field": "seasonality",
+        "reason": "FIELD_NOT_VERIFIED",
+        "status": "MISSING"
+      }
+    ],
+    "imports_exports": {
+      "as_of": [],
+      "evidence_ids": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "industry_chain": null,
+    "inventory": {
+      "by_location": {
+        "as_of": [],
+        "evidence_ids": [],
+        "sources": [],
+        "status": "MISSING",
+        "unit": "",
+        "value": null
+      },
+      "change": null,
+      "latest": null
+    },
+    "judgment": "NOT_ASSESSED",
+    "production_and_utilization": {
+      "as_of": [],
+      "evidence_ids": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "seasonality": {
+      "as_of": [],
+      "evidence_ids": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    },
+    "status": "INSUFFICIENT",
+    "supply_demand_balance": {
+      "as_of": [],
+      "evidence_ids": [],
+      "sources": [],
+      "status": "MISSING",
+      "unit": "",
+      "value": null
+    }
+  }
+}

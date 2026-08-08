@@ -1,0 +1,106 @@
+{
+  "schema_version": "futures-fundamentals-input.v1",
+  "variety_id": "CU",
+  "variety_name": "沪铜",
+  "exchange": "SHFE",
+  "as_of": "2025-03-20T16:00:00+08:00",
+  "research_cutoff": "2025-03-20",
+  "market_phase": "inventory_accumulation",
+  "spot_benchmark": {
+    "benchmark_id": "shanghai_copper_spot",
+    "price": 72100,
+    "unit": "CNY/ton",
+    "date": "2025-03-20",
+    "source": "shanghai_spot_market",
+    "field_status": "VERIFIED"
+  },
+  "contract_quotes": [
+    {
+      "contract": "CU2505",
+      "settlement_price": 72350,
+      "close_price": 72280,
+      "volume": 198765,
+      "open_interest": 287654,
+      "date": "2025-03-20",
+      "source": "shfe_settlement",
+      "field_status": "VERIFIED"
+    }
+  ],
+  "inventory": {
+    "exchange_inventory": {
+      "value": 187654,
+      "unit": "ton",
+      "date": "2025-03-20",
+      "source": "shfe_daily_warrant",
+      "field_status": "VERIFIED",
+      "note": "库存持续累积"
+    },
+    "bonded_warehouse": {
+      "value": 345678,
+      "unit": "ton",
+      "date": "2025-03-17",
+      "source": "sme_weekly",
+      "field_status": "VERIFIED"
+    },
+    "lme_inventory": {
+      "value": 234567,
+      "unit": "ton",
+      "date": "2025-03-19",
+      "source": "lme_daily",
+      "field_status": "REFERENCE"
+    }
+  },
+  "production": {
+    "smelter_output": {
+      "value": 912345,
+      "unit": "ton",
+      "date": "2025-02-28",
+      "source": "antaike_monthly",
+      "field_status": "VERIFIED"
+    },
+    "utilization_rate": {
+      "value": 84.7,
+      "unit": "percent",
+      "date": "2025-03-17",
+      "source": "sme_weekly",
+      "field_status": "VERIFIED"
+    }
+  },
+  "cost": {
+    "concentrate_tc": {
+      "value": 92,
+      "unit": "USD/ton",
+      "date": "2025-03-01",
+      "source": "market_benchmark",
+      "field_status": "VERIFIED"
+    },
+    "smelting_cost": {
+      "value": 3400,
+      "unit": "CNY/ton",
+      "date": "2025-03-01",
+      "source": "industry_average",
+      "field_status": "ESTIMATED"
+    }
+  },
+  "basis": {
+    "spot_futures_basis": {
+      "value": -250,
+      "unit": "CNY/ton",
+      "calculation": "spot - CU2505_settlement",
+      "date": "2025-03-20",
+      "field_status": "CALCULATED",
+      "note": "现货贴水，库存压力"
+    }
+  },
+  "term_structure": {
+    "contango_backwardation": "CONTANGO",
+    "spread_2505_2506": {
+      "value": 180,
+      "unit": "CNY/ton",
+      "date": "2025-03-20"
+    }
+  },
+  "market_narrative": "2025年Q1铜市场库存累积，现货贴水，期限结构正向",
+  "evidence_ids": ["copper-shfe-settlement-20250320", "copper-warrant-20250320-001"],
+  "source_document_id": "copper-fundamentals-input-20250320"
+}

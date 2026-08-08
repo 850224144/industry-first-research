@@ -1,0 +1,115 @@
+{
+  "schema_version": "futures-fundamentals-input.v1",
+  "variety_id": "RB",
+  "variety_name": "螺纹钢",
+  "exchange": "SHFE",
+  "as_of": "2024-03-20T16:00:00+08:00",
+  "research_cutoff": "2024-03-20",
+  "market_phase": "high_price_cycle",
+  "spot_benchmark": {
+    "benchmark_id": "east_china_rebar_spot",
+    "price": 4250,
+    "unit": "CNY/ton",
+    "date": "2024-03-20",
+    "source": "mysteel",
+    "field_status": "VERIFIED"
+  },
+  "contract_quotes": [
+    {
+      "contract": "RB2405",
+      "settlement_price": 4320,
+      "close_price": 4315,
+      "volume": 3456789,
+      "open_interest": 2345678,
+      "date": "2024-03-20",
+      "source": "shfe_settlement",
+      "field_status": "VERIFIED"
+    }
+  ],
+  "inventory": {
+    "exchange_inventory": {
+      "value": 987654,
+      "unit": "ton",
+      "date": "2024-03-20",
+      "source": "shfe_daily_inventory",
+      "field_status": "VERIFIED",
+      "note": "库存处于历史低位"
+    },
+    "social_inventory": {
+      "value": 5432109,
+      "unit": "ton",
+      "date": "2024-03-15",
+      "source": "mysteel_weekly",
+      "field_status": "VERIFIED"
+    },
+    "steel_mill_inventory": {
+      "value": 1234567,
+      "unit": "ton",
+      "date": "2024-03-15",
+      "source": "mysteel_weekly",
+      "field_status": "VERIFIED"
+    }
+  },
+  "production": {
+    "weekly_output": {
+      "value": 3876543,
+      "unit": "ton",
+      "date": "2024-03-15",
+      "source": "mysteel_weekly",
+      "field_status": "VERIFIED"
+    },
+    "utilization_rate": {
+      "value": 85.3,
+      "unit": "percent",
+      "date": "2024-03-15",
+      "source": "mysteel_weekly",
+      "field_status": "VERIFIED",
+      "note": "高开工率"
+    }
+  },
+  "cost": {
+    "iron_ore_cost": {
+      "value": 950,
+      "unit": "CNY/ton",
+      "date": "2024-03-20",
+      "source": "market_average",
+      "field_status": "ESTIMATED"
+    },
+    "coking_coal_cost": {
+      "value": 2100,
+      "unit": "CNY/ton",
+      "date": "2024-03-20",
+      "source": "market_average",
+      "field_status": "ESTIMATED"
+    },
+    "cash_cost": {
+      "value": 3600,
+      "unit": "CNY/ton",
+      "date": "2024-03-20",
+      "source": "calculated",
+      "field_status": "ESTIMATED"
+    }
+  },
+  "margin": {
+    "steel_mill_margin": {
+      "value": 650,
+      "unit": "CNY/ton",
+      "calculation": "spot - cash_cost",
+      "date": "2024-03-20",
+      "field_status": "CALCULATED",
+      "note": "高利润期"
+    }
+  },
+  "basis": {
+    "spot_futures_basis": {
+      "value": -70,
+      "unit": "CNY/ton",
+      "calculation": "spot - RB2405_settlement",
+      "date": "2024-03-20",
+      "field_status": "CALCULATED"
+    }
+  },
+  "market_narrative": "2024年Q1钢材处于高价周期，地产复苏预期强、库存低位、钢厂高利润",
+  "evidence_ids": ["steel-mysteel-20240320-001", "steel-shfe-settlement-20240320"],
+  "source_document_id": "steel-fundamentals-input-20240320"
+}

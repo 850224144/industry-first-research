@@ -1,0 +1,26 @@
+{
+  "code": "0",
+  "msg": "ok",
+  "data": {
+    "code": "000858",
+    "name": "五粮液",
+    "market": "sz",
+    "trade_date": "20260320",
+    "open": "142.50",
+    "high": "145.88",
+    "low": "141.20",
+    "close": "144.36",
+    "pre_close": "143.12",
+    "change": "1.24",
+    "pct_change": "0.87",
+    "volume": "45678900",
+    "amount": "6589432100.00",
+    "turnover": "1.18",
+    "pe_ttm": "24.35",
+    "pb": "5.67",
+    "total_market_value": "558790234560.00",
+    "float_market_value": "558790234560.00",
+    "update_time": "2026-03-20 15:00:03",
+    "source_document_id": "szse-realtime-000858-20260320"
+  }
+}

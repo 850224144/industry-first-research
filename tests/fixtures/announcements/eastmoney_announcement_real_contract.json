@@ -1,0 +1,20 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "art_code": "AN202605151122334455",
+    "notice_title": "隆基绿能科技股份有限公司关于签订重大销售合同的公告",
+    "notice_date": "2026-05-15",
+    "codes": "601012",
+    "security_code": "601012",
+    "company_name": "隆基绿能",
+    "security_name": "隆基绿能",
+    "notice_type": "重大合同",
+    "column": "重大事项",
+    "pdf_url": "https://data.eastmoney.com/notices/detail/601012/AN202605151122334455.html",
+    "publish_timestamp": 1747267200,
+    "important_flag": 1,
+    "batch_num": "202605150002",
+    "abstract": "公司与海外客户签订组件销售框架协议，预计合同总金额约15亿美元"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "schema_version": "company-scope-input.v1",
+  "company_id": "600438.SH",
+  "display_name": "通威股份",
+  "as_of": "2026-07-18",
+  "objects": [
+    {
+      "object_id": "600438.SH",
+      "object_type": "ListedEntity",
+      "legal_name": "通威股份有限公司",
+      "consolidation_method": "CONSOLIDATED",
+      "source_evidence_ids": ["ev-company-identity"]
+    },
+    {
+      "object_id": "group-600438",
+      "object_type": "ConsolidatedGroup",
+      "parent_entity_id": "600438.SH",
+      "consolidation_method": "CONSOLIDATED",
+      "source_evidence_ids": ["ev-annual-report-scope"]
+    },
+    {
+      "object_id": "associate-example",
+      "object_type": "Associate",
+      "ownership_percent": 30,
+      "consolidation_method": "EQUITY_METHOD",
+      "source_evidence_ids": ["ev-associate"]
+    }
+  ],
+  "facts": [
+    {
+      "fact_id": "fact-product-ownership",
+      "object_id": "group-600438",
+      "field": "product_ownership",
+      "value": ["高纯晶硅", "太阳能电池", "太阳能组件"],
+      "accounting_basis": "CONSOLIDATED",
+      "transmission_to_listed": "CONSOLIDATED",
+      "evidence_ids": ["ev-annual-report-scope"],
+      "verification_status": "VERIFIED"
+    },
+    {
+      "fact_id": "fact-revenue-attribution",
+      "object_id": "600438.SH",
+      "field": "revenue_attribution",
+      "value": "按合并报表口径拆分",
+      "accounting_basis": "CONSOLIDATED",
+      "transmission_to_listed": "DIRECT",
+      "evidence_ids": ["ev-segment-revenue"],
+      "verification_status": "VERIFIED"
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "schema_version": "futures-fundamentals-input.v1",
+  "variety_id": "LC",
+  "variety_name": "碳酸锂",
+  "exchange": "GFEX",
+  "as_of": "2026-05-20T16:00:00+08:00",
+  "research_cutoff": "2026-05-20",
+  "spot_benchmark": {
+    "benchmark_id": "china_battery_grade_lithium_carbonate",
+    "price": 98500,
+    "unit": "CNY/ton",
+    "date": "2026-05-20",
+    "source": "smm_daily",
+    "field_status": "VERIFIED",
+    "grade": "99.5% battery grade"
+  },
+  "contract_quotes": [
+    {
+      "contract": "LC2607",
+      "settlement_price": 96800,
+      "close_price": 97200,
+      "volume": 45678,
+      "open_interest": 87654,
+      "date": "2026-05-20",
+      "source": "gfex_settlement",
+      "field_status": "VERIFIED"
+    }
+  ],
+  "inventory": {
+    "converter_inventory": {
+      "value": 34567,
+      "unit": "ton",
+      "date": "2026-05-17",
+      "source": "smm_weekly",
+      "field_status": "VERIFIED"
+    },
+    "cathode_factory_inventory": {
+      "value": 23456,
+      "unit": "ton",
+      "date": "2026-05-17",
+      "source": "smm_weekly",
+      "field_status": "VERIFIED"
+    },
+    "exchange_inventory": {
+      "value": 8765,
+      "unit": "ton",
+      "date": "2026-05-20",
+      "source": "gfex_daily",
+      "field_status": "VERIFIED"
+    }
+  },
+  "production": {
+    "lithium_carbonate_output": {
+      "value": 43210,
+      "unit": "ton",
+      "date": "2026-04-30",
+      "source": "smm_monthly",
+      "field_status": "VERIFIED"
+    },
+    "effective_supply": {
+      "value": 45678,
+      "unit": "ton",
+      "date": "2026-04-30",
+      "source": "smm_monthly",
+      "field_status": "ESTIMATED",
+      "note": "包含进口和产量，扣除库存变化"
+    },
+    "utilization_rate": {
+      "value": 73.5,
+      "unit": "percent",
+      "date": "2026-05-17",
+      "source": "smm_weekly",
+      "field_status": "VERIFIED"
+    }
+  },
+  "demand": {
+    "battery_output": {
+      "value": 87654,
+      "unit": "GWh",
+      "date": "2026-04-30",
+      "source": "ggii_monthly",
+      "field_status": "VERIFIED"
+    },
+    "ev_sales": {
+      "value": 876543,
+      "unit": "units",
+      "date": "2026-04-30",
+      "source": "caam_monthly",
+      "field_status": "VERIFIED"
+    },
+    "lithium_demand": {
+      "value": 45000,
+      "unit": "ton_LCE",
+      "date": "2026-04-30",
+      "source": "calculated",
+      "field_status": "ESTIMATED"
+    }
+  },
+  "cost": {
+    "ore_cost": {
+      "value": 45000,
+      "unit": "CNY/ton",
+      "date": "2026-05-01",
+      "source": "industry_average",
+      "field_status": "ESTIMATED"
+    },
+    "brine_cost": {
+      "value": 35000,
+      "unit": "CNY/ton",
+      "date": "2026-05-01",
+      "source": "industry_average",
+      "field_status": "ESTIMATED"
+    },
+    "conversion_cost": {
+      "value": 25000,
+      "unit": "CNY/ton",
+      "date": "2026-05-01",
+      "source": "industry_average",
+      "field_status": "ESTIMATED"
+    },
+    "cost_curve_p90": {
+      "value": 85000,
+      "unit": "CNY/ton",
+      "date": "2026-05-01",
+      "source": "analyst_estimate",
+      "field_status": "ESTIMATED"
+    }
+  },
+  "basis": {
+    "spot_futures_basis": {
+      "value": 1700,
+      "unit": "CNY/ton",
+      "calculation": "spot - LC2607_settlement",
+      "date": "2026-05-20",
+      "field_status": "CALCULATED"
+    }
+  },
+  "evidence_ids": ["lithium-smm-weekly-20260517", "lithium-gfex-settlement-20260520"],
+  "source_document_id": "lithium-fundamentals-input-20260520"
+}

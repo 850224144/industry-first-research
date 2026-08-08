@@ -1,0 +1,60 @@
+{
+  "schema_version": "commodity-adapter.v1",
+  "adapter_id": "copper",
+  "display_name": "铜产业链",
+  "aliases": ["铜", "沪铜", "copper"],
+  "exchanges": ["SHFE", "INE"],
+  "variety_ids": ["CU", "BC"],
+  "commodity_category": "non_ferrous",
+  "quote_unit": "CNY/ton",
+  "trading_unit": "ton",
+  "spot_benchmarks": [
+    {
+      "benchmark_id": "shanghai_copper_spot",
+      "name": "上海电解铜现货",
+      "unit": "CNY/ton",
+      "region": "Shanghai",
+      "comparability_rule": "same_grade_and_delivery_region_before_basis_calculation"
+    }
+  ],
+  "indicator_groups": {
+    "supply_demand": ["supply_demand_balance"],
+    "production": ["production_and_utilization"],
+    "trade": ["imports_exports"],
+    "inventory": ["inventory_by_location", "exchange_inventory_and_warrants"],
+    "pricing": ["spot_benchmark", "basis_and_calendar_spread", "term_structure"],
+    "cost_margin": ["production_and_import_cost", "industry_margin"],
+    "structure": ["open_interest_and_available_member_positions"],
+    "seasonality": ["seasonality"],
+    "position": ["open_interest_and_available_member_positions"],
+    "delivery": ["delivery_rules_and_warrant_expiry"]
+  },
+  "inventory_locations": ["mine", "smelter", "social", "port", "exchange", "registered_warrant"],
+  "cost_components": ["concentrate_treatment_charge", "smelting_cost", "freight", "import_parity", "cash_cost", "full_cost"],
+  "margin_components": ["spot_minus_cash_cost", "spot_minus_full_cost", "processing_fee", "import_profit"],
+  "seasonality": {
+    "required_drivers": ["construction_demand", "power_grid_investment", "holiday_effect", "maintenance_cycle"],
+    "weather_factors": ["rainfall", "transport_disruption"]
+  },
+  "delivery_rules": {
+    "required_fields": ["delivery_grade", "delivery_region", "delivery_month_limit", "warrant_expiry"],
+    "rule_source": "official_exchange_rule_version",
+    "near_expiry_review_days": 30
+  },
+  "scenario_method": {
+    "method": "supply_demand_cost_and_inventory_ranges",
+    "required_drivers": ["demand", "mine_supply", "smelter_utilization", "inventory", "spot_cost"],
+    "invalidators": ["demand_collapse", "unexpected_supply_release", "benchmark_incomparability"],
+    "range_policy": "observation_range_not_intrinsic_value"
+  },
+  "acceptance_samples": [
+    {
+      "sample_id": "copper-contract-ready",
+      "description": "具体沪铜合约、上海现货、库存仓单和成本字段齐全时进入合约研究验收"
+    },
+    {
+      "sample_id": "copper-spot-mismatch",
+      "description": "现货等级或地区不匹配时降级为待复核，不直接计算基差"
+    }
+  ]
+}

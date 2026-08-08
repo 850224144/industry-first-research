@@ -1,0 +1,31 @@
+{
+  "schema_version": "commodity-adapter.v1",
+  "adapter_id": "steel",
+  "display_name": "黑色钢材产业链",
+  "aliases": ["钢材", "螺纹钢", "热卷", "steel"],
+  "exchanges": ["SHFE"],
+  "variety_ids": ["RB", "HC"],
+  "commodity_category": "ferrous",
+  "quote_unit": "CNY/ton",
+  "trading_unit": "ton",
+  "spot_benchmarks": [{"benchmark_id": "east_china_rebar_spot", "name": "华东螺纹钢现货", "unit": "CNY/ton", "region": "East China", "comparability_rule": "same_grade_region_and_delivery_period"}],
+  "indicator_groups": {
+    "supply_demand": ["supply_demand_balance"],
+    "production": ["production_and_utilization"],
+    "trade": ["imports_exports"],
+    "inventory": ["inventory_by_location", "exchange_inventory_and_warrants"],
+    "pricing": ["spot_benchmark", "basis_and_calendar_spread", "term_structure"],
+    "cost_margin": ["production_and_import_cost", "industry_margin"],
+    "structure": ["open_interest_and_available_member_positions"],
+    "seasonality": ["seasonality"],
+    "position": ["open_interest_and_available_member_positions"],
+    "delivery": ["delivery_rules_and_warrant_expiry"]
+  },
+  "inventory_locations": ["steel_mill", "social", "warehouse", "port", "exchange", "registered_warrant"],
+  "cost_components": ["iron_ore", "coking_coal", "coke", "scrap", "energy", "cash_cost", "full_cost"],
+  "margin_components": ["spot_minus_cash_cost", "spot_minus_full_cost", "steel_mill_margin", "rolling_margin"],
+  "seasonality": {"required_drivers": ["construction_season", "weather", "winter_production_limits", "infrastructure_investment"]},
+  "delivery_rules": {"required_fields": ["delivery_grade", "delivery_region", "delivery_month_limit", "warrant_expiry"], "rule_source": "official_exchange_rule_version", "near_expiry_review_days": 30},
+  "scenario_method": {"method": "demand_supply_inventory_and_cost_ranges", "required_drivers": ["construction_demand", "steel_output", "ore_cost", "inventory"], "invalidators": ["demand_collapse", "unexpected_output_release", "benchmark_incomparability"], "range_policy": "observation_range_not_intrinsic_value"},
+  "acceptance_samples": [{"sample_id": "steel-inventory-cost", "description": "螺纹钢现货、产量、库存、炉料成本和交割字段齐全时进入研究验收"}]
+}

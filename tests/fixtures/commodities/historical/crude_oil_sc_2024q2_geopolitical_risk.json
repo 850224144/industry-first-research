@@ -1,0 +1,141 @@
+{
+  "schema_version": "futures-fundamentals-input.v1",
+  "variety_id": "SC",
+  "variety_name": "上海原油",
+  "exchange": "INE",
+  "as_of": "2024-06-20T16:00:00+08:00",
+  "research_cutoff": "2024-06-20",
+  "market_phase": "geopolitical_risk",
+  "spot_benchmark": {
+    "benchmark_id": "middle_east_crude_spot",
+    "price": 89.8,
+    "unit": "USD/barrel",
+    "date": "2024-06-20",
+    "source": "platts",
+    "field_status": "VERIFIED",
+    "grade": "Dubai crude"
+  },
+  "contract_quotes": [
+    {
+      "contract": "SC2408",
+      "settlement_price": 648.2,
+      "close_price": 650.5,
+      "volume": 345678,
+      "open_interest": 456789,
+      "date": "2024-06-20",
+      "source": "ine_settlement",
+      "field_status": "VERIFIED",
+      "note": "CNY/barrel"
+    }
+  ],
+  "inventory": {
+    "exchange_inventory": {
+      "value": 1876543,
+      "unit": "barrel",
+      "date": "2024-06-20",
+      "source": "ine_daily",
+      "field_status": "VERIFIED"
+    },
+    "china_commercial": {
+      "value": 876543210,
+      "unit": "barrel",
+      "date": "2024-06-17",
+      "source": "klcc_weekly",
+      "field_status": "ESTIMATED"
+    },
+    "oecd_inventory": {
+      "value": 2654321098,
+      "unit": "barrel",
+      "date": "2024-05-31",
+      "source": "iea_monthly",
+      "field_status": "REFERENCE",
+      "note": "库存低于5年均值"
+    },
+    "us_commercial": {
+      "value": 432109876,
+      "unit": "barrel",
+      "date": "2024-06-14",
+      "source": "eia_weekly",
+      "field_status": "REFERENCE"
+    }
+  },
+  "production": {
+    "opec_output": {
+      "value": 27.8,
+      "unit": "million_barrel_per_day",
+      "date": "2024-05-31",
+      "source": "opec_monthly",
+      "field_status": "VERIFIED",
+      "note": "OPEC减产执行"
+    },
+    "us_output": {
+      "value": 13.4,
+      "unit": "million_barrel_per_day",
+      "date": "2024-06-14",
+      "source": "eia_weekly",
+      "field_status": "REFERENCE"
+    }
+  },
+  "demand": {
+    "china_refinery_throughput": {
+      "value": 15.1,
+      "unit": "million_barrel_per_day",
+      "date": "2024-05-31",
+      "source": "klcc_monthly",
+      "field_status": "VERIFIED"
+    },
+    "global_demand": {
+      "value": 103.5,
+      "unit": "million_barrel_per_day",
+      "date": "2024-06-01",
+      "source": "iea_forecast",
+      "field_status": "FORECAST"
+    }
+  },
+  "cost": {
+    "production_cost": {
+      "value": 45.0,
+      "unit": "USD/barrel",
+      "date": "2024-06-01",
+      "source": "analyst_estimate",
+      "field_status": "ESTIMATED"
+    },
+    "freight": {
+      "value": 4.2,
+      "unit": "USD/barrel",
+      "date": "2024-06-20",
+      "source": "baltic_index",
+      "field_status": "VERIFIED"
+    }
+  },
+  "fx": {
+    "usdcnh": {
+      "value": 7.22,
+      "date": "2024-06-20",
+      "source": "cfets",
+      "field_status": "VERIFIED"
+    }
+  },
+  "crack_spread": {
+    "gasoline": {
+      "value": 18.5,
+      "unit": "USD/barrel",
+      "date": "2024-06-20",
+      "source": "calculated"
+    },
+    "diesel": {
+      "value": 22.3,
+      "unit": "USD/barrel",
+      "date": "2024-06-20",
+      "source": "calculated"
+    }
+  },
+  "seasonality": {
+    "driving_season": "US summer driving season peak",
+    "refinery_maintenance": "maintenance season ending",
+    "hurricane_risk": "Atlantic hurricane season starting"
+  },
+  "market_narrative": "2024年Q2原油受中东地缘风险影响，OPEC减产、库存低位、油价上涨",
+  "evidence_ids": ["crude-oil-ine-settlement-20240620", "crude-oil-platts-20240620"],
+  "source_document_id": "crude-oil-fundamentals-input-20240620"
+}

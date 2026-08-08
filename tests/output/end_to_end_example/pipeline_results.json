@@ -1,0 +1,315 @@
+{
+  "radar_data": {
+    "schema_version": "industry-radar.v1",
+    "scan_id": "radar-scan-20260520-001",
+    "scan_date": "2026-05-20",
+    "source": "cross_validation",
+    "industries": [
+      {
+        "industry_id": "881143",
+        "industry_name": "光伏设备",
+        "source": "tonghuashun",
+        "rank": 2,
+        "score": 8.5,
+        "price_change_1d": 3.2,
+        "price_change_5d": 12.5,
+        "price_change_20d": 28.7,
+        "volume_ratio": 1.85,
+        "leading_stocks": [
+          "通威股份",
+          "隆基绿能",
+          "TCL中环"
+        ],
+        "signal_strength": "STRONG",
+        "cross_validated": true,
+        "validation_sources": [
+          "tonghuashun",
+          "eastmoney"
+        ],
+        "observation_status": "CROSS_VALIDATED"
+      }
+    ],
+    "metadata": {
+      "radar_limit": 50,
+      "filters": [
+        "price_change_20d > 15%",
+        "volume_ratio > 1.5"
+      ],
+      "execution_mode": "LOCAL_ONLY"
+    }
+  },
+  "company_pool": {
+    "schema_version": "tonghuashun-company-pool.v1",
+    "industry_id": "881143",
+    "industry_name": "光伏设备",
+    "as_of": "2026-05-20",
+    "pool_size": 10,
+    "companies": [
+      {
+        "stock_code": "600438",
+        "stock_name": "通威股份",
+        "listing_market": "SH",
+        "market_cap": 2156789012345,
+        "pe_ttm": 18.5,
+        "industry": "光伏设备",
+        "main_business": "高纯晶硅、太阳能电池片等光伏产品",
+        "pool_rank": 1
+      },
+      {
+        "stock_code": "601012",
+        "stock_name": "隆基绿能",
+        "listing_market": "SH",
+        "market_cap": 1987654321098,
+        "pe_ttm": 16.2,
+        "industry": "光伏设备",
+        "main_business": "单晶硅棒、硅片、电池、组件",
+        "pool_rank": 2
+      },
+      {
+        "stock_code": "002129",
+        "stock_name": "TCL中环",
+        "listing_market": "SZ",
+        "market_cap": 987654321098,
+        "pe_ttm": 22.3,
+        "industry": "光伏设备",
+        "main_business": "半导体材料、光伏硅片",
+        "pool_rank": 3
+      }
+    ],
+    "source": "tonghuashun_industry_constituents",
+    "with_light_data": true
+  },
+  "screening_result": {
+    "schema_version": "company-screening-result.v1",
+    "screening_date": "2026-05-20",
+    "input_pool_size": 3,
+    "expected_industry": "光伏设备",
+    "screened_companies": [
+      {
+        "stock_code": "600438",
+        "stock_name": "通威股份",
+        "completeness_score": 3,
+        "status": "READY",
+        "missing_fields": []
+      },
+      {
+        "stock_code": "601012",
+        "stock_name": "隆基绿能",
+        "completeness_score": 3,
+        "status": "READY",
+        "missing_fields": []
+      },
+      {
+        "stock_code": "002129",
+        "stock_name": "TCL中环",
+        "completeness_score": 3,
+        "status": "READY",
+        "missing_fields": []
+      }
+    ]
+  },
+  "selected_company": {
+    "stock_code": "600438",
+    "stock_name": "通威股份",
+    "listing_market": "SH",
+    "market_cap": 2156789012345,
+    "pe_ttm": 18.5,
+    "industry": "光伏设备",
+    "main_business": "高纯晶硅、太阳能电池片等光伏产品",
+    "pool_rank": 1
+  },
+  "research_report": {
+    "schema_version": "company-research-report.v1",
+    "report_id": "research-600438-20260520-001",
+    "company_code": "600438",
+    "company_name": "通威股份",
+    "research_date": "2026-05-20",
+    "research_cutoff": "2026-05-20",
+    "research_depth": "STANDARD",
+    "company_scope": {
+      "listed_entity": "通威股份有限公司",
+      "consolidated_group": true,
+      "main_subsidiaries": [
+        "四川永祥股份有限公司",
+        "通威太阳能（合肥）有限公司",
+        "通威太阳能（成都）有限公司"
+      ],
+      "scope_status": "READY"
+    },
+    "product_profile": {
+      "core_products": [
+        {
+          "product_name": "高纯晶硅",
+          "product_type": "光伏材料",
+          "revenue_contribution": 45.2,
+          "capacity": "320000吨/年",
+          "market_position": "国内第一",
+          "lifecycle_stage": "MATURE"
+        },
+        {
+          "product_name": "太阳能电池片",
+          "product_type": "光伏组件",
+          "revenue_contribution": 42.8,
+          "capacity": "75GW/年",
+          "market_position": "全球第一",
+          "lifecycle_stage": "GROWING"
+        }
+      ],
+      "profile_status": "READY"
+    },
+    "financial_analysis": {
+      "report_period": "2025-12-31",
+      "total_revenue": 128567890000,
+      "revenue_yoy": 15.68,
+      "net_profit": 18923456000,
+      "net_profit_yoy": 22.45,
+      "roe": 21.34,
+      "gross_margin": 18.56,
+      "net_margin": 14.72,
+      "operating_cash_flow": 23456789000,
+      "analysis_status": "READY"
+    },
+    "valuation_scenarios": {
+      "pessimistic": {
+        "pe": 12.0,
+        "target_eps": 2.85,
+        "scenario": "行业产能过剩，硅料价格暴跌"
+      },
+      "base": {
+        "pe": 18.0,
+        "target_eps": 3.85,
+        "scenario": "行业稳定增长，公司维持市场地位"
+      },
+      "optimistic": {
+        "pe": 25.0,
+        "target_eps": 4.5,
+        "scenario": "光伏装机超预期，公司产能持续扩张"
+      },
+      "framework_status": "READY"
+    },
+    "adversarial_review": {
+      "review_result": "PASS",
+      "concerns": [],
+      "review_date": "2026-05-20"
+    },
+    "final_status": "REVIEWABLE",
+    "report_version": "1.0.0"
+  },
+  "research_version": {
+    "schema_version": "research-version.v1",
+    "version_id": "version-600438-20260520-9247d0b0e93e39b6",
+    "company_code": "600438",
+    "company_name": "通威股份",
+    "research_date": "2026-05-20",
+    "research_cutoff": "2026-05-20",
+    "version_number": "1.0.0",
+    "previous_version": null,
+    "references": {
+      "research_report_id": "research-600438-20260520-001",
+      "evidence_bundle_id": "evidence-600438-20260520-001",
+      "market_data_snapshot_id": "market-600438-20260520-001"
+    },
+    "content_hashes": {
+      "report_hash": "9247d0b0e93e39b6",
+      "evidence_hash": "abc123",
+      "market_data_hash": "def456"
+    },
+    "affected_modules": [
+      "product_profile",
+      "financial_analysis",
+      "valuation_scenarios",
+      "adversarial_review"
+    ],
+    "execution_mode": "LOCAL_ONLY",
+    "model_calls": 0,
+    "token_usage": 0,
+    "status": "LOCKED",
+    "locked_at": "2026-05-20T18:00:00+08:00"
+  },
+  "tracking_plan": {
+    "schema_version": "tracking-plan.v1",
+    "plan_id": "tracking-600438-20260520-001",
+    "company_code": "600438",
+    "company_name": "通威股份",
+    "base_version": "version-600438-20260520-9247d0b0e93e39b6",
+    "tracking_start": "2026-05-21",
+    "tracking_items": [
+      {
+        "item_type": "announcement",
+        "item_name": "公司公告",
+        "frequency": "daily",
+        "sources": [
+          "sse",
+          "eastmoney"
+        ],
+        "triggers": [
+          "年报",
+          "季报",
+          "业绩预告",
+          "重大合同"
+        ]
+      },
+      {
+        "item_type": "financial_data",
+        "item_name": "财务数据",
+        "frequency": "quarterly",
+        "sources": [
+          "eastmoney",
+          "wind"
+        ],
+        "triggers": [
+          "营收变化>10%",
+          "净利润变化>15%"
+        ]
+      },
+      {
+        "item_type": "market_data",
+        "item_name": "市场行情",
+        "frequency": "weekly",
+        "sources": [
+          "sse"
+        ],
+        "triggers": [
+          "股价变化>20%",
+          "成交量异常"
+        ]
+      },
+      {
+        "item_type": "industry_data",
+        "item_name": "行业动态",
+        "frequency": "monthly",
+        "sources": [
+          "pv_infolink",
+          "solarzoom"
+        ],
+        "triggers": [
+          "硅料价格变化>15%",
+          "组件价格变化>10%"
+        ]
+      },
+      {
+        "item_type": "commodity_futures",
+        "item_name": "多晶硅现货",
+        "frequency": "weekly",
+        "sources": [
+          "pv_infolink"
+        ],
+        "triggers": [
+          "价格变化>10%"
+        ]
+      }
+    ],
+    "review_schedule": {
+      "quick_review": "monthly",
+      "standard_review": "quarterly",
+      "deep_review": "annually"
+    },
+    "alert_conditions": [
+      "公告中出现'业绩预警'或'风险提示'",
+      "季度财务数据与预期偏离>20%",
+      "硅料或电池片价格单周跌幅>15%",
+      "重大产能扩张或收购公告"
+    ],
+    "plan_status": "ACTIVE"
+  }
+}

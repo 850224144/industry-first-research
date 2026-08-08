@@ -1,0 +1,23 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "symbol": "600519.SH",
+    "name": "贵州茅台",
+    "trade_date": "2026-03-28",
+    "open": 1685.50,
+    "high": 1702.88,
+    "low": 1678.00,
+    "close": 1695.23,
+    "pre_close": 1688.46,
+    "volume": 8523400,
+    "amount": 14432567890.00,
+    "turnover_rate": 0.68,
+    "pe_ratio": 28.56,
+    "pb_ratio": 9.32,
+    "market_cap": 2128945670000.00,
+    "circulating_market_cap": 2128945670000.00,
+    "timestamp": "2026-03-28T15:00:00+08:00",
+    "source_document_id": "sse-quote-600519-20260328"
+  }
+}
