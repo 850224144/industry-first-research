@@ -1,0 +1,91 @@
+{
+  "schema_version": "company-supplemental-evidence.v1",
+  "supplemental_id": "company-supplemental-600021-20260810",
+  "as_of": "2026-08-10T16:00:00+08:00",
+  "research_cutoff": "2026-08-10T16:00:00+08:00",
+  "source": "manual",
+  "evidence_ids": [
+    "evidence-600021-company-profile-20260810",
+    "evidence-600021-financial-20260810",
+    "evidence-600021-industry-20260810"
+  ],
+  "source_document_ids": [
+    "source-doc-600021-annual-report-2025",
+    "source-doc-600021-q2-report-2026"
+  ],
+  "items": [
+    {
+      "company_id": "600021",
+      "display_name": "上海电力",
+      "industry_id": "881147",
+      "industry_name": "电力",
+      "candidate_state": "WATCH",
+      "candidate_rule_version": "candidate-rules.v1",
+      "evidence_ids": ["evidence-600021-company-profile-20260810"],
+      "fields": {
+        "listing_market": {
+          "status": "VERIFIED",
+          "values": ["SH"],
+          "evidence_ids": ["evidence-600021-company-profile-20260810"]
+        },
+        "industry_id": {
+          "status": "VERIFIED",
+          "values": ["881147"],
+          "evidence_ids": ["evidence-600021-company-profile-20260810"]
+        },
+        "industry_name": {
+          "status": "VERIFIED",
+          "values": ["电力"],
+          "evidence_ids": ["evidence-600021-company-profile-20260810"]
+        },
+        "company_scope": {
+          "status": "VERIFIED",
+          "values": [{
+            "listed_entity": "上海电力股份有限公司",
+            "consolidated_group": true,
+            "business_boundary": "发电及售电业务"
+          }],
+          "evidence_ids": ["evidence-600021-company-profile-20260810"]
+        },
+        "reporting_scope": {
+          "status": "VERIFIED",
+          "values": ["consolidated"],
+          "evidence_ids": ["evidence-600021-financial-20260810"]
+        },
+        "key_products": {
+          "status": "VERIFIED",
+          "values": [{
+            "product": "电力",
+            "application": "终端用电",
+            "customer_type": "电网公司、工商业用户",
+            "criticality": "基础设施服务",
+            "profit_source": "电价差、装机容量"
+          }],
+          "evidence_ids": ["evidence-600021-company-profile-20260810"]
+        },
+        "key_risks": {
+          "status": "VERIFIED",
+          "values": [
+            {
+              "risk_type": "regulatory_risk",
+              "description": "电价受政府管控",
+              "severity": "high"
+            },
+            {
+              "risk_type": "fuel_cost_risk",
+              "description": "煤炭价格波动",
+              "severity": "medium"
+            }
+          ],
+          "evidence_ids": ["evidence-600021-company-profile-20260810"]
+        }
+      }
+    }
+  ],
+  "coverage_state": "READY",
+  "metadata": {
+    "created_at": "2026-08-10T16:00:00+08:00",
+    "data_sources": ["annual_report_2025", "q2_report_2026"],
+    "review_status": "READY_FOR_PIPELINE"
+  }
+}

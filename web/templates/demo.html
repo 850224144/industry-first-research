@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>投资分析演示 - 行业先行投研系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1 class="logo">📊 行业先行投研系统</h1>
+            <ul class="nav-menu">
+                <li><a href="/">首页</a></li>
+                <li><a href="/radar">行业雷达</a></li>
+                <li><a href="/commodities">商品品种</a></li>
+                <li><a href="/companies">公司列表</a></li>
+                <li><a href="/demo" class="active">演示</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero">
+            <h2>投资分析演示</h2>
+            <p>端到端完整分析流程展示</p>
+        </section>
+
+        <section style="background: white; padding: 2rem; border-radius: 8px; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h3>📝 说明</h3>
+            <p>本演示展示了系统的完整分析能力，从数据采集到投资建议的全流程。</p>
+            <p style="margin-top: 1rem;">包含两个完整案例：</p>
+            <ul style="margin-top: 0.5rem;">
+                <li>✅ 天然橡胶期货（RU2609）- 商品基本面分析</li>
+                <li>✅ 上海电力股票（600021）- 公司完整研究</li>
+            </ul>
+        </section>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3>🌾 天然橡胶期货</h3>
+                <p><strong>合约:</strong> RU2609</p>
+                <p><strong>分析时间:</strong> 2026-05-20</p>
+                <hr style="margin: 1rem 0; border: none; border-top: 1px solid #ecf0f1;">
+                <p><strong>分析结论:</strong></p>
+                <p style="color: #27ae60; font-weight: bold;">💡 建议：观察多单机会</p>
+                <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+                    ✅ 库存去化（港口库存连续下降）<br>
+                    ✅ 需求稳定（轮胎开工率68%+）<br>
+                    ✅ 基差合理（350元/吨正常水平）
+                </p>
+                <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #e74c3c;">
+                    ⚠️ 风险：割胶旺季供应压力
+                </p>
+                <button class="btn" onclick="runDemo('rubber')" style="margin-top: 1rem;">运行分析</button>
+            </div>
+
+            <div class="feature-card">
+                <h3>⚡ 上海电力股票</h3>
+                <p><strong>代码:</strong> 600021.SH</p>
+                <p><strong>分析时间:</strong> 2026-08-10</p>
+                <hr style="margin: 1rem 0; border: none; border-top: 1px solid #ecf0f1;">
+                <p><strong>分析结论:</strong></p>
+                <p style="color: #3498db; font-weight: bold;">💡 建议：长期配置型资产</p>
+                <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+                    ✅ 需求稳定（用电量+5.8%）<br>
+                    ✅ 现金流充裕（转换率2.67x）<br>
+                    ✅ 稳定分红（股息率4.5%）
+                </p>
+                <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #e74c3c;">
+                    ⚠️ 风险：成长性有限、煤价波动
+                </p>
+                <button class="btn" onclick="runDemo('power')" style="margin-top: 1rem;">运行分析</button>
+            </div>
+        </div>
+
+        <section style="background: white; padding: 2rem; border-radius: 8px; margin-top: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h3>🚀 运行完整演示</h3>
+            <p>使用命令行运行端到端演示脚本：</p>
+            <pre style="background: #2c3e50; color: #ecf0f1; padding: 1rem; border-radius: 4px; overflow-x: auto; margin-top: 1rem;">python examples/end_to_end_demo.py</pre>
+            <p style="margin-top: 1rem;">演示将展示：</p>
+            <ul style="margin-top: 0.5rem;">
+                <li>📊 数据采集与验证</li>
+                <li>🔍 供需/财务分析</li>
+                <li>📈 周期/行业判断</li>
+                <li>💰 估值与情景分析</li>
+                <li>💡 投资建议生成</li>
+                <li>⚠️ 风险提示</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 行业先行投研系统 v1.0.0-dev</p>
+    </footer>
+
+    <script>
+        function runDemo(type) {
+            const messages = {
+                rubber: '天然橡胶期货分析\n\n正在运行分析管道...\n\n1. ✓ 加载基本面数据\n2. ✓ 供需分析\n3. ✓ 周期判断\n4. ✓ 价格情景\n5. ✓ 合约分析\n6. ✓ 投资建议生成\n\n建议：观察多单机会\n信号：库存去化 + 需求稳定 + 基差合理',
+                power: '上海电力股票分析\n\n正在运行分析管道...\n\n1. ✓ 公司基本信息\n2. ✓ 行业分析\n3. ✓ 公司质量分析\n4. ✓ 生存能力分析\n5. ✓ 估值分析\n6. ✓ 投资建议生成\n\n建议：长期配置型资产\n适合：低风险偏好投资者'
+            };
+            alert(messages[type]);
+        }
+    </script>
+</body>
+</html>

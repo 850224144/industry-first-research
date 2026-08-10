@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品品种 - 行业先行投研系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1 class="logo">📊 行业先行投研系统</h1>
+            <ul class="nav-menu">
+                <li><a href="/">首页</a></li>
+                <li><a href="/radar">行业雷达</a></li>
+                <li><a href="/commodities" class="active">商品品种</a></li>
+                <li><a href="/companies">公司列表</a></li>
+                <li><a href="/demo">演示</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero">
+            <h2>商品品种</h2>
+            <p>期货品种配置与基本面分析框架</p>
+        </section>
+
+        <section class="feature-grid" id="commodity-list">
+            <p style="text-align: center; color: #7f8c8d; grid-column: 1 / -1;">正在加载商品品种...</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 行业先行投研系统 v1.0.0-dev</p>
+    </footer>
+
+    <script>
+        async function loadCommodities() {
+            try {
+                const response = await fetch('/api/commodities');
+                const commodities = await response.json();
+
+                const listElement = document.getElementById('commodity-list');
+                listElement.innerHTML = '';
+
+                if (commodities.length === 0) {
+                    listElement.innerHTML = '<p style="text-align: center; color: #7f8c8d; grid-column: 1 / -1;">暂无商品数据</p>';
+                    return;
+                }
+
+                commodities.forEach(commodity => {
+                    const card = document.createElement('div');
+                    card.className = 'feature-card';
+                    card.innerHTML = `
+                        <h3>🌾 ${commodity.display_name}</h3>
+                        <p><strong>类别:</strong> ${commodity.category}</p>
+                        <p><strong>交易所:</strong> ${commodity.exchanges.join(', ')}</p>
+                        <p><strong>品种代码:</strong> ${commodity.variety_ids.join(', ')}</p>
+                        <button class="btn" onclick="viewCommodity('${commodity.adapter_id}')">查看详情</button>
+                    `;
+                    listElement.appendChild(card);
+                });
+            } catch (error) {
+                console.error('加载商品数据失败:', error);
+                document.getElementById('commodity-list').innerHTML = '<p style="text-align: center; color: #e74c3c; grid-column: 1 / -1;">加载数据失败</p>';
+            }
+        }
+
+        function viewCommodity(adapterId) {
+            alert(`查看商品详情: ${adapterId}\n\n功能开发中...`);
+        }
+
+        loadCommodities();
+    </script>
+</body>
+</html>

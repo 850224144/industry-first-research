@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公司列表 - 行业先行投研系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1 class="logo">📊 行业先行投研系统</h1>
+            <ul class="nav-menu">
+                <li><a href="/">首页</a></li>
+                <li><a href="/radar">行业雷达</a></li>
+                <li><a href="/commodities">商品品种</a></li>
+                <li><a href="/companies" class="active">公司列表</a></li>
+                <li><a href="/demo">演示</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero">
+            <h2>公司列表</h2>
+            <p>已配置的研究对象公司</p>
+        </section>
+
+        <section class="feature-grid" id="company-list">
+            <p style="text-align: center; color: #7f8c8d; grid-column: 1 / -1;">正在加载公司列表...</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 行业先行投研系统 v1.0.0-dev</p>
+    </footer>
+
+    <script>
+        async function loadCompanies() {
+            try {
+                const response = await fetch('/api/companies');
+                const companies = await response.json();
+
+                const listElement = document.getElementById('company-list');
+                listElement.innerHTML = '';
+
+                if (companies.length === 0) {
+                    listElement.innerHTML = '<p style="text-align: center; color: #7f8c8d; grid-column: 1 / -1;">暂无公司数据</p>';
+                    return;
+                }
+
+                companies.forEach(company => {
+                    const card = document.createElement('div');
+                    card.className = 'feature-card';
+                    card.innerHTML = `
+                        <h3>🏢 ${company.display_name}</h3>
+                        <p><strong>代码:</strong> ${company.stock_code || company.company_id}</p>
+                        <p><strong>行业:</strong> ${company.industry_category || '-'}</p>
+                        <p><strong>市场:</strong> ${company.listing_market || '-'}</p>
+                        <button class="btn" onclick="viewCompany('${company.company_id}')">查看详情</button>
+                    `;
+                    listElement.appendChild(card);
+                });
+            } catch (error) {
+                console.error('加载公司数据失败:', error);
+                document.getElementById('company-list').innerHTML = '<p style="text-align: center; color: #e74c3c; grid-column: 1 / -1;">加载数据失败</p>';
+            }
+        }
+
+        function viewCompany(companyId) {
+            alert(`查看公司详情: ${companyId}\n\n功能开发中...`);
+        }
+
+        loadCompanies();
+    </script>
+</body>
+</html>
