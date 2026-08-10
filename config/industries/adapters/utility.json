@@ -1,0 +1,107 @@
+{
+  "adapter_id": "utility",
+  "display_name": "公用事业行业适配器",
+  "category": "utility",
+  "applicable_industries": [
+    "电力",
+    "水务",
+    "燃气",
+    "环保公用"
+  ],
+  "analysis_dimensions": {
+    "cycle_analysis": {
+      "applicable": false,
+      "reason": "公用事业需求稳定，不适用强周期分析"
+    },
+    "regulatory_analysis": {
+      "applicable": true,
+      "focus": [
+        "price_regulation",
+        "license_requirement",
+        "policy_change_risk"
+      ]
+    },
+    "cash_flow_analysis": {
+      "applicable": true,
+      "emphasis": "稳定性和可预测性"
+    },
+    "dividend_analysis": {
+      "applicable": true,
+      "importance": "high"
+    }
+  },
+  "key_metrics": {
+    "profitability": [
+      "roe",
+      "roa",
+      "net_margin",
+      "gross_margin"
+    ],
+    "operation": [
+      "installed_capacity",
+      "power_generation",
+      "utilization_rate",
+      "fuel_cost_ratio"
+    ],
+    "financial_health": [
+      "debt_to_asset",
+      "current_ratio",
+      "interest_coverage",
+      "free_cash_flow"
+    ],
+    "shareholder_return": [
+      "dividend_yield",
+      "dividend_payout_ratio",
+      "dividend_stability"
+    ]
+  },
+  "valuation_methods": {
+    "primary": "DDM",
+    "secondary": ["PE", "PB", "EV_EBITDA"],
+    "reasoning": "公用事业强调稳定分红，股息折现模型最适用"
+  },
+  "risk_factors": {
+    "regulatory_risk": {
+      "level": "high",
+      "description": "电价受政府管控，政策变化影响大"
+    },
+    "fuel_cost_risk": {
+      "level": "medium",
+      "description": "煤炭价格波动影响火电成本"
+    },
+    "demand_risk": {
+      "level": "low",
+      "description": "用电需求相对稳定"
+    },
+    "technology_risk": {
+      "level": "medium",
+      "description": "清洁能源转型压力"
+    }
+  },
+  "survival_scenarios": {
+    "base_load_requirement": {
+      "description": "即使需求下滑，基础负荷仍需保障",
+      "probability": "high",
+      "impact": "支撑最低收入"
+    },
+    "policy_support": {
+      "description": "公用事业属性决定政策支持力度",
+      "probability": "high",
+      "impact": "降低破产风险"
+    },
+    "cost_pass_through": {
+      "description": "煤电联动机制允许部分成本传导",
+      "probability": "medium",
+      "impact": "缓解燃料成本压力"
+    }
+  },
+  "competitive_factors": {
+    "barrier_to_entry": "high",
+    "competitive_intensity": "low",
+    "key_advantages": [
+      "regional_monopoly",
+      "license_barrier",
+      "infrastructure_investment"
+    ]
+  }
+}

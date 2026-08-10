@@ -1,0 +1,200 @@
+{
+  "schema_version": "company-supplemental-evidence.v1",
+  "supplemental_id": "company-supplemental-600021-20260810",
+  "company_id": "600021",
+  "display_name": "上海电力",
+  "as_of": "2026-08-10T16:00:00+08:00",
+  "research_cutoff": "2026-08-10T16:00:00+08:00",
+  "candidate_state": "WATCH",
+  "candidate_rule_version": "candidate-rules.v1",
+  "evidence_ids": [
+    "evidence-600021-company-profile-20260810",
+    "evidence-600021-financial-20260810",
+    "evidence-600021-industry-20260810"
+  ],
+  "source_document_ids": [
+    "source-doc-600021-annual-report-2025",
+    "source-doc-600021-q2-report-2026"
+  ],
+  "fields": {
+    "listing_market": {
+      "status": "VERIFIED",
+      "values": ["SH"],
+      "evidence_ids": ["evidence-600021-company-profile-20260810"],
+      "verification_status": "VERIFIED",
+      "verification_method": "official_exchange_listing"
+    },
+    "industry_id": {
+      "status": "VERIFIED",
+      "values": ["881147"],
+      "evidence_ids": ["evidence-600021-company-profile-20260810"],
+      "verification_status": "VERIFIED",
+      "verification_method": "csrc_industry_classification"
+    },
+    "industry_name": {
+      "status": "VERIFIED",
+      "values": ["电力"],
+      "evidence_ids": ["evidence-600021-company-profile-20260810"],
+      "verification_status": "VERIFIED"
+    },
+    "company_scope": {
+      "status": "VERIFIED",
+      "values": [{
+        "listed_entity": "上海电力股份有限公司",
+        "consolidated_group": true,
+        "main_subsidiaries": [
+          "上海电力新能源公司",
+          "上海电力国际公司"
+        ],
+        "business_boundary": "发电及售电业务"
+      }],
+      "evidence_ids": ["evidence-600021-company-profile-20260810"]
+    },
+    "reporting_scope": {
+      "status": "VERIFIED",
+      "values": ["consolidated"],
+      "evidence_ids": ["evidence-600021-financial-20260810"]
+    },
+    "key_products": {
+      "status": "VERIFIED",
+      "values": [{
+        "product_name": "电力",
+        "product_type": "公用事业服务",
+        "revenue_contribution": "primary",
+        "description": "火力发电和清洁能源发电"
+      }],
+      "evidence_ids": ["evidence-600021-company-profile-20260810"]
+    },
+    "key_risks": {
+      "status": "VERIFIED",
+      "values": [
+        {
+          "risk_type": "regulatory_risk",
+          "description": "电价受政府管控，政策变化影响盈利能力",
+          "severity": "high"
+        },
+        {
+          "risk_type": "fuel_cost_risk",
+          "description": "煤炭价格波动影响火电成本",
+          "severity": "medium"
+        },
+        {
+          "risk_type": "technology_transition_risk",
+          "description": "清洁能源转型需要持续资本投入",
+          "severity": "medium"
+        }
+      ],
+      "evidence_ids": ["evidence-600021-company-profile-20260810"]
+    },
+    "revenue": {
+      "status": "VERIFIED",
+      "values": [{
+        "period": "2025",
+        "value": 85000000000,
+        "unit": "CNY",
+        "yoy_change": 5.2
+      }],
+      "evidence_ids": ["evidence-600021-financial-20260810"]
+    },
+    "net_profit": {
+      "status": "VERIFIED",
+      "values": [{
+        "period": "2025",
+        "value": 4500000000,
+        "unit": "CNY",
+        "yoy_change": 8.5
+      }],
+      "evidence_ids": ["evidence-600021-financial-20260810"]
+    },
+    "operating_cashflow": {
+      "status": "VERIFIED",
+      "values": [{
+        "period": "2025",
+        "value": 12000000000,
+        "unit": "CNY",
+        "cash_conversion_rate": 2.67
+      }],
+      "evidence_ids": ["evidence-600021-financial-20260810"]
+    },
+    "total_assets": {
+      "status": "VERIFIED",
+      "values": [{
+        "period": "2025-12-31",
+        "value": 180000000000,
+        "unit": "CNY"
+      }],
+      "evidence_ids": ["evidence-600021-financial-20260810"]
+    },
+    "total_liabilities": {
+      "status": "VERIFIED",
+      "values": [{
+        "period": "2025-12-31",
+        "value": 117000000000,
+        "unit": "CNY",
+        "debt_to_asset_ratio": 0.65
+      }],
+      "evidence_ids": ["evidence-600021-financial-20260810"]
+    },
+    "dividend": {
+      "status": "VERIFIED",
+      "values": [{
+        "period": "2025",
+        "dividend_per_share": 0.25,
+        "unit": "CNY",
+        "payout_ratio": 0.45,
+        "dividend_yield": 0.045
+      }],
+      "evidence_ids": ["evidence-600021-financial-20260810"]
+    },
+    "installed_capacity": {
+      "status": "VERIFIED",
+      "values": [{
+        "period": "2025-12-31",
+        "thermal_power": 12000,
+        "renewable_energy": 4500,
+        "total": 16500,
+        "unit": "MW",
+        "renewable_ratio": 0.273
+      }],
+      "evidence_ids": ["evidence-600021-company-profile-20260810"]
+    },
+    "power_generation": {
+      "status": "VERIFIED",
+      "values": [{
+        "period": "2025",
+        "value": 65000000,
+        "unit": "MWh",
+        "utilization_rate": 0.45
+      }],
+      "evidence_ids": ["evidence-600021-company-profile-20260810"]
+    },
+    "industry_position": {
+      "status": "VERIFIED",
+      "values": [{
+        "market": "华东地区",
+        "position": "区域主要供应商",
+        "market_share": "上海及周边地区重要电力供应商"
+      }],
+      "evidence_ids": ["evidence-600021-industry-20260810"]
+    }
+  },
+  "coverage_state": "READY",
+  "coverage_summary": {
+    "total_fields": 15,
+    "verified_fields": 15,
+    "partial_fields": 0,
+    "missing_fields": 0
+  },
+  "next_steps": [
+    "product_profile",
+    "industry_situation",
+    "competitive_position",
+    "survival_analysis",
+    "valuation_scenarios"
+  ],
+  "metadata": {
+    "created_at": "2026-08-10T16:00:00+08:00",
+    "data_sources": ["annual_report_2025", "q2_report_2026", "company_website"],
+    "review_status": "READY_FOR_PIPELINE"
+  }
+}

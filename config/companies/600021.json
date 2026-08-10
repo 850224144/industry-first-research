@@ -1,0 +1,67 @@
+{
+  "company_id": "600021",
+  "display_name": "上海电力",
+  "listing_market": "SH",
+  "stock_code": "600021.SH",
+  "industry_id": "881147",
+  "industry_name": "电力",
+  "industry_category": "公用事业",
+  "research_as_of": "2026-08-10T16:00:00+08:00",
+  "data_collection": {
+    "primary_source": "official_exchange",
+    "fallback_sources": ["eastmoney", "akshare"],
+    "enable_ai_assist": false
+  },
+  "business_scope": {
+    "primary_business": "电力生产和销售",
+    "business_model": "发电及售电",
+    "main_products": [
+      "火力发电",
+      "清洁能源发电（风电、光伏）"
+    ],
+    "service_region": "上海及周边地区",
+    "customer_type": "电网公司、直供用户"
+  },
+  "research_focus": {
+    "cycle_analysis": true,
+    "survival_analysis": true,
+    "valuation_required": true,
+    "stress_test_scenarios": [
+      "coal_price_surge",
+      "demand_decline",
+      "financing_constraint"
+    ]
+  },
+  "data_sources": {
+    "financial_reports": {
+      "source": "sse",
+      "url_pattern": "http://www.sse.com.cn/assortment/stock/list/info/announcement/",
+      "update_frequency": "quarterly"
+    },
+    "market_data": {
+      "source": "akshare",
+      "update_frequency": "daily"
+    },
+    "industry_data": {
+      "source": "manual",
+      "description": "电力行业统计数据"
+    }
+  },
+  "analysis_config": {
+    "industry_adapter": "utility",
+    "cycle_applicable": false,
+    "valuation_method": ["DDM", "PE", "PB"],
+    "emphasis": [
+      "cash_flow_stability",
+      "dividend_sustainability",
+      "regulatory_risk",
+      "fuel_cost_sensitivity"
+    ]
+  },
+  "metadata": {
+    "created_at": "2026-08-10T16:00:00+08:00",
+    "created_by": "system",
+    "version": "1.0",
+    "notes": "公用事业-电力行业代表公司"
+  }
+}
