@@ -8,6 +8,8 @@ import subprocess
 from pathlib import Path
 import sys
 
+from tests.subprocess_helpers import subprocess_environment
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "commodities"
@@ -44,7 +46,7 @@ def test_steel_full_cli_pipeline():
             "--output-dir", str(OUTPUT_DIR)
         ],
         cwd=PROJECT_ROOT,
-        env={"PYTHONPATH": str(PROJECT_ROOT / "src")},
+        env=subprocess_environment(),
         capture_output=True,
         text=True,
         timeout=60
@@ -96,7 +98,7 @@ def test_copper_full_cli_pipeline():
             "--output-dir", str(OUTPUT_DIR)
         ],
         cwd=PROJECT_ROOT,
-        env={"PYTHONPATH": str(PROJECT_ROOT / "src")},
+        env=subprocess_environment(),
         capture_output=True,
         text=True,
         timeout=60
@@ -149,7 +151,7 @@ def test_identity_files_completeness():
 
     print(f"✓ 找到 {len(identity_files)} 个identity文件")
 
-    expected_varieties = {"RB", "CU", "LC", "M", "SC"}
+    expected_varieties = {"RB", "CU", "LC", "M", "SC", "RU"}
     found_varieties = set()
 
     for file in identity_files:
@@ -159,7 +161,7 @@ def test_identity_files_completeness():
         assert identity["schema_version"] == "futures-object-identity.v1"
         assert "variety_id" in identity
         assert "commodity_adapter_id" in identity
-        assert "identification_status" in identity
+        assert "status" in identity
 
         variety_id = identity["variety_id"]
         found_varieties.add(variety_id)
@@ -170,7 +172,7 @@ def test_identity_files_completeness():
     if missing:
         print(f"⚠ 缺少品种: {missing}")
     else:
-        print(f"✓ 所有5个品种都有identity文件")
+        print(f"✓ 所有6个品种都有identity文件")
 
     return len(missing) == 0
 
@@ -185,7 +187,8 @@ def test_data_traceability():
         "copper_cu_fundamentals.json",
         "lithium_lc_fundamentals.json",
         "soybean_meal_m_fundamentals.json",
-        "crude_oil_sc_fundamentals.json"
+        "crude_oil_sc_fundamentals.json",
+        "natural_rubber_ru_fundamentals.json"
     ]
 
     for filename in current_files:

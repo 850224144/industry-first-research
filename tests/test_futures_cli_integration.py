@@ -8,6 +8,8 @@ import subprocess
 from pathlib import Path
 import pytest
 
+from tests.subprocess_helpers import PYTHON, subprocess_environment
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SRC_DIR = PROJECT_ROOT / "src"
@@ -26,9 +28,9 @@ def setup_output_dir():
 def test_futures_identity_cli_available():
     """测试futures-identify命令是否可用"""
     result = subprocess.run(
-        ["python3", "-m", "industry_first_research", "futures-identify", "--help"],
+        [PYTHON, "-m", "industry_first_research", "futures-identify", "--help"],
         cwd=PROJECT_ROOT,
-        env={"PYTHONPATH": str(SRC_DIR)},
+        env=subprocess_environment(),
         capture_output=True,
         text=True
     )
@@ -40,9 +42,9 @@ def test_futures_identity_cli_available():
 def test_commodity_adapters_cli_available():
     """测试commodity-adapters命令是否可用"""
     result = subprocess.run(
-        ["python3", "-m", "industry_first_research", "commodity-adapters", "--help"],
+        [PYTHON, "-m", "industry_first_research", "commodity-adapters", "--help"],
         cwd=PROJECT_ROOT,
-        env={"PYTHONPATH": str(SRC_DIR)},
+        env=subprocess_environment(),
         capture_output=True,
         text=True
     )
@@ -55,13 +57,13 @@ def test_list_commodity_adapters():
     """测试列出所有商品适配器"""
     result = subprocess.run(
         [
-            "python3", "-m", "industry_first_research",
+            PYTHON, "-m", "industry_first_research",
             "commodity-adapters",
-            "--adapter-dir", str(PROJECT_ROOT / "config" / "commodities"),
+            "--directory", str(PROJECT_ROOT / "config" / "commodities"),
             "--output-dir", str(OUTPUT_DIR)
         ],
         cwd=PROJECT_ROOT,
-        env={"PYTHONPATH": str(SRC_DIR)},
+        env=subprocess_environment(),
         capture_output=True,
         text=True,
         timeout=30
@@ -71,24 +73,23 @@ def test_list_commodity_adapters():
     print(f"stdout: {result.stdout}")
     print(f"stderr: {result.stderr}")
 
-    # 检查是否提到了我们的5个品种
+    # 检查是否提到了我们的6个品种
     assert any(v in result.stdout or v in result.stderr
-              for v in ["steel", "copper", "lithium", "soybean", "crude"])
+              for v in ["steel", "copper", "lithium", "soybean", "crude", "natural_rubber"])
 
 
 def test_validate_steel_adapter():
     """测试验证钢材适配器配置"""
-    steel_config = PROJECT_ROOT / "config" / "commodities" / "steel.json"
-
     result = subprocess.run(
         [
-            "python3", "-m", "industry_first_research",
+            PYTHON, "-m", "industry_first_research",
             "commodity-adapter-validate",
-            "--adapter-config", str(steel_config),
+            "--directory", str(PROJECT_ROOT / "config" / "commodities"),
+            "--adapter", "steel",
             "--output-dir", str(OUTPUT_DIR)
         ],
         cwd=PROJECT_ROOT,
-        env={"PYTHONPATH": str(SRC_DIR)},
+        env=subprocess_environment(),
         capture_output=True,
         text=True,
         timeout=30
@@ -223,6 +224,28 @@ def test_crude_oil_fundamentals_data_structure():
     assert data["spot_benchmark"]["unit"] == "USD/barrel"
 
 
+def test_natural_rubber_fundamentals_data_structure():
+    """验证天然橡胶基本面数据结构"""
+    fundamentals_file = FIXTURES_DIR / "natural_rubber_ru_fundamentals.json"
+
+    assert fundamentals_file.exists(), "天然橡胶基本面数据文件不存在"
+
+    data = json.loads(fundamentals_file.read_text())
+
+    assert data["schema_version"] == "futures-fundamentals-input.v1"
+    assert data["variety_id"] == "RU"
+    assert data["exchange"] == "SHFE"
+
+    # 天然橡胶特有字段
+    assert "production" in data
+    assert "tapping_season_status" in data["production"]
+    assert "demand" in data
+    assert "tire_output" in data["demand"]
+    assert "tire_operating_rate" in data["demand"]
+    assert "trade" in data
+    assert "china_imports" in data["trade"]
+
+
 def test_all_fundamentals_have_evidence_traceability():
     """验证所有基本面数据都有证据追溯"""
     fundamentals_files = [
@@ -230,7 +253,8 @@ def test_all_fundamentals_have_evidence_traceability():
         "copper_cu_fundamentals.json",
         "lithium_lc_fundamentals.json",
         "soybean_meal_m_fundamentals.json",
-        "crude_oil_sc_fundamentals.json"
+        "crude_oil_sc_fundamentals.json",
+        "natural_rubber_ru_fundamentals.json"
     ]
 
     for filename in fundamentals_files:

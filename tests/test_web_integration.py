@@ -9,6 +9,8 @@ import requests
 import json
 from pathlib import Path
 
+from tests.subprocess_helpers import PYTHON, subprocess_environment
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = Path(__file__).parent / "output"
@@ -19,9 +21,9 @@ def test_web_server_health():
     # 启动web服务器
     print("启动web服务器...")
     proc = subprocess.Popen(
-        ["python", "-m", "industry_first_research", "web", "--port", "8765"],
+        [PYTHON, "-m", "industry_first_research", "web", "--port", "8765"],
         cwd=PROJECT_ROOT,
-        env={"PYTHONPATH": str(PROJECT_ROOT / "src")},
+        env=subprocess_environment(),
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
@@ -61,9 +63,9 @@ def test_web_api_summary():
     print("\n--- 测试摘要API ---")
 
     proc = subprocess.Popen(
-        ["python", "-m", "industry_first_research", "web", "--port", "8766"],
+        [PYTHON, "-m", "industry_first_research", "web", "--port", "8766"],
         cwd=PROJECT_ROOT,
-        env={"PYTHONPATH": str(PROJECT_ROOT / "src")},
+        env=subprocess_environment(),
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
@@ -97,9 +99,9 @@ def test_web_static_files():
     print("\n--- 测试静态文件访问 ---")
 
     proc = subprocess.Popen(
-        ["python", "-m", "industry_first_research", "web", "--port", "8767"],
+        [PYTHON, "-m", "industry_first_research", "web", "--port", "8767"],
         cwd=PROJECT_ROOT,
-        env={"PYTHONPATH": str(PROJECT_ROOT / "src")},
+        env=subprocess_environment(),
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
@@ -134,9 +136,9 @@ def test_web_policy_compliance():
     print("\n--- 测试项目原则遵循 ---")
 
     proc = subprocess.Popen(
-        ["python", "-m", "industry_first_research", "web", "--port", "8768"],
+        [PYTHON, "-m", "industry_first_research", "web", "--port", "8768"],
         cwd=PROJECT_ROOT,
-        env={"PYTHONPATH": str(PROJECT_ROOT / "src")},
+        env=subprocess_environment(),
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True

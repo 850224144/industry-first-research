@@ -1,0 +1,225 @@
+{
+  "schema_version": "futures-fundamentals-input.v1",
+  "fundamentals_id": "ru-fundamentals-20260520-001",
+  "variety_id": "RU",
+  "variety_name": "天然橡胶",
+  "exchange": "SHFE",
+  "as_of": "2026-05-20T16:00:00+08:00",
+  "research_cutoff": "2026-05-20T16:00:00+08:00",
+  "evidence_ids": [
+    "evidence-ru-spot-20260520",
+    "evidence-ru-inventory-20260520",
+    "evidence-ru-production-20260520",
+    "evidence-ru-imports-20260520",
+    "evidence-ru-tire-output-20260520"
+  ],
+  "source_document_id": "source-doc-ru-20260520",
+  "spot_benchmark": {
+    "benchmark_id": "east_china_ru_spot",
+    "name": "华东天然橡胶现货",
+    "unit": "CNY/ton",
+    "value": 12800,
+    "observation_date": "2026-05-20",
+    "comparability": "SAME_GRADE_REGION",
+    "evidence_ids": ["evidence-ru-spot-20260520"]
+  },
+  "contract_quotes": [
+    {
+      "contract_code": "RU2609",
+      "settlement_price": 13150,
+      "close_price": 13180,
+      "observation_date": "2026-05-20",
+      "open_interest": 185000,
+      "volume": 98000,
+      "evidence_ids": ["evidence-ru-contract-20260520"]
+    },
+    {
+      "contract_code": "RU2701",
+      "settlement_price": 13520,
+      "close_price": 13550,
+      "observation_date": "2026-05-20",
+      "open_interest": 142000,
+      "volume": 56000,
+      "evidence_ids": ["evidence-ru-contract-20260520"]
+    }
+  ],
+  "inventory": {
+    "exchange_inventory": {
+      "value": 185000,
+      "unit": "ton",
+      "observation_date": "2026-05-17",
+      "change_from_last_week": -8200,
+      "evidence_ids": ["evidence-ru-inventory-20260520"]
+    },
+    "registered_warrant": {
+      "value": 98000,
+      "unit": "ton",
+      "observation_date": "2026-05-17",
+      "evidence_ids": ["evidence-ru-inventory-20260520"]
+    },
+    "port_inventory": {
+      "value": 520000,
+      "unit": "ton",
+      "observation_date": "2026-05-15",
+      "change_from_last_month": -15000,
+      "location": "青岛港",
+      "evidence_ids": ["evidence-ru-inventory-20260520"]
+    },
+    "bonded_inventory": {
+      "value": 280000,
+      "unit": "ton",
+      "observation_date": "2026-05-15",
+      "evidence_ids": ["evidence-ru-inventory-20260520"]
+    }
+  },
+  "production": {
+    "china_output": {
+      "value": 85000,
+      "unit": "ton",
+      "period": "2026-04",
+      "year_over_year_change": -2.5,
+      "evidence_ids": ["evidence-ru-production-20260520"]
+    },
+    "thailand_output": {
+      "value": 450000,
+      "unit": "ton",
+      "period": "2026-04",
+      "year_over_year_change": 3.2,
+      "region": "泰国",
+      "evidence_ids": ["evidence-ru-production-20260520"]
+    },
+    "indonesia_output": {
+      "value": 320000,
+      "unit": "ton",
+      "period": "2026-04",
+      "year_over_year_change": 1.8,
+      "region": "印度尼西亚",
+      "evidence_ids": ["evidence-ru-production-20260520"]
+    },
+    "tapping_season_status": {
+      "status": "peak_season",
+      "description": "东南亚主产区处于割胶旺季",
+      "expected_duration": "2026-05至2026-09",
+      "evidence_ids": ["evidence-ru-production-20260520"]
+    }
+  },
+  "trade": {
+    "china_imports": {
+      "value": 580000,
+      "unit": "ton",
+      "period": "2026-04",
+      "year_over_year_change": 5.6,
+      "evidence_ids": ["evidence-ru-imports-20260520"]
+    },
+    "imports_from_thailand": {
+      "value": 280000,
+      "unit": "ton",
+      "period": "2026-04",
+      "share_of_total": 48.3,
+      "evidence_ids": ["evidence-ru-imports-20260520"]
+    },
+    "imports_from_indonesia": {
+      "value": 180000,
+      "unit": "ton",
+      "period": "2026-04",
+      "share_of_total": 31.0,
+      "evidence_ids": ["evidence-ru-imports-20260520"]
+    }
+  },
+  "demand": {
+    "tire_output": {
+      "value": 85000000,
+      "unit": "units",
+      "period": "2026-04",
+      "year_over_year_change": 4.2,
+      "category": "全钢胎+半钢胎",
+      "evidence_ids": ["evidence-ru-tire-output-20260520"]
+    },
+    "tire_operating_rate": {
+      "value": 68.5,
+      "unit": "percent",
+      "observation_date": "2026-05-20",
+      "category": "全钢胎",
+      "evidence_ids": ["evidence-ru-tire-output-20260520"]
+    },
+    "auto_production": {
+      "value": 2450000,
+      "unit": "units",
+      "period": "2026-04",
+      "year_over_year_change": 6.8,
+      "evidence_ids": ["evidence-ru-tire-output-20260520"]
+    }
+  },
+  "cost": {
+    "thailand_production_cost": {
+      "value": 10200,
+      "unit": "CNY/ton",
+      "observation_date": "2026-05-15",
+      "cost_type": "FOB",
+      "evidence_ids": ["evidence-ru-cost-20260520"]
+    },
+    "import_parity_cost": {
+      "value": 11800,
+      "unit": "CNY/ton",
+      "observation_date": "2026-05-20",
+      "includes": "origin_cost + freight + tariff",
+      "evidence_ids": ["evidence-ru-cost-20260520"]
+    }
+  },
+  "basis": {
+    "ru2609_basis": {
+      "value": 350,
+      "unit": "CNY/ton",
+      "observation_date": "2026-05-20",
+      "contract": "RU2609",
+      "spot_benchmark": "east_china_ru_spot",
+      "basis_type": "futures_minus_spot",
+      "evidence_ids": ["evidence-ru-spot-20260520", "evidence-ru-contract-20260520"]
+    }
+  },
+  "term_structure": {
+    "ru2609_ru2701_spread": {
+      "value": 370,
+      "unit": "CNY/ton",
+      "observation_date": "2026-05-20",
+      "structure_type": "contango",
+      "evidence_ids": ["evidence-ru-contract-20260520"]
+    }
+  },
+  "scenarios": {
+    "pessimistic": {
+      "description": "需求疲软，产区丰产，库存累积",
+      "price_range": {
+        "lower": 11500,
+        "upper": 12500,
+        "unit": "CNY/ton"
+      },
+      "key_drivers": ["tire_demand_slowdown", "peak_tapping_season", "inventory_buildup"]
+    },
+    "base": {
+      "description": "需求平稳，季节性供应，库存小幅下降",
+      "price_range": {
+        "lower": 12500,
+        "upper": 13500,
+        "unit": "CNY/ton"
+      },
+      "key_drivers": ["stable_tire_output", "normal_seasonal_pattern", "moderate_inventory"]
+    },
+    "optimistic": {
+      "description": "需求回升，天气扰动供应，库存去化",
+      "price_range": {
+        "lower": 13500,
+        "upper": 14800,
+        "unit": "CNY/ton"
+      },
+      "key_drivers": ["auto_sales_recovery", "weather_disruption", "inventory_drawdown"]
+    }
+  },
+  "key_observations": [
+    "当前处于东南亚割胶旺季，产量环比增加",
+    "国内港口库存连续四周下降，去库存趋势明显",
+    "轮胎开工率维持在68%以上，需求端保持稳定",
+    "RU2609合约基差350元/吨，处于正常水平",
+    "远月合约呈现contango结构，反映正常持仓成本"
+  ]
+}

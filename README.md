@@ -45,7 +45,7 @@
 - 具体期货合约模拟结算账本：支持逐日盯市、当日保证金率、显式移仓、手续费/滑点、涨跌停阻断、保证金调用和模拟强平；与股票全额资金组合分开，不自动换月、不追加真实资金、不发送委托。
 - 期货回放已接入统一归因和研究质量评分卡回归：保留保证金口径，不与股票全额资金收益直接相减，并将期货结果表现与事实/状态/模型质量分开评价。
 - 行业适配器配置已扩展到 7 类：通用、周期制造、消费品牌、金融服务、软件/SaaS、医药健康和公用事业；金融服务、公用事业等非物理周期行业不会生成库存/产能周期模型。
-- 商品品种适配器配置已覆盖黑色、能源化工、农产品、有色和新能源材料 5 类，支持 `RB`/`HC`、`SC`、`M`、`CU`/`BC`、`LC`；当前只完成配置契约、目录解析和字段验收，不抓取数据、不产生方向结论。
+- 商品品种适配器配置已覆盖黑色、能源化工、农产品、有色和新能源材料 5 类，支持 `RB`/`HC`、`SC`、`M`、`CU`/`BC`、`LC`、`RU`；当前只完成配置契约、目录解析和字段验收，不抓取数据、不产生方向结论。
 - 期货刷新结果已可按显式品种映射转换为 `futures-fundamentals-input.v1`：转换保留刷新哈希、来源、查询 ID、数据哈希和字段路径，映射值默认标为 `UNVERIFIED`，必须经过人工证据闸门后才能进入正式基本面报告。
 - 期货持续跟踪已接入：按交易所/品种/对象类型/具体合约比较已保存的基本面报告，生成不可变变化清单、受影响模块和 `decision_review` 人工复核投影，并关联研究版本；没有历史快照时只输出 `INITIALIZED`/待复核，不产生方向结论。
 - 公开稿最小链路已接入：`public-draft` 从显式哈希锁定的公司/期货报告生成脱敏 Markdown 与 `public-draft.v1` JSON，`validate-public-draft` 校验正文哈希和未发布边界；不联网、不登录、不调用微信公众号接口。
@@ -99,15 +99,19 @@ PYTHONPATH=src python -m industry_first_research market-registry \
 ## 开发
 
 ```bash
-python3 -m venv .venv
+# Python 3.11 or newer is required; Python 3.12 is recommended.
+python3.12 -m venv .venv
 source .venv/bin/activate
+python -m pip install --upgrade pip
 python -m pip install -e '.[dev]'
-pytest
+python -m pytest
 python -m industry_first_research demo
 
 # 可选免费数据依赖（Mac/Linux/Windows 均可）
 python -m pip install -e '.[data]'
 ```
+
+项目要求 Python 3.11 或更高版本；Python 3.9 不支持运行本项目。
 
 启动本地 Web 研究控制台：
 
@@ -871,7 +875,7 @@ PYTHONPATH=src python3 -m industry_first_research commodity-adapter-validate \
   --output-dir data/commodity_adapter_validations
 ```
 
-当前提供钢材、原油、豆粕、铜和碳酸锂 5 类配置，覆盖 `RB`、`HC`、`SC`、`M`、`CU`、`BC`、`LC`。
+当前提供钢材、原油、豆粕、铜、碳酸锂和天然橡胶 6 类配置，覆盖 `RB`、`HC`、`SC`、`M`、`CU`、`BC`、`LC`、`RU`。
 适配器只定义研究问题和数据契约，不抓取数据、不选择方向；品种、交易所、现货基准或指标口径不匹配时输出
 `PARTIAL` / `BLOCKED`，不会静默套用其他商品的模型。配置目录通过回归测试后，仍需对每个品种分别完成交易所/现货数据和时间截面验证。
 

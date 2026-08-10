@@ -1,0 +1,26 @@
+{
+  "schema_version": "futures-object-identity.v1",
+  "identity_id": "futures-identity-ru2609-20260520-001",
+  "object_type": "futures_contract",
+  "exchange": "SHFE",
+  "variety_id": "RU",
+  "variety_name": "天然橡胶",
+  "contract": {
+    "contract_code": "RU2609",
+    "contract_month": "202609",
+    "last_trade_date": "2026-09-15",
+    "contract_multiplier": 10,
+    "tick_size": 5.0,
+    "settlement_basis": "daily_settlement",
+    "delivery_month": "2026-09",
+    "delivery_period": "2026-09-16至2026-09-20"
+  },
+  "as_of": "2026-05-20T16:00:00+08:00",
+  "commodity_adapter_id": "natural_rubber",
+  "spot_benchmark": {
+    "benchmark_id": "east_china_ru_spot",
+    "name": "华东天然橡胶现货"
+  },
+  "status": "READY",
+  "identification_method": "explicit_exchange_variety_contract"
+}

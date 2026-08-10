@@ -1,0 +1,72 @@
+{
+  "schema_version": "commodity-adapter.v1",
+  "adapter_id": "natural_rubber",
+  "display_name": "天然橡胶产业链",
+  "aliases": ["天然橡胶", "沪胶", "橡胶", "natural rubber", "rubber"],
+  "exchanges": ["SHFE"],
+  "variety_ids": ["RU"],
+  "commodity_category": "agricultural_industrial",
+  "quote_unit": "CNY/ton",
+  "trading_unit": "ton",
+  "spot_benchmarks": [
+    {
+      "benchmark_id": "east_china_ru_spot",
+      "name": "华东天然橡胶现货",
+      "unit": "CNY/ton",
+      "region": "East China",
+      "comparability_rule": "same_grade_and_delivery_region"
+    },
+    {
+      "benchmark_id": "qingdao_ru_spot",
+      "name": "青岛天然橡胶现货",
+      "unit": "CNY/ton",
+      "region": "Qingdao",
+      "comparability_rule": "same_grade_and_delivery_region"
+    }
+  ],
+  "indicator_groups": {
+    "supply_demand": ["supply_demand_balance"],
+    "production": ["production_by_region", "tapping_season", "plantation_area", "production_and_utilization"],
+    "trade": ["imports_exports_by_origin", "imports_exports"],
+    "inventory": ["inventory_by_location", "exchange_inventory_and_warrants"],
+    "pricing": ["spot_benchmark", "basis_and_calendar_spread", "term_structure"],
+    "cost_margin": ["production_cost_by_region", "import_parity", "production_and_import_cost", "industry_margin"],
+    "downstream": ["tire_output", "auto_production", "rubber_product_demand"],
+    "structure": ["open_interest_and_available_member_positions"],
+    "seasonality": ["seasonality"],
+    "position": ["open_interest_and_available_member_positions"],
+    "delivery": ["delivery_rules_and_warrant_expiry"]
+  },
+  "inventory_locations": ["port", "bonded", "factory", "dealer", "exchange", "registered_warrant"],
+  "cost_components": ["plantation_cost", "tapping_cost", "processing_cost", "freight", "import_parity", "cash_cost"],
+  "margin_components": ["spot_minus_production_cost", "import_minus_origin_cost", "dealer_margin"],
+  "seasonality": {
+    "required_drivers": ["tapping_season", "monsoon", "tire_replacement_season", "auto_sales_cycle"],
+    "weather_factors": ["rainfall", "temperature", "typhoon"]
+  },
+  "delivery_rules": {
+    "required_fields": ["delivery_grade", "delivery_region", "delivery_month_limit", "warrant_expiry"],
+    "rule_source": "official_exchange_rule_version",
+    "near_expiry_review_days": 30
+  },
+  "scenario_method": {
+    "method": "supply_demand_inventory_and_seasonal_ranges",
+    "required_drivers": ["tapping_output", "import_volume", "tire_demand", "inventory", "seasonal_pattern"],
+    "invalidators": ["demand_collapse", "unexpected_supply_release", "benchmark_incomparability", "major_weather_disruption"],
+    "range_policy": "observation_range_not_intrinsic_value"
+  },
+  "acceptance_samples": [
+    {
+      "sample_id": "rubber-contract-ready",
+      "description": "具体沪胶合约、华东现货、产区产量、进口量、库存仓单和下游需求字段齐全时进入合约研究验收"
+    },
+    {
+      "sample_id": "rubber-seasonal-incomplete",
+      "description": "缺少割胶季节或气候因素时降级为待复核，不直接生成季节性预测"
+    },
+    {
+      "sample_id": "rubber-downstream-missing",
+      "description": "缺少轮胎或汽车产量时标记为需求证据不足，不推导需求增长"
+    }
+  ]
+}

@@ -1,0 +1,835 @@
+{
+  "adapter_count": 6,
+  "adapters": [
+    {
+      "acceptance_samples": [
+        {
+          "description": "具体沪铜合约、上海现货、库存仓单和成本字段齐全时进入合约研究验收",
+          "sample_id": "copper-contract-ready"
+        },
+        {
+          "description": "现货等级或地区不匹配时降级为待复核，不直接计算基差",
+          "sample_id": "copper-spot-mismatch"
+        }
+      ],
+      "adapter_id": "copper",
+      "aliases": [
+        "铜",
+        "沪铜",
+        "copper"
+      ],
+      "commodity_category": "non_ferrous",
+      "cost_components": [
+        "concentrate_treatment_charge",
+        "smelting_cost",
+        "freight",
+        "import_parity",
+        "cash_cost",
+        "full_cost"
+      ],
+      "delivery_rules": {
+        "near_expiry_review_days": 30,
+        "required_fields": [
+          "delivery_grade",
+          "delivery_region",
+          "delivery_month_limit",
+          "warrant_expiry"
+        ],
+        "rule_source": "official_exchange_rule_version"
+      },
+      "display_name": "铜产业链",
+      "exchanges": [
+        "SHFE",
+        "INE"
+      ],
+      "indicator_groups": {
+        "cost_margin": [
+          "production_and_import_cost",
+          "industry_margin"
+        ],
+        "delivery": [
+          "delivery_rules_and_warrant_expiry"
+        ],
+        "inventory": [
+          "inventory_by_location",
+          "exchange_inventory_and_warrants"
+        ],
+        "position": [
+          "open_interest_and_available_member_positions"
+        ],
+        "pricing": [
+          "spot_benchmark",
+          "basis_and_calendar_spread",
+          "term_structure"
+        ],
+        "production": [
+          "production_and_utilization"
+        ],
+        "seasonality": [
+          "seasonality"
+        ],
+        "structure": [
+          "open_interest_and_available_member_positions"
+        ],
+        "supply_demand": [
+          "supply_demand_balance"
+        ],
+        "trade": [
+          "imports_exports"
+        ]
+      },
+      "inventory_locations": [
+        "mine",
+        "smelter",
+        "social",
+        "port",
+        "exchange",
+        "registered_warrant"
+      ],
+      "margin_components": [
+        "spot_minus_cash_cost",
+        "spot_minus_full_cost",
+        "processing_fee",
+        "import_profit"
+      ],
+      "quote_unit": "CNY/ton",
+      "rule_version": "commodity-adapter-rules.v1",
+      "scenario_method": {
+        "invalidators": [
+          "demand_collapse",
+          "unexpected_supply_release",
+          "benchmark_incomparability"
+        ],
+        "method": "supply_demand_cost_and_inventory_ranges",
+        "range_policy": "observation_range_not_intrinsic_value",
+        "required_drivers": [
+          "demand",
+          "mine_supply",
+          "smelter_utilization",
+          "inventory",
+          "spot_cost"
+        ]
+      },
+      "schema_version": "commodity-adapter.v1",
+      "seasonality": {
+        "required_drivers": [
+          "construction_demand",
+          "power_grid_investment",
+          "holiday_effect",
+          "maintenance_cycle"
+        ],
+        "weather_factors": [
+          "rainfall",
+          "transport_disruption"
+        ]
+      },
+      "spot_benchmarks": [
+        {
+          "benchmark_id": "shanghai_copper_spot",
+          "comparability_rule": "same_grade_and_delivery_region_before_basis_calculation",
+          "name": "上海电解铜现货",
+          "region": "Shanghai",
+          "unit": "CNY/ton"
+        }
+      ],
+      "trading_unit": "ton",
+      "variety_ids": [
+        "CU",
+        "BC"
+      ]
+    },
+    {
+      "acceptance_samples": [
+        {
+          "description": "原油现货基准、汇率、库存、运费和交割字段必须同口径后才计算基差",
+          "sample_id": "crude-oil-basis-fx"
+        }
+      ],
+      "adapter_id": "crude_oil",
+      "aliases": [
+        "原油",
+        "SC",
+        "上海原油",
+        "crude oil"
+      ],
+      "commodity_category": "energy_chemical",
+      "cost_components": [
+        "production_cost",
+        "freight",
+        "insurance",
+        "fx",
+        "refining_cost",
+        "cash_cost",
+        "full_cost"
+      ],
+      "delivery_rules": {
+        "near_expiry_review_days": 45,
+        "required_fields": [
+          "delivery_grade",
+          "delivery_region",
+          "delivery_month_limit",
+          "warrant_expiry"
+        ],
+        "rule_source": "official_exchange_rule_version"
+      },
+      "display_name": "原油能源化工产业链",
+      "exchanges": [
+        "INE"
+      ],
+      "indicator_groups": {
+        "cost_margin": [
+          "production_and_import_cost",
+          "industry_margin"
+        ],
+        "delivery": [
+          "delivery_rules_and_warrant_expiry"
+        ],
+        "inventory": [
+          "inventory_by_location",
+          "exchange_inventory_and_warrants"
+        ],
+        "position": [
+          "open_interest_and_available_member_positions"
+        ],
+        "pricing": [
+          "spot_benchmark",
+          "basis_and_calendar_spread",
+          "term_structure"
+        ],
+        "production": [
+          "production_and_utilization"
+        ],
+        "seasonality": [
+          "seasonality"
+        ],
+        "structure": [
+          "open_interest_and_available_member_positions"
+        ],
+        "supply_demand": [
+          "supply_demand_balance"
+        ],
+        "trade": [
+          "imports_exports"
+        ]
+      },
+      "inventory_locations": [
+        "crude_producer",
+        "refinery",
+        "tank",
+        "port",
+        "exchange",
+        "registered_warrant"
+      ],
+      "margin_components": [
+        "spot_minus_cash_cost",
+        "crack_spread",
+        "import_parity",
+        "refinery_margin"
+      ],
+      "quote_unit": "CNY/barrel",
+      "rule_version": "commodity-adapter-rules.v1",
+      "scenario_method": {
+        "invalidators": [
+          "supply_policy_reversal",
+          "demand_recession",
+          "benchmark_incomparability"
+        ],
+        "method": "global_supply_demand_inventory_and_freight_ranges",
+        "range_policy": "observation_range_not_intrinsic_value",
+        "required_drivers": [
+          "opec_supply",
+          "non_opec_supply",
+          "refinery_demand",
+          "inventory",
+          "fx"
+        ]
+      },
+      "schema_version": "commodity-adapter.v1",
+      "seasonality": {
+        "required_drivers": [
+          "driving_season",
+          "refinery_maintenance",
+          "hurricane_risk",
+          "heating_demand"
+        ]
+      },
+      "spot_benchmarks": [
+        {
+          "benchmark_id": "middle_east_crude_spot",
+          "comparability_rule": "same_grade_freight_and_fx_before_basis_calculation",
+          "name": "中东原油现货基准",
+          "region": "Middle East",
+          "unit": "USD/barrel"
+        }
+      ],
+      "trading_unit": "barrel",
+      "variety_ids": [
+        "SC"
+      ]
+    },
+    {
+      "acceptance_samples": [
+        {
+          "description": "碳酸锂必须区分名义产能、有效供给、库存、成本曲线和电池需求，不用单一价格判断反转",
+          "sample_id": "lithium-effective-supply"
+        }
+      ],
+      "adapter_id": "lithium_carbonate",
+      "aliases": [
+        "碳酸锂",
+        "锂盐",
+        "LC",
+        "lithium carbonate"
+      ],
+      "commodity_category": "new_energy_material",
+      "cost_components": [
+        "ore_cost",
+        "brine_cost",
+        "conversion_cost",
+        "energy",
+        "freight",
+        "cash_cost",
+        "full_cost"
+      ],
+      "delivery_rules": {
+        "near_expiry_review_days": 30,
+        "required_fields": [
+          "delivery_grade",
+          "delivery_region",
+          "delivery_month_limit",
+          "warrant_expiry"
+        ],
+        "rule_source": "official_exchange_rule_version"
+      },
+      "display_name": "碳酸锂新能源材料产业链",
+      "exchanges": [
+        "GFEX"
+      ],
+      "indicator_groups": {
+        "cost_margin": [
+          "production_and_import_cost",
+          "industry_margin"
+        ],
+        "delivery": [
+          "delivery_rules_and_warrant_expiry"
+        ],
+        "inventory": [
+          "inventory_by_location",
+          "exchange_inventory_and_warrants"
+        ],
+        "position": [
+          "open_interest_and_available_member_positions"
+        ],
+        "pricing": [
+          "spot_benchmark",
+          "basis_and_calendar_spread",
+          "term_structure"
+        ],
+        "production": [
+          "production_and_utilization"
+        ],
+        "seasonality": [
+          "seasonality"
+        ],
+        "structure": [
+          "open_interest_and_available_member_positions"
+        ],
+        "supply_demand": [
+          "supply_demand_balance"
+        ],
+        "trade": [
+          "imports_exports"
+        ]
+      },
+      "inventory_locations": [
+        "brine",
+        "hard_rock",
+        "salt_lake",
+        "converter",
+        "cathode_factory",
+        "exchange",
+        "registered_warrant"
+      ],
+      "margin_components": [
+        "spot_minus_cash_cost",
+        "spot_minus_full_cost",
+        "conversion_margin",
+        "cathode_margin"
+      ],
+      "quote_unit": "CNY/ton",
+      "rule_version": "commodity-adapter-rules.v1",
+      "scenario_method": {
+        "invalidators": [
+          "demand_slowdown",
+          "new_supply_release",
+          "grade_incomparability"
+        ],
+        "method": "battery_demand_supply_cost_and_inventory_ranges",
+        "range_policy": "observation_range_not_intrinsic_value",
+        "required_drivers": [
+          "ev_demand",
+          "battery_output",
+          "effective_supply",
+          "inventory",
+          "cost_curve"
+        ]
+      },
+      "schema_version": "commodity-adapter.v1",
+      "seasonality": {
+        "required_drivers": [
+          "new_energy_sales",
+          "battery_inventory",
+          "salt_lake_weather",
+          "conversion_maintenance"
+        ]
+      },
+      "spot_benchmarks": [
+        {
+          "benchmark_id": "china_battery_grade_lithium_carbonate",
+          "comparability_rule": "same_grade_and_settlement_period",
+          "name": "中国电池级碳酸锂现货",
+          "region": "China",
+          "unit": "CNY/ton"
+        }
+      ],
+      "trading_unit": "ton",
+      "variety_ids": [
+        "LC"
+      ]
+    },
+    {
+      "acceptance_samples": [
+        {
+          "description": "具体沪胶合约、华东现货、产区产量、进口量、库存仓单和下游需求字段齐全时进入合约研究验收",
+          "sample_id": "rubber-contract-ready"
+        },
+        {
+          "description": "缺少割胶季节或气候因素时降级为待复核，不直接生成季节性预测",
+          "sample_id": "rubber-seasonal-incomplete"
+        },
+        {
+          "description": "缺少轮胎或汽车产量时标记为需求证据不足，不推导需求增长",
+          "sample_id": "rubber-downstream-missing"
+        }
+      ],
+      "adapter_id": "natural_rubber",
+      "aliases": [
+        "天然橡胶",
+        "沪胶",
+        "橡胶",
+        "natural rubber",
+        "rubber"
+      ],
+      "commodity_category": "agricultural_industrial",
+      "cost_components": [
+        "plantation_cost",
+        "tapping_cost",
+        "processing_cost",
+        "freight",
+        "import_parity",
+        "cash_cost"
+      ],
+      "delivery_rules": {
+        "near_expiry_review_days": 30,
+        "required_fields": [
+          "delivery_grade",
+          "delivery_region",
+          "delivery_month_limit",
+          "warrant_expiry"
+        ],
+        "rule_source": "official_exchange_rule_version"
+      },
+      "display_name": "天然橡胶产业链",
+      "exchanges": [
+        "SHFE"
+      ],
+      "indicator_groups": {
+        "cost_margin": [
+          "production_cost_by_region",
+          "import_parity",
+          "production_and_import_cost",
+          "industry_margin"
+        ],
+        "delivery": [
+          "delivery_rules_and_warrant_expiry"
+        ],
+        "downstream": [
+          "tire_output",
+          "auto_production",
+          "rubber_product_demand"
+        ],
+        "inventory": [
+          "inventory_by_location",
+          "exchange_inventory_and_warrants"
+        ],
+        "position": [
+          "open_interest_and_available_member_positions"
+        ],
+        "pricing": [
+          "spot_benchmark",
+          "basis_and_calendar_spread",
+          "term_structure"
+        ],
+        "production": [
+          "production_by_region",
+          "tapping_season",
+          "plantation_area",
+          "production_and_utilization"
+        ],
+        "seasonality": [
+          "seasonality"
+        ],
+        "structure": [
+          "open_interest_and_available_member_positions"
+        ],
+        "supply_demand": [
+          "supply_demand_balance"
+        ],
+        "trade": [
+          "imports_exports_by_origin",
+          "imports_exports"
+        ]
+      },
+      "inventory_locations": [
+        "port",
+        "bonded",
+        "factory",
+        "dealer",
+        "exchange",
+        "registered_warrant"
+      ],
+      "margin_components": [
+        "spot_minus_production_cost",
+        "import_minus_origin_cost",
+        "dealer_margin"
+      ],
+      "quote_unit": "CNY/ton",
+      "rule_version": "commodity-adapter-rules.v1",
+      "scenario_method": {
+        "invalidators": [
+          "demand_collapse",
+          "unexpected_supply_release",
+          "benchmark_incomparability",
+          "major_weather_disruption"
+        ],
+        "method": "supply_demand_inventory_and_seasonal_ranges",
+        "range_policy": "observation_range_not_intrinsic_value",
+        "required_drivers": [
+          "tapping_output",
+          "import_volume",
+          "tire_demand",
+          "inventory",
+          "seasonal_pattern"
+        ]
+      },
+      "schema_version": "commodity-adapter.v1",
+      "seasonality": {
+        "required_drivers": [
+          "tapping_season",
+          "monsoon",
+          "tire_replacement_season",
+          "auto_sales_cycle"
+        ],
+        "weather_factors": [
+          "rainfall",
+          "temperature",
+          "typhoon"
+        ]
+      },
+      "spot_benchmarks": [
+        {
+          "benchmark_id": "east_china_ru_spot",
+          "comparability_rule": "same_grade_and_delivery_region",
+          "name": "华东天然橡胶现货",
+          "region": "East China",
+          "unit": "CNY/ton"
+        },
+        {
+          "benchmark_id": "qingdao_ru_spot",
+          "comparability_rule": "same_grade_and_delivery_region",
+          "name": "青岛天然橡胶现货",
+          "region": "Qingdao",
+          "unit": "CNY/ton"
+        }
+      ],
+      "trading_unit": "ton",
+      "variety_ids": [
+        "RU"
+      ]
+    },
+    {
+      "acceptance_samples": [
+        {
+          "description": "豆粕进口、压榨、饲料需求、库存、基差和季节性字段齐全时进入研究验收",
+          "sample_id": "soybean-meal-feed-demand"
+        }
+      ],
+      "adapter_id": "soybean_meal",
+      "aliases": [
+        "豆粕",
+        "大豆粕",
+        "soybean meal"
+      ],
+      "commodity_category": "agriculture",
+      "cost_components": [
+        "soybean_import_cost",
+        "crushing_cost",
+        "freight",
+        "meal_yield",
+        "cash_cost",
+        "full_cost"
+      ],
+      "delivery_rules": {
+        "near_expiry_review_days": 30,
+        "required_fields": [
+          "delivery_grade",
+          "delivery_region",
+          "delivery_month_limit",
+          "warrant_expiry"
+        ],
+        "rule_source": "official_exchange_rule_version"
+      },
+      "display_name": "豆粕农产品产业链",
+      "exchanges": [
+        "DCE"
+      ],
+      "indicator_groups": {
+        "cost_margin": [
+          "production_and_import_cost",
+          "industry_margin"
+        ],
+        "delivery": [
+          "delivery_rules_and_warrant_expiry"
+        ],
+        "inventory": [
+          "inventory_by_location",
+          "exchange_inventory_and_warrants"
+        ],
+        "position": [
+          "open_interest_and_available_member_positions"
+        ],
+        "pricing": [
+          "spot_benchmark",
+          "basis_and_calendar_spread",
+          "term_structure"
+        ],
+        "production": [
+          "production_and_utilization"
+        ],
+        "seasonality": [
+          "seasonality"
+        ],
+        "structure": [
+          "open_interest_and_available_member_positions"
+        ],
+        "supply_demand": [
+          "supply_demand_balance"
+        ],
+        "trade": [
+          "imports_exports"
+        ]
+      },
+      "inventory_locations": [
+        "origin",
+        "crushing_mill",
+        "feed_factory",
+        "port",
+        "exchange",
+        "registered_warrant"
+      ],
+      "margin_components": [
+        "crush_margin",
+        "spot_minus_cash_cost",
+        "spot_minus_full_cost",
+        "feed_demand_margin"
+      ],
+      "quote_unit": "CNY/ton",
+      "rule_version": "commodity-adapter-rules.v1",
+      "scenario_method": {
+        "invalidators": [
+          "crop_supply_surprise",
+          "feed_demand_collapse",
+          "benchmark_incomparability"
+        ],
+        "method": "crop_supply_feed_demand_and_inventory_ranges",
+        "range_policy": "observation_range_not_intrinsic_value",
+        "required_drivers": [
+          "crop_weather",
+          "imports",
+          "crush_rate",
+          "feed_demand",
+          "inventory"
+        ]
+      },
+      "schema_version": "commodity-adapter.v1",
+      "seasonality": {
+        "required_drivers": [
+          "planting_weather",
+          "harvest_arrival",
+          "aquaculture_demand",
+          "hog_cycle",
+          "crushing_maintenance"
+        ]
+      },
+      "spot_benchmarks": [
+        {
+          "benchmark_id": "north_china_soybean_meal_spot",
+          "comparability_rule": "same_protein_region_and_delivery_period",
+          "name": "华北豆粕现货",
+          "region": "North China",
+          "unit": "CNY/ton"
+        }
+      ],
+      "trading_unit": "ton",
+      "variety_ids": [
+        "M"
+      ]
+    },
+    {
+      "acceptance_samples": [
+        {
+          "description": "螺纹钢现货、产量、库存、炉料成本和交割字段齐全时进入研究验收",
+          "sample_id": "steel-inventory-cost"
+        }
+      ],
+      "adapter_id": "steel",
+      "aliases": [
+        "钢材",
+        "螺纹钢",
+        "热卷",
+        "steel"
+      ],
+      "commodity_category": "ferrous",
+      "cost_components": [
+        "iron_ore",
+        "coking_coal",
+        "coke",
+        "scrap",
+        "energy",
+        "cash_cost",
+        "full_cost"
+      ],
+      "delivery_rules": {
+        "near_expiry_review_days": 30,
+        "required_fields": [
+          "delivery_grade",
+          "delivery_region",
+          "delivery_month_limit",
+          "warrant_expiry"
+        ],
+        "rule_source": "official_exchange_rule_version"
+      },
+      "display_name": "黑色钢材产业链",
+      "exchanges": [
+        "SHFE"
+      ],
+      "indicator_groups": {
+        "cost_margin": [
+          "production_and_import_cost",
+          "industry_margin"
+        ],
+        "delivery": [
+          "delivery_rules_and_warrant_expiry"
+        ],
+        "inventory": [
+          "inventory_by_location",
+          "exchange_inventory_and_warrants"
+        ],
+        "position": [
+          "open_interest_and_available_member_positions"
+        ],
+        "pricing": [
+          "spot_benchmark",
+          "basis_and_calendar_spread",
+          "term_structure"
+        ],
+        "production": [
+          "production_and_utilization"
+        ],
+        "seasonality": [
+          "seasonality"
+        ],
+        "structure": [
+          "open_interest_and_available_member_positions"
+        ],
+        "supply_demand": [
+          "supply_demand_balance"
+        ],
+        "trade": [
+          "imports_exports"
+        ]
+      },
+      "inventory_locations": [
+        "steel_mill",
+        "social",
+        "warehouse",
+        "port",
+        "exchange",
+        "registered_warrant"
+      ],
+      "margin_components": [
+        "spot_minus_cash_cost",
+        "spot_minus_full_cost",
+        "steel_mill_margin",
+        "rolling_margin"
+      ],
+      "quote_unit": "CNY/ton",
+      "rule_version": "commodity-adapter-rules.v1",
+      "scenario_method": {
+        "invalidators": [
+          "demand_collapse",
+          "unexpected_output_release",
+          "benchmark_incomparability"
+        ],
+        "method": "demand_supply_inventory_and_cost_ranges",
+        "range_policy": "observation_range_not_intrinsic_value",
+        "required_drivers": [
+          "construction_demand",
+          "steel_output",
+          "ore_cost",
+          "inventory"
+        ]
+      },
+      "schema_version": "commodity-adapter.v1",
+      "seasonality": {
+        "required_drivers": [
+          "construction_season",
+          "weather",
+          "winter_production_limits",
+          "infrastructure_investment"
+        ]
+      },
+      "spot_benchmarks": [
+        {
+          "benchmark_id": "east_china_rebar_spot",
+          "comparability_rule": "same_grade_region_and_delivery_period",
+          "name": "华东螺纹钢现货",
+          "region": "East China",
+          "unit": "CNY/ton"
+        }
+      ],
+      "trading_unit": "ton",
+      "variety_ids": [
+        "RB",
+        "HC"
+      ]
+    }
+  ],
+  "execution_enabled": false,
+  "investment_conclusion": false,
+  "policy": {
+    "automatic_order_included": false,
+    "configuration_only": true,
+    "data_fetched": false,
+    "decision_snapshot_created": false,
+    "directional_conclusion": false,
+    "execution_enabled": false,
+    "investment_conclusion": false,
+    "read_only": true,
+    "review_only": true
+  },
+  "read_only": true,
+  "registry_id": "commodity-adapter-registry-default",
+  "review_only": true,
+  "schema_version": "commodity-adapter-registry.v1"
+}

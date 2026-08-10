@@ -1,0 +1,173 @@
+{
+  "acceptance_samples": [
+    {
+      "description": "螺纹钢现货、产量、库存、炉料成本和交割字段齐全时进入研究验收",
+      "sample_id": "steel-inventory-cost"
+    }
+  ],
+  "adapter_id": "steel",
+  "adapter_version": "commodity-adapter-rules.v1",
+  "compatibility": {
+    "exchange_match": null,
+    "quote_unit_match": null,
+    "spot_benchmark_match": null,
+    "variety_match": null
+  },
+  "definition": {
+    "acceptance_samples": [
+      {
+        "description": "螺纹钢现货、产量、库存、炉料成本和交割字段齐全时进入研究验收",
+        "sample_id": "steel-inventory-cost"
+      }
+    ],
+    "adapter_id": "steel",
+    "aliases": [
+      "钢材",
+      "螺纹钢",
+      "热卷",
+      "steel"
+    ],
+    "commodity_category": "ferrous",
+    "cost_components": [
+      "iron_ore",
+      "coking_coal",
+      "coke",
+      "scrap",
+      "energy",
+      "cash_cost",
+      "full_cost"
+    ],
+    "delivery_rules": {
+      "near_expiry_review_days": 30,
+      "required_fields": [
+        "delivery_grade",
+        "delivery_region",
+        "delivery_month_limit",
+        "warrant_expiry"
+      ],
+      "rule_source": "official_exchange_rule_version"
+    },
+    "display_name": "黑色钢材产业链",
+    "exchanges": [
+      "SHFE"
+    ],
+    "indicator_groups": {
+      "cost_margin": [
+        "production_and_import_cost",
+        "industry_margin"
+      ],
+      "delivery": [
+        "delivery_rules_and_warrant_expiry"
+      ],
+      "inventory": [
+        "inventory_by_location",
+        "exchange_inventory_and_warrants"
+      ],
+      "position": [
+        "open_interest_and_available_member_positions"
+      ],
+      "pricing": [
+        "spot_benchmark",
+        "basis_and_calendar_spread",
+        "term_structure"
+      ],
+      "production": [
+        "production_and_utilization"
+      ],
+      "seasonality": [
+        "seasonality"
+      ],
+      "structure": [
+        "open_interest_and_available_member_positions"
+      ],
+      "supply_demand": [
+        "supply_demand_balance"
+      ],
+      "trade": [
+        "imports_exports"
+      ]
+    },
+    "inventory_locations": [
+      "steel_mill",
+      "social",
+      "warehouse",
+      "port",
+      "exchange",
+      "registered_warrant"
+    ],
+    "margin_components": [
+      "spot_minus_cash_cost",
+      "spot_minus_full_cost",
+      "steel_mill_margin",
+      "rolling_margin"
+    ],
+    "quote_unit": "CNY/ton",
+    "rule_version": "commodity-adapter-rules.v1",
+    "scenario_method": {
+      "invalidators": [
+        "demand_collapse",
+        "unexpected_output_release",
+        "benchmark_incomparability"
+      ],
+      "method": "demand_supply_inventory_and_cost_ranges",
+      "range_policy": "observation_range_not_intrinsic_value",
+      "required_drivers": [
+        "construction_demand",
+        "steel_output",
+        "ore_cost",
+        "inventory"
+      ]
+    },
+    "schema_version": "commodity-adapter.v1",
+    "seasonality": {
+      "required_drivers": [
+        "construction_season",
+        "weather",
+        "winter_production_limits",
+        "infrastructure_investment"
+      ]
+    },
+    "spot_benchmarks": [
+      {
+        "benchmark_id": "east_china_rebar_spot",
+        "comparability_rule": "same_grade_region_and_delivery_period",
+        "name": "华东螺纹钢现货",
+        "region": "East China",
+        "unit": "CNY/ton"
+      }
+    ],
+    "trading_unit": "ton",
+    "variety_ids": [
+      "RB",
+      "HC"
+    ]
+  },
+  "execution_enabled": false,
+  "field_coverage": {},
+  "findings": [
+    {
+      "message": "仅校验适配器配置。",
+      "severity": "INFO",
+      "type": "CONFIG_ONLY"
+    }
+  ],
+  "input_fundamentals_report_id": "",
+  "input_futures_report_id": "",
+  "investment_conclusion": false,
+  "policy": {
+    "automatic_order_included": false,
+    "configuration_only": true,
+    "data_fetched": false,
+    "decision_snapshot_created": false,
+    "directional_conclusion": false,
+    "execution_enabled": false,
+    "investment_conclusion": false,
+    "read_only": true,
+    "review_only": true
+  },
+  "read_only": true,
+  "review_only": true,
+  "schema_version": "commodity-adapter-validation.v1",
+  "status": "CONFIG_READY",
+  "validation_id": "commodity-adapter-validation-steel"
+}
