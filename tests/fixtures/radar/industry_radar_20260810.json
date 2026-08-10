@@ -1,0 +1,187 @@
+{
+  "schema_version": "industry-radar-snapshot.v1",
+  "snapshot_id": "industry-radar-20260810-001",
+  "as_of": "2026-08-10T16:00:00+08:00",
+  "source": "manual",
+  "source_version": "1.0",
+  "industries": [
+    {
+      "industry_id": "881147",
+      "industry_name": "电力",
+      "display_name": "电力行业",
+      "category": "公用事业",
+      "state": "STABLE",
+      "signals": [
+        {
+          "name": "demand",
+          "value": "growing",
+          "metric": "全社会用电量同比+5.8%",
+          "as_of": "2026-07",
+          "source": "国家能源局",
+          "evidence_status": "VERIFIED",
+          "direction": "positive"
+        },
+        {
+          "name": "policy",
+          "value": "supportive",
+          "metric": "电价机制改革，利润空间改善",
+          "as_of": "2026-08",
+          "source": "国家发改委",
+          "evidence_status": "VERIFIED",
+          "direction": "positive"
+        },
+        {
+          "name": "cost",
+          "value": "stable",
+          "metric": "煤炭价格回落至700元/吨",
+          "as_of": "2026-08",
+          "source": "煤炭资源网",
+          "evidence_status": "VERIFIED",
+          "direction": "positive"
+        },
+        {
+          "name": "capacity",
+          "value": "expansion",
+          "metric": "清洁能源装机增速+12%",
+          "as_of": "2026-07",
+          "source": "中电联",
+          "evidence_status": "VERIFIED",
+          "direction": "neutral"
+        }
+      ],
+      "evidence_completeness": "VERIFIED",
+      "opportunity_types": ["defensive", "dividend"],
+      "rank": 15,
+      "reason": "需求稳定增长，政策支持，成本改善",
+      "next_review": "2026-09-10"
+    },
+    {
+      "industry_id": "881145",
+      "industry_name": "煤炭",
+      "display_name": "煤炭开采",
+      "category": "能源",
+      "state": "WATCH",
+      "signals": [
+        {
+          "name": "price",
+          "value": "declining",
+          "metric": "动力煤价格700元/吨，较高点下降25%",
+          "as_of": "2026-08",
+          "source": "煤炭资源网",
+          "evidence_status": "VERIFIED",
+          "direction": "negative"
+        },
+        {
+          "name": "demand",
+          "value": "stable",
+          "metric": "火电需求基本稳定",
+          "as_of": "2026-07",
+          "source": "煤炭工业协会",
+          "evidence_status": "VERIFIED",
+          "direction": "neutral"
+        },
+        {
+          "name": "policy",
+          "value": "transition_pressure",
+          "metric": "清洁能源替代压力持续",
+          "as_of": "2026-08",
+          "source": "国家能源局",
+          "evidence_status": "VERIFIED",
+          "direction": "negative"
+        },
+        {
+          "name": "inventory",
+          "value": "high",
+          "metric": "港口库存处于高位",
+          "as_of": "2026-08",
+          "source": "煤炭资源网",
+          "evidence_status": "VERIFIED",
+          "direction": "negative"
+        }
+      ],
+      "evidence_completeness": "VERIFIED",
+      "opportunity_types": [],
+      "rank": 35,
+      "reason": "价格下行，库存高企，长期替代压力",
+      "next_review": "2026-09-10"
+    },
+    {
+      "industry_id": "881141",
+      "industry_name": "光伏设备",
+      "display_name": "光伏设备制造",
+      "category": "新能源",
+      "state": "INFLECTION_CANDIDATE",
+      "signals": [
+        {
+          "name": "price",
+          "value": "bottoming",
+          "metric": "硅料价格企稳于40元/kg",
+          "as_of": "2026-08",
+          "source": "硅业分会",
+          "evidence_status": "VERIFIED",
+          "direction": "positive"
+        },
+        {
+          "name": "inventory",
+          "value": "clearing",
+          "metric": "产业链库存连续3个月下降",
+          "as_of": "2026-07",
+          "source": "InfoLink",
+          "evidence_status": "VERIFIED",
+          "direction": "positive"
+        },
+        {
+          "name": "capacity_exit",
+          "value": "accelerating",
+          "metric": "二线厂商产能退出加速",
+          "as_of": "2026-08",
+          "source": "行业调研",
+          "evidence_status": "COMPANY_CLAIM",
+          "direction": "positive"
+        },
+        {
+          "name": "demand",
+          "value": "recovering",
+          "metric": "国内装机需求回暖",
+          "as_of": "2026-07",
+          "source": "光伏行业协会",
+          "evidence_status": "VERIFIED",
+          "direction": "positive"
+        },
+        {
+          "name": "profitability",
+          "value": "low",
+          "metric": "龙头企业毛利率<10%",
+          "as_of": "2026-Q2",
+          "source": "财报",
+          "evidence_status": "VERIFIED",
+          "direction": "negative"
+        }
+      ],
+      "evidence_completeness": "CROSS_VALIDATED",
+      "opportunity_types": ["cycle_reversal"],
+      "rank": 3,
+      "reason": "价格筑底，库存去化，产能出清，需求恢复信号初现",
+      "next_review": "2026-08-20"
+    }
+  ],
+  "summary": {
+    "total_industries": 3,
+    "by_state": {
+      "INFLECTION_CANDIDATE": 1,
+      "WATCH": 1,
+      "STABLE": 1
+    },
+    "by_opportunity": {
+      "cycle_reversal": 1,
+      "defensive": 1,
+      "dividend": 1
+    }
+  },
+  "metadata": {
+    "scan_method": "manual_curated",
+    "update_frequency": "monthly",
+    "next_scan": "2026-09-10",
+    "notes": "手工整理的行业雷达示例数据"
+  }
+}
