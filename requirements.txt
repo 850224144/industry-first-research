@@ -1,0 +1,12 @@
+# 投研分析系统 - Python依赖
+
+# 核心依赖
+akshare>=1.18.0
+pandas>=2.0.0
+
+# Web界面
+streamlit>=1.28.0
+
+# 可选：数据可视化
+plotly>=5.17.0
+matplotlib>=3.7.0
