@@ -135,7 +135,10 @@ class InvestmentAnalyzer:
             chain = self.chain_v2.get_product_chain(main_product['name'], max_depth=2)
 
             return {
-                'data_version': 'v2',
+                'data_version': chain.get('data_version', 'industry-chain.v2'),
+                'source_status': chain.get('source_status', 'UNKNOWN'),
+                'license_status': chain.get('license_status', 'UNVERIFIED'),
+                'validation_status': chain.get('validation_status', 'UNKNOWN'),
                 'industry': main_product.get('industry', industry),
                 'company_position': company.get('position', '需要配置'),
                 'chain_flow': self._build_chain_flow_from_v2(chain),
@@ -166,7 +169,7 @@ class InvestmentAnalyzer:
                 'downstream_products': chain.get('downstream', []),
 
                 'has_config': True,
-                'source': company.get('source', 'v2'),
+                'source': chain.get('source', company.get('source', 'industry_chain_v2')),
                 'confidence': company.get('confidence', 0.9),
             }
 

@@ -1,0 +1,176 @@
+[
+  {
+    "stock_code": "600438",
+    "stock_name": "通威股份",
+    "products": [
+      "高纯硅料",
+      "电池片"
+    ],
+    "update_time": "2026-08-12T15:29:24.062285",
+    "position": "上游+中游",
+    "source": "v1_migration",
+    "confidence": 0.95
+  },
+  {
+    "stock_code": "601012",
+    "stock_name": "隆基绿能",
+    "products": [
+      "硅片",
+      "电池片",
+      "光伏组件"
+    ],
+    "update_time": "2026-08-12T15:29:24.062359",
+    "position": "中游全产业链",
+    "source": "v1_migration",
+    "confidence": 0.95
+  },
+  {
+    "stock_code": "002459",
+    "stock_name": "晶澳科技",
+    "products": [
+      "电池片",
+      "光伏组件"
+    ],
+    "update_time": "2026-08-12T15:29:24.062411",
+    "position": "中游",
+    "source": "v1_migration",
+    "confidence": 0.95
+  },
+  {
+    "stock_code": "002129",
+    "stock_name": "TCL中环",
+    "products": [
+      "硅片"
+    ],
+    "update_time": "2026-08-12T15:29:24.062463",
+    "position": "中游",
+    "source": "v1_migration",
+    "confidence": 0.95
+  },
+  {
+    "stock_code": "600519",
+    "stock_name": "贵州茅台",
+    "products": [
+      "白酒品牌",
+      "酿造工艺"
+    ],
+    "update_time": "2026-08-12T15:29:24.062889",
+    "position": "品牌龙头",
+    "source": "v1_migration",
+    "confidence": 0.95
+  },
+  {
+    "stock_code": "000858",
+    "stock_name": "五粮液",
+    "products": [
+      "白酒品牌",
+      "酿造工艺"
+    ],
+    "update_time": "2026-08-12T15:29:24.062958",
+    "position": "品牌龙头",
+    "source": "v1_migration",
+    "confidence": 0.95
+  },
+  {
+    "stock_code": "600809",
+    "stock_name": "山西汾酒",
+    "products": [
+      "白酒品牌",
+      "酿造工艺"
+    ],
+    "update_time": "2026-08-12T15:29:24.063033",
+    "position": "区域龙头",
+    "source": "v1_migration",
+    "confidence": 0.95
+  },
+  {
+    "stock_code": "000568",
+    "stock_name": "泸州老窖",
+    "products": [
+      "白酒品牌",
+      "酿造工艺"
+    ],
+    "update_time": "2026-08-12T15:29:24.063106",
+    "position": "品牌企业",
+    "source": "v1_migration",
+    "confidence": 0.95
+  },
+  {
+    "stock_code": "300750",
+    "stock_name": "宁德时代",
+    "products": [
+      "电芯"
+    ],
+    "update_time": "2026-08-12T15:29:24.063707",
+    "position": "中游龙头",
+    "source": "v1_migration",
+    "confidence": 0.95
+  },
+  {
+    "stock_code": "002594",
+    "stock_name": "比亚迪",
+    "products": [
+      "正极材料",
+      "电芯"
+    ],
+    "update_time": "2026-08-12T15:29:24.063791",
+    "position": "垂直整合",
+    "source": "v1_migration",
+    "confidence": 0.95
+  },
+  {
+    "stock_code": "002460",
+    "stock_name": "赣锋锂业",
+    "products": [
+      "碳酸锂"
+    ],
+    "update_time": "2026-08-12T15:29:24.063880",
+    "position": "上游",
+    "source": "v1_migration",
+    "confidence": 0.95
+  },
+  {
+    "stock_code": "002466",
+    "stock_name": "天齐锂业",
+    "products": [
+      "碳酸锂"
+    ],
+    "update_time": "2026-08-12T15:29:24.063969",
+    "position": "上游",
+    "source": "v1_migration",
+    "confidence": 0.95
+  },
+  {
+    "stock_code": "688981",
+    "stock_name": "中芯国际",
+    "products": [
+      "晶圆制造"
+    ],
+    "update_time": "2026-08-12T15:29:24.064775",
+    "position": "制造龙头",
+    "source": "v1_migration",
+    "confidence": 0.95
+  },
+  {
+    "stock_code": "688347",
+    "stock_name": "华虹半导体",
+    "products": [
+      "晶圆制造"
+    ],
+    "update_time": "2026-08-12T15:29:24.064874",
+    "position": "制造企业",
+    "source": "v1_migration",
+    "confidence": 0.95
+  },
+  {
+    "stock_code": "600584",
+    "stock_name": "长电科技",
+    "products": [
+      "封装测试"
+    ],
+    "update_time": "2026-08-12T15:29:24.065015",
+    "position": "封测龙头",
+    "source": "v1_migration",
+    "confidence": 0.95
+  }
+]

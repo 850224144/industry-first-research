@@ -1,0 +1,56 @@
+[
+  {
+    "from": "高纯硅料",
+    "to": "硅片",
+    "relation": "upstream",
+    "update_time": "2026-08-12T15:29:24.062070",
+    "strength": "strong",
+    "source": "v1_chain_flow",
+    "confidence": 0.9
+  },
+  {
+    "from": "硅片",
+    "to": "电池片",
+    "relation": "upstream",
+    "update_time": "2026-08-12T15:29:24.062146",
+    "strength": "strong",
+    "source": "v1_chain_flow",
+    "confidence": 0.9
+  },
+  {
+    "from": "碳酸锂",
+    "to": "正极材料",
+    "relation": "upstream",
+    "update_time": "2026-08-12T15:29:24.063590",
+    "strength": "strong",
+    "source": "v1_chain_flow",
+    "confidence": 0.9
+  },
+  {
+    "from": "正极材料",
+    "to": "电芯",
+    "relation": "upstream",
+    "update_time": "2026-08-12T15:29:24.063647",
+    "strength": "strong",
+    "source": "v1_chain_flow",
+    "confidence": 0.9
+  },
+  {
+    "from": "IC设计",
+    "to": "晶圆制造",
+    "relation": "upstream",
+    "update_time": "2026-08-12T15:29:24.064642",
+    "strength": "strong",
+    "source": "v1_chain_flow",
+    "confidence": 0.9
+  },
+  {
+    "from": "晶圆制造",
+    "to": "封装测试",
+    "relation": "upstream",
+    "update_time": "2026-08-12T15:29:24.064707",
+    "strength": "strong",
+    "source": "v1_chain_flow",
+    "confidence": 0.9
+  }
+]

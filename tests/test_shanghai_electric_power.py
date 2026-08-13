@@ -85,29 +85,26 @@ def test_shanghai_electric_power_config_exists():
 
 def test_utility_adapter_exists():
     """验证公用事业行业适配器存在"""
-    adapter_file = PROJECT_ROOT / "config/industries/adapters/utility.json"
+    adapter_file = PROJECT_ROOT / "config/industries/adapters/utilities.json"
 
     assert adapter_file.exists(), "公用事业适配器文件不存在"
 
     with open(adapter_file) as f:
         adapter = json.load(f)
 
-    assert adapter["adapter_id"] == "utility"
-    assert adapter["category"] == "utility"
-
-    # 验证分析维度
-    dimensions = adapter["analysis_dimensions"]
-    assert dimensions["cycle_analysis"]["applicable"] is False
-    assert dimensions["regulatory_analysis"]["applicable"] is True
-    assert dimensions["dividend_analysis"]["applicable"] is True
+    assert adapter["schema_version"] == "industry-adapter.v1"
+    assert adapter["adapter_id"] == "utilities"
+    assert "utility" in adapter["supported_industry_ids"]
+    assert "电力" in adapter["supported_industry_names"]
+    assert adapter["classification_attributes"]["cyclicality"] == "REGULATED_OR_DEFENSIVE"
 
     # 验证估值方法
     valuation = adapter["valuation_methods"]
-    assert valuation["primary"] == "DDM"  # 股息折现模型
+    assert "dividend_discount" in valuation
 
     print(f"✅ 公用事业适配器验证通过")
-    print(f"   - 主要估值方法: {valuation['primary']}")
-    print(f"   - 适用行业: {', '.join(adapter['applicable_industries'])}")
+    print(f"   - 主要估值方法: {valuation[0]}")
+    print(f"   - 适用行业: {', '.join(adapter['supported_industry_names'])}")
 
 
 def test_shanghai_electric_power_risk_factors():

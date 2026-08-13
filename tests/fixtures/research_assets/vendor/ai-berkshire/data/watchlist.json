@@ -1,0 +1,29 @@
+{
+  "consumer": [
+    {"company_id": "0700.HK", "company_name": "腾讯控股"},
+    {"company_id": "9888.HK", "company_name": "百度集团"},
+    {"company_id": "1024.HK", "company_name": "快手"},
+    {"company_id": "9992.HK", "company_name": "泡泡玛特"},
+    {"company_id": "AAPL", "company_name": "Apple"},
+    {"company_id": "MSFT", "company_name": "Microsoft"},
+    {"company_id": "NVDA", "company_name": "NVIDIA"},
+    {"company_id": "AMZN", "company_name": "Amazon"},
+    {"company_id": "META", "company_name": "Meta"},
+    {"company_id": "TSLA", "company_name": "Tesla"},
+    {"company_id": "GOOGL", "company_name": "Alphabet"},
+    {"company_id": "NFLX", "company_name": "Netflix"},
+    {"company_id": "ORCL", "company_name": "Oracle"},
+    {"company_id": "AVGO", "company_name": "Broadcom"},
+    {"company_id": "AMD", "company_name": "AMD"},
+    {"company_id": "INTC", "company_name": "Intel"},
+    {"company_id": "CRM", "company_name": "Salesforce"},
+    {"company_id": "ADBE", "company_name": "Adobe"},
+    {"company_id": "PYPL", "company_name": "PayPal"},
+    {"company_id": "NKE", "company_name": "Nike"},
+    {"company_id": "DIS", "company_name": "Disney"},
+    {"company_id": "SONY", "company_name": "Sony"},
+    {"company_id": "005930.KS", "company_name": "Samsung Electronics"},
+    {"company_id": "6758.T", "company_name": "Sony Group"},
+    {"company_id": "NESN.SW", "company_name": "Nestle"}
+  ]
+}

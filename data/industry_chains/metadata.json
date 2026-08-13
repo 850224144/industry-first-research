@@ -1,0 +1,18 @@
+{
+  "schema_version": "industry-chain.v2",
+  "relation_semantics": "directed_supply_edge",
+  "relation_definition": "from is upstream of to",
+  "source": "v1_migration",
+  "source_status": "configuration_only",
+  "license_status": "UNVERIFIED",
+  "generated_at": "2026-08-12",
+  "counts": {
+    "products": 13,
+    "relations": 6,
+    "companies": 15
+  },
+  "notes": [
+    "The initial graph is migrated from the project's manually maintained V1 configuration.",
+    "Company-product and product-product claims require primary-source verification before commercial use."
+  ]
+}

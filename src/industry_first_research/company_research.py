@@ -7,6 +7,9 @@ router. It does not infer valuation or investment advice from incomplete data.
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
+import json
+import os
+from pathlib import Path
 from typing import Any
 
 from .data_sources import (
@@ -48,6 +51,7 @@ class CompanyResearchSnapshot:
     missing_fields: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
     company_scope: dict[str, Any] | None = None
+    industry_chain: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -67,6 +71,7 @@ class CompanyResearchAssembler:
             as_of=query.as_of,
             research_status="INSUFFICIENT",
             company_scope=None,
+            industry_chain=_load_industry_chain_profile(query.company_id),
         )
         if query.company_scope is not None:
             try:
@@ -149,3 +154,92 @@ def snapshot_from_config(config: dict[str, Any]) -> CompanyResearchQuery:
         source_names=tuple(config.get("source_names", [])),
         company_scope=dict(config["company_scope"]) if isinstance(config.get("company_scope"), dict) else None,
     )
+
+
+def _load_industry_chain_profile(company_id: str) -> dict[str, Any] | None:
+    """Load the shared V2 company/product graph for the formal CLI path.
+
+    The legacy ``research_system`` analyzer and the package CLI now consume
+    the same JSON records.  Missing local data is represented as ``None`` so
+    the source router can still produce a bounded company snapshot.
+    """
+    raw_code = str(company_id or "").strip().upper()
+    code = raw_code.split(".", 1)[0]
+    if not code:
+        return None
+    configured_dir = os.environ.get("INDUSTRY_CHAIN_DATA_DIR", "").strip()
+    data_dir = Path(configured_dir) if configured_dir else (
+        Path(__file__).resolve().parents[2] / "data" / "industry_chains"
+    )
+    try:
+        products = json.loads((data_dir / "products.json").read_text(encoding="utf-8"))
+        relations = json.loads((data_dir / "product_relations.json").read_text(encoding="utf-8"))
+        companies = json.loads((data_dir / "company_products.json").read_text(encoding="utf-8"))
+        metadata_path = data_dir / "metadata.json"
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8")) if metadata_path.is_file() else {}
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, TypeError):
+        return None
+    if not isinstance(products, list) or not isinstance(relations, list) or not isinstance(companies, list):
+        return None
+    metadata_is_object = isinstance(metadata, dict)
+    if not metadata_is_object:
+        metadata = {}
+    company = next(
+        (
+            item
+            for item in companies
+            if isinstance(item, dict)
+            and str(item.get("stock_code") or "").split(".", 1)[0] == code
+        ),
+        None,
+    )
+    if not isinstance(company, dict):
+        return None
+    product_by_name = {
+        str(item.get("name")): item for item in products if isinstance(item, dict) and item.get("name")
+    }
+    names = [name for name in company.get("products") or [] if name in product_by_name]
+    actual_counts = {
+        "products": len(products),
+        "relations": len(relations),
+        "companies": len(companies),
+    }
+    validation_errors: list[str] = []
+    if not metadata_is_object:
+        validation_errors.append("metadata must be an object")
+    if metadata.get("schema_version") != "industry-chain.v2":
+        validation_errors.append("unsupported or missing schema_version")
+    if metadata.get("relation_semantics") != "directed_supply_edge":
+        validation_errors.append("unsupported or missing relation_semantics")
+    if metadata.get("counts") != actual_counts:
+        validation_errors.append("metadata counts do not match loaded records")
+    unknown_company_products = [
+        name for name in company.get("products") or [] if name not in product_by_name
+    ]
+    if unknown_company_products:
+        validation_errors.append("company references unknown products")
+    upstream: dict[str, dict[str, Any]] = {}
+    downstream: dict[str, dict[str, Any]] = {}
+    for relation in relations:
+        if not isinstance(relation, dict):
+            continue
+        if relation.get("relation") != "upstream":
+            continue
+        source = str(relation.get("from") or "")
+        target = str(relation.get("to") or "")
+        if target in names and source in product_by_name:
+            upstream[source] = product_by_name[source]
+        if source in names and target in product_by_name:
+            downstream[target] = product_by_name[target]
+    return {
+        "data_version": str(metadata.get("schema_version") or "industry-chain.v2"),
+        "source": str(metadata.get("source") or "industry_chain_v2"),
+        "source_status": str(metadata.get("source_status") or "UNKNOWN"),
+        "license_status": str(metadata.get("license_status") or "UNVERIFIED"),
+        "validation_status": "VALID" if not validation_errors else "INVALID",
+        "validation_errors": validation_errors,
+        "company": company,
+        "products": [product_by_name[name] for name in names],
+        "upstream_products": list(upstream.values()),
+        "downstream_products": list(downstream.values()),
+    }

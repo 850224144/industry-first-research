@@ -37,6 +37,27 @@ class ReportGenerator:
             md.append(f"     ↑")
             md.append(f"  【{product.get('company_position', '')}】")
             md.append(f"```")
+            upstream = product.get('upstream_products', [])
+            downstream = product.get('downstream_products', [])
+            if upstream or downstream:
+                md.append("\n### 上下游关系\n")
+                if upstream:
+                    names = [item.get('product', {}).get('name', '未知') for item in upstream]
+                    md.append(f"- **上游**：{'、'.join(names)}")
+                if downstream:
+                    names = [item.get('product', {}).get('name', '未知') for item in downstream]
+                    md.append(f"- **下游**：{'、'.join(names)}")
+            if product.get('data_version'):
+                md.append(
+                    f"- **产业链数据版本**：{product.get('data_version')}，"
+                    f"来源：{product.get('source', 'unknown')}，"
+                    f"置信度：{product.get('confidence', 'unknown')}"
+                )
+                md.append(
+                    f"- **数据状态**：{product.get('source_status', 'UNKNOWN')}，"
+                    f"许可证：{product.get('license_status', 'UNVERIFIED')}，"
+                    f"校验：{product.get('validation_status', 'UNKNOWN')}"
+                )
             if product.get('chain_description'):
                 md.append(f"\n*{product['chain_description']}*\n")
 

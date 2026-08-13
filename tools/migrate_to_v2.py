@@ -3,6 +3,7 @@
 """
 
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -70,7 +71,10 @@ def migrate_v1_to_v2():
                     chain_v2.add_relation(
                         from_product=from_product,
                         to_product=to_product,
-                        relation='upstream',  # to的上游是from
+                        # A relation is a directed supply edge: from -> to.
+                        # The label describes the role of ``from`` relative to
+                        # ``to`` and is not a second direction to be queried.
+                        relation='upstream',
                         strength='strong',
                         source='v1_chain_flow',
                         confidence=0.9,
@@ -99,6 +103,25 @@ def migrate_v1_to_v2():
     print(f"  产品: {total_products}")
     print(f"  关系: {total_relations}")
     print(f"  公司: {total_companies}")
+
+    chain_v2._save_json('metadata.json', {
+        'schema_version': 'industry-chain.v2',
+        'relation_semantics': 'directed_supply_edge',
+        'relation_definition': 'from is upstream of to',
+        'source': 'v1_migration',
+        'source_status': 'configuration_only',
+        'license_status': 'UNVERIFIED',
+        'generated_at': datetime.now(timezone.utc).isoformat(),
+        'counts': {
+            'products': len(chain_v2.products),
+            'relations': len(chain_v2.product_relations),
+            'companies': len(chain_v2.company_products),
+        },
+        'notes': [
+            'Migrated from manually maintained V1 configuration.',
+            'Verify company-product and product-product claims against primary sources before commercial use.',
+        ],
+    })
 
     # 验证
     print("\n验证数据...")

@@ -2,7 +2,7 @@
 
 > 用"西红柿炒鸡蛋"的逻辑分析上市公司投资价值
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-red.svg)](https://streamlit.io/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -20,12 +20,21 @@ bash run_web.sh
 ### 命令行
 
 ```bash
-# 演示
-python demo.py
+# 安装正式 CLI 及免费数据源依赖
+python3 -m pip install -e ".[data]"
 
-# 分析股票
-python -m research_system.main analyze 600438
+# 查看完整研究命令
+industry-first-research --help
+
+# 生成公司研究快照（正式入口）
+industry-first-research company --config config/companies/600438.json
+
+# 兼容入口：快速生成旧版单股报告
+python3 -m research_system.main analyze 600438
 ```
+
+正式入口和兼容入口共享 `data/industry_chains/` 下的 V2 产业链数据；
+数据来源状态、许可证状态和结构校验结果会随研究快照或报告输出。
 
 ---
 
@@ -81,7 +90,7 @@ python -m research_system.main analyze 600438
 
 ## 🔧 技术特点
 
-- ✅ **100%基于API** - AKShare实时数据
+- ✅ **API + 可审计本地快照** - AKShare 等公开接口与版本化产业链数据
 - ✅ **极简架构** - 5个核心模块，3000行代码
 - ✅ **零维护** - 无需手动更新数据
 

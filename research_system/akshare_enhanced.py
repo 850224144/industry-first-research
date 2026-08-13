@@ -29,7 +29,7 @@ class AKShareEnhanced:
 
         industries = {}
 
-        # 1. 东方财富行业分类
+        # 1. 东方财富行业板块（市场实时板块，不等同于申万）
         try:
             print("  - 东方财富行业分类...")
             em_industries = ak.stock_board_industry_name_em()
@@ -39,15 +39,19 @@ class AKShareEnhanced:
             print(f"    ✗ 失败: {e}")
             industries['eastmoney'] = pd.DataFrame()
 
-        # 2. 申万行业分类
-        try:
-            print("  - 申万行业分类...")
-            sw_industries = ak.stock_board_industry_name_em()  # 东财也包含申万
-            industries['shenwan'] = sw_industries
-            print(f"    ✓ 获取到 {len(sw_industries)} 个行业")
-        except Exception as e:
-            print(f"    ✗ 失败: {e}")
-            industries['shenwan'] = pd.DataFrame()
+        # 2. 证监会/巨潮/申万等分类标准（巨潮公开接口）
+        for key, symbol in {
+            'csrc': '证监会行业分类标准',
+            'cninfo': '巨潮行业分类标准',
+            'shenwan': '申银万国行业分类标准',
+        }.items():
+            try:
+                print(f"  - {symbol}...")
+                industries[key] = ak.stock_industry_category_cninfo(symbol=symbol)
+                print(f"    ✓ 获取到 {len(industries[key])} 个分类")
+            except Exception as e:
+                print(f"    ✗ 失败: {e}")
+                industries[key] = pd.DataFrame()
 
         # 3. 概念板块（补充维度）
         try:
@@ -158,18 +162,24 @@ class AKShareEnhanced:
         print("\n2. 获取行业分类...")
         industries = self.get_all_industries()
 
-        # 3. 逐个获取公司详细信息
-        print(f"\n3. 获取公司详细信息 (共{len(all_stocks)}只)...")
+        # Build one reverse index from industry constituents.  The old
+        # implementation queried every industry for every stock, which could
+        # create hundreds of thousands of requests.
+        print("\n3. 建立行业成分反向索引...")
+        industry_membership = self._build_industry_membership_index(industries.get('eastmoney'))
+
+        # 4. 逐个获取公司详细信息
+        print(f"\n4. 获取公司详细信息 (共{len(all_stocks)}只)...")
         master = []
 
         for idx, (_, stock) in enumerate(all_stocks.iterrows(), 1):
-            code = stock['代码']
+            code = self._normalize_stock_code(stock['代码'])
             name = stock['名称']
 
             print(f"   [{idx}/{len(all_stocks)}] {name}({code})...", end=" ")
 
             # 获取行业归属
-            industry_em = self._find_industry(code, industries.get('eastmoney'))
+            industry_em = industry_membership.get(code, "未知")
 
             # 获取主营业务
             main_business = self.get_company_main_business(code)
@@ -194,22 +204,43 @@ class AKShareEnhanced:
 
         return master
 
-    def _find_industry(self, stock_code: str, industry_df: pd.DataFrame) -> str:
-        """从行业板块数据中查找股票所属行业"""
+    def _build_industry_membership_index(self, industry_df: pd.DataFrame) -> Dict[str, str]:
+        """Fetch each board once and map stock code to its first board."""
+        membership: Dict[str, str] = {}
         if industry_df is None or industry_df.empty:
-            return "未知"
-
-        # 遍历每个行业，获取成分股
+            return membership
         for _, industry in industry_df.iterrows():
             industry_name = industry.get('板块名称', industry.get('name', ''))
+            if not industry_name:
+                continue
             try:
                 companies = ak.stock_board_industry_cons_em(symbol=industry_name)
-                if stock_code in companies['代码'].values:
-                    return industry_name
-            except:
+                for code in companies.get('代码', []):
+                    normalized_code = self._normalize_stock_code(code)
+                    if normalized_code:
+                        membership.setdefault(normalized_code, industry_name)
+            except Exception:
                 continue
+        return membership
 
-        return "未知"
+    def _find_industry(self, stock_code: str, industry_df: pd.DataFrame) -> str:
+        """Backward-compatible single-code lookup."""
+        code = self._normalize_stock_code(stock_code)
+        return self._build_industry_membership_index(industry_df).get(code, "未知")
+
+    @staticmethod
+    def _normalize_stock_code(value: object) -> str:
+        """Normalize common AKShare code representations to six digits."""
+        code = str(value or '').strip().upper()
+        if code.endswith('.0') and code[:-2].isdigit():
+            code = code[:-2]
+        parts = code.split('.')
+        if len(parts) == 2:
+            if parts[0] in {'SH', 'SZ', 'BJ'}:
+                code = parts[1]
+            elif parts[1] in {'SH', 'SZ', 'BJ'}:
+                code = parts[0]
+        return code.zfill(6) if code.isdigit() else code
 
     def _save_json(self, file_path: Path, data: any):
         """保存JSON文件"""

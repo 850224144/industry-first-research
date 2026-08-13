@@ -12,7 +12,10 @@ build/
 .pytest_cache/
 
 # Local research data and generated artifacts
-data/
+data/*
+!data/
+!data/industry_chains/
+!data/industry_chains/*.json
 artifacts/
 outputs/*.html
 outputs/*.json

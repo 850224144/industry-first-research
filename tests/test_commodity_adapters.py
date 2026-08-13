@@ -232,19 +232,20 @@ def test_repository_commodity_directory_covers_initial_categories():
     directory = Path(__file__).parents[1] / "config" / "commodities"
     registry = CommodityAdapterRegistry.from_directory(directory)
 
-    assert len(registry.list()) == 5
+    assert len(registry.list()) == 6
     assert {
         definition.adapter_id for definition in registry.list()
-    } == {"copper", "crude_oil", "lithium_carbonate", "soybean_meal", "steel"}
+    } == {"copper", "crude_oil", "lithium_carbonate", "natural_rubber", "soybean_meal", "steel"}
     assert {
         variety_id
         for definition in registry.list()
         for variety_id in definition.variety_ids
-    } == {"BC", "CU", "HC", "LC", "M", "RB", "SC"}
+    } == {"BC", "CU", "HC", "LC", "M", "RB", "RU", "SC"}
     assert {
         definition.commodity_category for definition in registry.list()
     } == {
         "agriculture",
+        "agricultural_industrial",
         "energy_chemical",
         "ferrous",
         "new_energy_material",

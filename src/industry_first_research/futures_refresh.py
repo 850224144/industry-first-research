@@ -75,6 +75,16 @@ def build_futures_fundamentals_input_from_refresh(
         for row in refresh.get("queries", [])
         if isinstance(row, Mapping)
     }
+    expected_variety = str(mapping["variety_id"]).strip().upper()
+    observed_varieties = {
+        str(row.get("subject_id") or "").strip().upper()
+        for row in rows.values()
+        if str(row.get("subject_id") or "").strip()
+    }
+    if observed_varieties and expected_variety not in observed_varieties:
+        raise FuturesRefreshMappingError(
+            f"refresh subject_id {sorted(observed_varieties)[0]} does not match variety_id {expected_variety}"
+        )
     fields: dict[str, dict[str, Any]] = {}
     mapped_queries: set[str] = set()
     for index, raw_mapping in enumerate(mapping.get("field_mappings", [])):
@@ -175,6 +185,7 @@ def build_futures_fundamentals_input_from_refresh(
         },
         "fields": fields,
         "observations": observations,
+        "status": "REVIEW",
         "price_scenarios": {},
         "assessments": {},
         "policy": {
