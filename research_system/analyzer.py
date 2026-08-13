@@ -9,6 +9,7 @@ from .industry_analyzer import IndustryComparator, HistoricalTrendAnalyzer, Comm
 from .industry_chain_knowledge import get_industry_chain_analysis
 from .industry_chain_v2 import IndustryChainV2
 from .cycle_analyzer import CycleAnalyzer
+from .business_model_analyzer import BusinessModelAnalyzer
 
 
 class InvestmentAnalyzer:
@@ -22,6 +23,7 @@ class InvestmentAnalyzer:
         self.valuation_comparator = ValuationComparator()
         self.cycle_analyzer = CycleAnalyzer()
         self.chain_v2 = IndustryChainV2()  # V2产业链知识库
+        self.business_model_analyzer = BusinessModelAnalyzer()  # 商业模式分析器
 
     def analyze(self, stock_data: Dict) -> Dict:
         """
@@ -80,7 +82,14 @@ class InvestmentAnalyzer:
         # 6. 财务健康度分析
         report['financial_health'] = self._analyze_financial_health(stock_data)
 
-        # 7. 周期分析（增强版）
+        # 7. 商业模式分析（新增）
+        print("  正在分析商业模式...")
+        report['business_model'] = self.business_model_analyzer.analyze(
+            stock_data,
+            report['industry_comparison']
+        )
+
+        # 8. 周期分析（增强版）
         print("  正在分析行业周期...")
         report['cycle_analysis'] = self.cycle_analyzer.analyze_cycle(
             stock_data,
@@ -89,7 +98,7 @@ class InvestmentAnalyzer:
             report['valuation_comparison']
         )
 
-        # 8. 生存能力分析
+        # 9. 生存能力分析
         report['survival_analysis'] = self._analyze_survival(stock_data)
 
         # 9. 回本周期预测
